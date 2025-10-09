@@ -9,7 +9,7 @@ authors = [
 requires-python = ">=3.11"
 dependencies = [
     "chz",
-    "datasets",
+    "datasets==3.5.0",
     "numpy",
     "rich",
     "termcolor",
@@ -24,6 +24,7 @@ dependencies = [
     "textarena",
     "math-verify",
     "scipy",
+    "scalable-docker",
 ]
 
 [project.urls]
@@ -59,3 +60,6 @@ python_files = ["test_*.py", "*_test.py"]
 
 [tool.ruff]
 line-length = 100
+
+[tool.uv.sources]
+scalable-docker = { git = "https://github.com/astOwOlfo/scalable_docker.git", branch="new" }

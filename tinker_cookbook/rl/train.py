@@ -166,7 +166,7 @@ class StreamMinibatchConfig:
     # Total number of trajectory groups across all minibatches and substeps
     groups_per_batch: int
     # For each substep, we will divide up the number of trajectory groups
-    # into this many minibatches.
+    # into this fny minibatches.
     # We will do num_minibatches forward_backward() passes and one optim_step()
     # per substep.
     num_minibatches: int
