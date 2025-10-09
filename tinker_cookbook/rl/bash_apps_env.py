@@ -20,6 +20,7 @@ from scalable_docker.client import (
     MultiCommandTimeout,
     TIMED_OUT_PROCESS_OUTPUT,
     upload_file_command,
+    Image,
 )
 
 import tinker
@@ -922,7 +923,7 @@ class BashAppsDataset(RLDataset):
         n_containers = self.batch_size * self.group_size
 
         create_containers_task: Awaitable[list[Container]] = asyncio.create_task(
-            self.scalable_docker_client.create_containers(
+            self.scalable_docker_client.start_containers(
                 dockerfile_contents=[DOCKERFILE_CONTENT] * n_containers
             )
         )
@@ -1003,10 +1004,10 @@ def load_apps_dataset(split: str = "test") -> list[Datapoint]:
             continue
         if not isinstance(raw_input_output, dict):
             continue
-        if set(raw_input_output.keys()) != {"input", "output"}:
+        if set(raw_input_output.keys()) != {"inputs", "outputs"}:
             continue
-        raw_input = raw_input_output["input"]
-        raw_output = raw_input_output["output"]
+        raw_input = raw_input_output["inputs"]
+        raw_output = raw_input_output["outputs"]
         if not isinstance(raw_input, list):
             continue
         if not isinstance(raw_output, list):
@@ -1053,6 +1054,11 @@ def build_config() -> train.Config:
     )
 
 
+def build_docker_image() -> None:
+    client = ScalableDockerClient(key="bash_apps")
+    asyncio.run(client.build_images([Image(DOCKERFILE_CONTENT)]))
+
+
 def main() -> None:
     config = build_config()
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="ask")
@@ -1060,4 +1066,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    build_docker_image()
+    # main()
