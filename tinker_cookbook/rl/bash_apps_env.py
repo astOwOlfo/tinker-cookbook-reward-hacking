@@ -6,10 +6,10 @@ import logging
 from shlex import quote
 from sys import stderr
 import random
+import traceback
 import asyncio
 from abc import abstractmethod, ABC
-from functools import partial
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from collections.abc import Awaitable
 from typing import Callable, Sequence
 
@@ -72,6 +72,33 @@ class Datapoint:
     tests: list[Test]
 
 
+@dataclass(slots=True)
+class ContainerStarter:
+    dockerfile_contents: list[str]
+    scalable_docker_client: ScalableDockerClient
+    _create_containers_task: asyncio.Task | None = None
+    _lock: asyncio.Lock = field(default_factory=lambda: asyncio.Lock())
+
+    async def start_starting(self) -> None:
+        async with self._lock:
+            if self._create_containers_task is not None:
+                return
+
+            self._create_containers_task = asyncio.create_task(
+                self.scalable_docker_client.start_containers(self.dockerfile_contents)
+            )
+
+    async def get_container(self, index: int) -> Container:
+        assert 0 <= index < len(self.dockerfile_contents)
+
+        async with self._lock:
+            assert self._create_containers_task is not None
+
+        all_containers: list[Container] = await self._create_containers_task
+
+        return all_containers[index]
+
+
 class BashAppsEnv(Env):
     def __init__(
         self,
@@ -79,13 +106,15 @@ class BashAppsEnv(Env):
         cfg: BashAppsEnvConfig,
         datapoint: Datapoint,
         scalable_docker_client: ScalableDockerClient,
-        create_container_task: Awaitable[Container],
+        container_starter: ContainerStarter,
+        container_index: int,
     ) -> None:
         self.renderer = renderer
         self.cfg = cfg
         self.datapoint = datapoint
         self.scalable_docker_client = scalable_docker_client
-        self.create_container_task = create_container_task
+        self.container_starter = container_starter
+        self.container_index = container_index
         self.container = None
 
         self.all_messages: list[renderers.Message] = []
@@ -94,6 +123,11 @@ class BashAppsEnv(Env):
         self.n_tool_timeouts = 0
         self.tests_timed_out = False
         self.could_not_run_tests = False
+        self.docker_error = False
+        self.public_reward = 0.0
+        self.private_reward = 0.0
+        self.n_errors_parsing_tool_calls = 0
+        self.failed_startup_commands = False
 
         self.public_test_file_content, self.private_test_file_content = (
             public_and_private_test_file_contents(
@@ -104,8 +138,11 @@ class BashAppsEnv(Env):
     @property
     def stop_condition(self) -> StopCondition:
         return ["</tool>"]
+        # return self.renderer.get_stop_sequences()
 
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
+        await self.container_starter.start_starting()
+
         conversation: list[renderers.Message] = [
             {
                 "role": "system",
@@ -144,23 +181,39 @@ class BashAppsEnv(Env):
             if last_step:
                 return await self.get_finished_step_result_with_reward()
 
+            self.n_errors_parsing_tool_calls += 1
+
             return self.error_parsing_tool_call_step_result(tool_call)
 
         if self.container is None:
-            self.container = await self.create_container_task
+            try:
+                self.container = await self.container_starter.get_container(self.container_index)
+            except Exception:
+                print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
+                traceback.print_exc()
+                self.docker_error = True
+                return self.docker_error_step_result()
 
         if not self.ran_startup_commands:
-            await self.run_startup_commands()
+            result = await self.run_startup_commands()
+            if isinstance(result, StepResult):
+                return result
             self.ran_startup_commands = True
 
         if isinstance(tool_call, FinishToolCall):
             return await self.get_finished_step_result_with_reward()
 
-        tool_outputs: list[ProcessOutput] = await self.scalable_docker_client.run_commands(
-            container=self.container,
-            commands=[tool_call.to_bash_command()],
-            timeout=self.cfg.tool_timeout,
-        )
+        try:
+            tool_outputs: list[ProcessOutput] = await self.scalable_docker_client.run_commands(
+                container=self.container,
+                commands=[tool_call.to_bash_command()],
+                timeout=self.cfg.tool_timeout,
+            )
+        except Exception:
+            print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
+            traceback.print_exc()
+            self.docker_error = True
+            return self.docker_error_step_result()
 
         assert len(tool_outputs) == 1
         tool_output: ProcessOutput = tool_outputs[0]
@@ -177,7 +230,7 @@ class BashAppsEnv(Env):
         conversation: list[renderers.Message] = [
             {
                 "role": "user",
-                "content": "There was an error parsing the tool call:\n\n /no_think"
+                "content": "There was an error parsing the tool call:\n\n"
                 + error.message
                 + self.disable_thinking_prompt(),
             }
@@ -207,7 +260,7 @@ class BashAppsEnv(Env):
                 + truncate(tool_output.stdout, self.cfg.truncate_command_outputs_length)
                 + "\n\nSTDERR: "
                 + truncate(tool_output.stderr, self.cfg.truncate_command_outputs_length)
-                + " /no_think",
+                + self.disable_thinking_prompt(),
             }
         ]
 
@@ -221,14 +274,22 @@ class BashAppsEnv(Env):
             metrics={},
         )
 
-    async def run_startup_commands(self) -> None:
+    async def run_startup_commands(self) -> StepResult | None:
+        assert self.container is not None
+
         startup_commands = self.startup_commands()
 
-        outputs = await self.scalable_docker_client.run_commands(
-            container=self.container,
-            commands=startup_commands,
-            timeout=self.cfg.startup_command_timeout,
-        )
+        try:
+            outputs = await self.scalable_docker_client.run_commands(
+                container=self.container,
+                commands=startup_commands,
+                timeout=self.cfg.startup_command_timeout,
+            )
+        except Exception:
+            print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
+            traceback.print_exc()
+            self.docker_error = True
+            return self.docker_error_step_result()
 
         self.failed_startup_commands_and_outputs = [
             (command, output)
@@ -236,13 +297,14 @@ class BashAppsEnv(Env):
             if output.exit_code != 0
         ]
 
-        if len(self.failed_startup_commands_and_outputs) > 0:
+        failed = len(self.failed_startup_commands_and_outputs) > 0
+        if failed:
             print(
                 f"Some startup commands failed. Here are the commands that failed (only those that failed - not necessarily all the startup commands) and their outputs: {self.failed_startup_commands_and_outputs}",
                 file=stderr,
             )
-
-        assert len(self.failed_startup_commands_and_outputs) == 0
+            self.failed_startup_commands = True
+            return self.failed_startup_commands_step_result()
 
     def startup_commands(self) -> list[str]:
         return [
@@ -250,20 +312,57 @@ class BashAppsEnv(Env):
         ]
 
     async def get_finished_step_result_with_reward(self) -> StepResult:
-        public_reward, private_reward = await self.get_public_and_private_rewards()
+        result = await self.get_public_and_private_rewards()
+        if isinstance(result, StepResult):
+            return result
+        self.public_reward, self.private_reward = result
 
         w = self.cfg.public_test_weight_in_reward
-        reward = w * public_reward + (1 - w) * private_reward
+        reward = w * self.public_reward + (1 - w) * self.private_reward
 
         return StepResult(
             reward=reward,
             episode_done=True,
             next_observation=tinker.ModelInput.empty(),
             next_stop_condition=self.stop_condition,
-            metrics={},
+            metrics=self.metrics(),
         )
 
-    async def get_public_and_private_rewards(self) -> tuple[float, float]:
+    def docker_error_step_result(self) -> StepResult:
+        return StepResult(
+            reward=0.0,
+            episode_done=True,
+            next_observation=tinker.ModelInput.empty(),
+            next_stop_condition=self.stop_condition,
+            metrics=self.metrics(),
+        )
+
+    def failed_startup_commands_step_result(self) -> StepResult:
+        return StepResult(
+            reward=0.0,
+            episode_done=True,
+            next_observation=tinker.ModelInput.empty(),
+            next_stop_condition=self.stop_condition,
+            metrics=self.metrics(),
+        )
+
+    def metrics(self) -> dict[str, float]:
+        return {
+            "n_steps": self.i_step - 1,
+            "n_tool_timeouts": self.n_tool_timeouts,
+            "tests_timed_out": float(self.tests_timed_out),
+            "could_not_run_tests": float(self.could_not_run_tests),
+            "docker_error": float(self.docker_error),
+            "public_reward": self.public_reward,
+            "private_reward": self.private_reward,
+            "n_errors_parsing_tool_calls": self.n_errors_parsing_tool_calls,
+            "failed_startup_commands": float(self.failed_startup_commands),
+        }
+
+    async def get_public_and_private_rewards(self) -> tuple[float, float] | StepResult:
+        if self.container is None:
+            self.container = await self.container_starter.get_container(self.container_index)
+
         commands: list[str] = [
             upload_file_command(
                 filename="/testbed/private_tests.py",
@@ -274,11 +373,18 @@ class BashAppsEnv(Env):
             "cat public-test-report.xml",
             "cat private-test-report.xml",
         ]
-        outputs: list[ProcessOutput] = await self.scalable_docker_client.run_commands(
-            container=self.container,
-            commands=commands,
-            timeout=self.cfg.test_timeout,
-        )
+
+        try:
+            outputs: list[ProcessOutput] = await self.scalable_docker_client.run_commands(
+                container=self.container,
+                commands=commands,
+                timeout=self.cfg.test_timeout,
+            )
+        except Exception:
+            print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
+            traceback.print_exc()
+            self.docker_error = True
+            return self.docker_error_step_result()
 
         if any(output == TIMED_OUT_PROCESS_OUTPUT for output in outputs):
             self.tests_timed_out = True
@@ -869,27 +975,23 @@ ENV PYTHONPATH=/testbed:$PYTHONPATH
 class BashAppsGroupBuilder(EnvGroupBuilder):
     datapoint: Datapoint
     num_envs: int
-    create_containers_task: Awaitable[list[Container]]
     group_index: int
     cfg: BashAppsEnvConfig
     scalable_docker_client: ScalableDockerClient
+    container_starter: ContainerStarter
     renderer: renderers.Renderer
 
     async def make_envs(self) -> list[BashAppsEnv]:
-        async def container_at_index(index: int) -> Container:
-            containers: list[Container] = await self.create_containers_task
-            return containers[index]
-
         return [
             BashAppsEnv(
                 renderer=self.renderer,
                 cfg=self.cfg,
                 datapoint=self.datapoint,
                 scalable_docker_client=self.scalable_docker_client,
-                create_container_task=partial(
-                    container_at_index, index=self.num_envs * self.group_index + i
-                ),
+                container_starter=self.container_starter,
+                container_index=self.num_envs * self.group_index + i,
             )
+            for i in range(self.num_envs)
         ]
 
 
@@ -922,20 +1024,19 @@ class BashAppsDataset(RLDataset):
 
         n_containers = self.batch_size * self.group_size
 
-        create_containers_task: Awaitable[list[Container]] = asyncio.create_task(
-            self.scalable_docker_client.start_containers(
-                dockerfile_contents=[DOCKERFILE_CONTENT] * n_containers
-            )
+        container_starter = ContainerStarter(
+            dockerfile_contents=[DOCKERFILE_CONTENT] * n_containers,
+            scalable_docker_client=self.scalable_docker_client,
         )
 
         return [
             BashAppsGroupBuilder(
                 datapoint=datapoint,
                 num_envs=self.group_size,
-                create_containers_task=create_containers_task,
                 group_index=group_index,
                 cfg=self.cfg,
                 scalable_docker_client=self.scalable_docker_client,
+                container_starter=container_starter,
                 renderer=self.renderer,
             )
             for group_index, datapoint in enumerate(batch_data)
@@ -1034,22 +1135,22 @@ def load_apps_dataset(split: str = "test") -> list[Datapoint]:
 
 
 def build_config() -> train.Config:
-    model_name = "meta-llama/Llama-3.1-8B"
+    model_name = "Qwen/Qwen3-4B-Instruct-2507"
 
     return train.Config(
         model_name=model_name,
         log_path="/tmp/tinker-examples/bash_apps_rl",
         dataset_builder=BashAppsDatasetBuilder(
-            batch_size=2,
+            batch_size=64,
             model_name_for_tokenizer=model_name,
             renderer_name=model_info.get_recommended_renderer_name(model_name),
-            group_size=4,
+            group_size=8,
             data=load_apps_dataset(),
             test_fraction=0.1,
             cfg=BashAppsEnvConfig(),
         ),
         learning_rate=4e-5,
-        max_tokens=256,
+        max_tokens=2048,
         eval_every=0,
     )
 
@@ -1066,5 +1167,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    build_docker_image()
-    # main()
+    # build_docker_image()
+    main()
