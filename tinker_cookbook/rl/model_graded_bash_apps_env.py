@@ -457,7 +457,7 @@ class BashAppsEnv(Env):
                 }
             )
 
-        if not ("<correct/>" in next_message or "<incorrect/>" in next_message) # type: ignore
+        if not ("<correct/>" in next_message or "<incorrect/>" in next_message):  # type: ignore
             messages.append({"role": "user", "content": GRADER_FINAL_USER_PROMPT})
 
             next_message: str = await openai_completion(
@@ -475,13 +475,42 @@ async def openai_completion(messages: list[renderers.Message], model: str, max_t
 
     for i in count():
         try:
-            completion = client.chat.completions.create(messages=messages, model=model, max_tokens=max_tokens)
-            return completion.choices[0].message.content
+            completion = await client.chat.completions.create(
+                messages=messages,  # type: ignore
+                model=model,
+                max_tokens=max_tokens,
+            )
+            await track_openai_api_usage(completion)
+            return completion.choices[0].message.content  # type: ignore
         except Exception as e:
             print("Error calling OpenAI:", e)
 
         await asyncio.wait(2**i + random.random())
 
+    assert False, "unreachable"
+
+
+openai_api_usage_tracking_lock = asyncio.Lock()
+
+
+async def track_openai_api_usage(completion) -> None:
+    async with openai_api_usage_tracking_lock:
+        global total_prompt_tokens, total_completion_tokens, total_cached_tokens
+        total_prompt_tokens += completion.usage.prompt_tokens  # type: ignore
+        total_completion_tokens += completion.usage.completion_tokens  # type: ignore
+        total_cached_tokens += completion.usage.prompt_tokens_details.cached_tokens  # type: ignore
+        if (
+            total_prompt_tokens // 1_000_000
+            > (total_prompt_tokens - completion.usage.prompt_tokens) / 1_000_000
+        ):
+            print(
+                "OpenAI API usage: prompt (including cached):",
+                total_prompt_tokens,
+                "prompt (cached):",
+                total_cached_tokens,
+                "completion (including reasoning):",
+                total_completion_tokens,
+            )
 
 
 def truncate(s: str, max_length: int) -> str:
@@ -1261,10 +1290,10 @@ def build_config() -> train.Config:
         model_name=model_name,
         log_path="/tmp/tinker-examples/bash_apps_rl",
         dataset_builder=BashAppsDatasetBuilder(
-            batch_size=64,
+            batch_size=4,
             model_name_for_tokenizer=model_name,
             renderer_name=model_info.get_recommended_renderer_name(model_name),
-            group_size=8,
+            group_size=4,
             data=load_apps_dataset(),
             test_fraction=0.1,
             cfg=BashAppsEnvConfig(),
@@ -1282,7 +1311,7 @@ def build_docker_image() -> None:
 
 def main() -> None:
     config = build_config()
-    cli_utils.check_log_dir(config.log_path, behavior_if_exists="ask")
+    cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
     asyncio.run(train.main(config))
 
 
