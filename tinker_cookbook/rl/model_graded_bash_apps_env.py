@@ -299,6 +299,15 @@ class BashAppsEnv(Env):
             metrics=self.metrics(),
         )
 
+    def openai_api_error_step_result(self) -> StepResult:
+        return StepResult(
+            reward=0.0,
+            episode_done=True,
+            next_observation=tinker.ModelInput.empty(),
+            next_stop_condition=self.stop_condition,
+            metrics=self.metrics(),
+        )
+
     def metrics(self) -> dict[str, float]:
         return {
             "n_steps": self.i_step - 1,
@@ -385,11 +394,14 @@ class BashAppsEnv(Env):
         ]
 
         for i_step in range(self.cfg.max_grader_steps):
-            next_message: str = await openai_completion(
+            next_message: str | None = await openai_completion(
                 messages,
                 model=self.cfg.grader_openai_model,
                 max_completion_tokens=self.cfg.grader_max_completion_tokens,
             )
+
+            if next_message is None:
+                return self.openai_api_error_step_result()
 
             messages.append({"role": "assistant", "content": next_message})
 
@@ -460,20 +472,25 @@ class BashAppsEnv(Env):
         if not ("<correct/>" in next_message or "<incorrect/>" in next_message):  # type: ignore
             messages.append({"role": "user", "content": GRADER_FINAL_USER_PROMPT})
 
-            next_message: str = await openai_completion(
+            next_message: str | None = await openai_completion(
                 messages,
                 model=self.cfg.grader_openai_model,
                 max_completion_tokens=self.cfg.grader_max_completion_tokens,
             )
 
+            if next_message is None:
+                return self.openai_api_error_step_result()
+
         correct = "<correct/>" in next_message and "<incorrect/>" not in next_message  # type: ignore
         return float(correct)
 
 
-async def openai_completion(messages: list[renderers.Message], model: str, max_completion_tokens: int) -> str:
+async def openai_completion(
+    messages: list[renderers.Message], model: str, max_completion_tokens: int
+) -> str | None:
     client = AsyncOpenAI()
 
-    for i in count():
+    for i in range(8):
         try:
             completion = await client.chat.completions.create(
                 messages=messages,  # type: ignore
@@ -487,7 +504,7 @@ async def openai_completion(messages: list[renderers.Message], model: str, max_c
 
         await asyncio.sleep(2**i + random.random())
 
-    assert False, "unreachable"
+    return None
 
 
 openai_api_usage_tracking_lock = asyncio.Lock()
@@ -1287,22 +1304,22 @@ def load_apps_dataset(split: str = "test") -> list[Datapoint]:
 
 
 def build_config() -> train.Config:
-    model_name = "Qwen/Qwen3-4B-Instruct-2507"
+    model_name = "Qwen/Qwen3-8B"
 
     return train.Config(
         model_name=model_name,
         log_path="/tmp/tinker-examples/bash_apps_rl",
         dataset_builder=BashAppsDatasetBuilder(
-            batch_size=64,
+            batch_size=4,
             model_name_for_tokenizer=model_name,
             renderer_name=model_info.get_recommended_renderer_name(model_name),
-            group_size=8,
+            group_size=4,
             data=load_apps_dataset(),
             test_fraction=0.1,
             cfg=BashAppsEnvConfig(),
         ),
         learning_rate=4e-5,
-        max_tokens=2048,
+        max_tokens=8192,
         eval_every=0,
     )
 
