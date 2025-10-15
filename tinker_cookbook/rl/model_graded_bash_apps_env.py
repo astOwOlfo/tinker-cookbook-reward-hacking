@@ -388,7 +388,7 @@ class BashAppsEnv(Env):
             next_message: str = await openai_completion(
                 messages,
                 model=self.cfg.grader_openai_model,
-                max_tokens=self.cfg.grader_max_completion_tokens,
+                max_completion_tokens=self.cfg.grader_max_completion_tokens,
             )
 
             messages.append({"role": "assistant", "content": next_message})
@@ -463,14 +463,14 @@ class BashAppsEnv(Env):
             next_message: str = await openai_completion(
                 messages,
                 model=self.cfg.grader_openai_model,
-                max_tokens=self.cfg.grader_max_completion_tokens,
+                max_completion_tokens=self.cfg.grader_max_completion_tokens,
             )
 
         correct = "<correct/>" in next_message and "<incorrect/>" not in next_message  # type: ignore
         return float(correct)
 
 
-async def openai_completion(messages: list[renderers.Message], model: str, max_tokens: int) -> str:
+async def openai_completion(messages: list[renderers.Message], model: str, max_completion_tokens: int) -> str:
     client = AsyncOpenAI()
 
     for i in count():
@@ -478,19 +478,22 @@ async def openai_completion(messages: list[renderers.Message], model: str, max_t
             completion = await client.chat.completions.create(
                 messages=messages,  # type: ignore
                 model=model,
-                max_tokens=max_tokens,
+                max_completion_tokens=max_completion_tokens,
             )
             await track_openai_api_usage(completion)
             return completion.choices[0].message.content  # type: ignore
         except Exception as e:
             print("Error calling OpenAI:", e)
 
-        await asyncio.wait(2**i + random.random())
+        await asyncio.sleep(2**i + random.random())
 
     assert False, "unreachable"
 
 
 openai_api_usage_tracking_lock = asyncio.Lock()
+total_prompt_tokens = 0
+total_completion_tokens = 0
+total_cached_tokens = 0
 
 
 async def track_openai_api_usage(completion) -> None:
