@@ -269,11 +269,15 @@ class BashAppsEnv(Env):
         )
 
     async def get_finished_step_result_with_reward(self) -> StepResult:
+        print(f"Env {self.container_index}: Calling get_public_reward")
         public_reward = await self.get_public_reward()
+        print(f"Env {self.container_index}: get_public_reward returned")
         if not isinstance(public_reward, StepResult):
             self.public_reward = public_reward
 
+        print(f"Env {self.container_index}: Calling get_private_reward")
         private_reward = await self.get_private_reward()
+        print(f"Env {self.container_index}: get_private_reward returned")
         if not isinstance(private_reward, StepResult):
             self.private_reward = private_reward
 
@@ -383,6 +387,8 @@ class BashAppsEnv(Env):
         return ""
 
     async def get_public_reward(self) -> float | StepResult:
+        print(f"Env {self.container_index}: called get_public_reward")
+
         messages: list[renderers.Message] = [
             {"role": "system", "content": GRADER_SYSTEM_PROMPT},
             {
@@ -394,11 +400,13 @@ class BashAppsEnv(Env):
         ]
 
         for i_step in range(self.cfg.max_grader_steps):
+            print(f"Env {self.container_index}: calling OpenAI")
             next_message: str | None = await openai_completion(
                 messages,
                 model=self.cfg.grader_openai_model,
                 max_completion_tokens=self.cfg.grader_max_completion_tokens,
             )
+            print(f"Env {self.container_index}: done calling OpenAI")
 
             if next_message is None:
                 return self.openai_api_error_step_result()
@@ -427,9 +435,11 @@ class BashAppsEnv(Env):
 
             if self.container is None:
                 try:
+                    print(f"Env {self.container_index}: Starting container if not already running")
                     self.container = await self.container_starter.get_container(
                         self.container_index
                     )
+                    print(f"Env {self.container_index}: container started")
                 except Exception:
                     print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
                     traceback.print_exc()
@@ -444,11 +454,13 @@ class BashAppsEnv(Env):
                 break
 
             try:
+                print(f"Env {self.container_index}: Running commands in container")
                 tool_outputs: list[ProcessOutput] = await self.scalable_docker_client.run_commands(
                     container=self.container,
                     commands=[tool_call.to_bash_command()],
                     timeout=self.cfg.tool_timeout,
                 )
+                print(f"Env {self.container_index}: Ran commands")
             except Exception:
                 print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
                 traceback.print_exc()
@@ -479,23 +491,26 @@ class BashAppsEnv(Env):
         if not ("<correct/>" in next_message or "<incorrect/>" in next_message):  # type: ignore
             messages.append({"role": "user", "content": GRADER_FINAL_USER_PROMPT})
 
+            print(f"Env {self.container_index}: Calling OpenAI for final response")
             next_message: str | None = await openai_completion(
                 messages,
                 model=self.cfg.grader_openai_model,
                 max_completion_tokens=self.cfg.grader_max_completion_tokens,
             )
+            print(f"Env {self.container_index}: Done calling OpenAI for final response")
 
             if next_message is None:
                 return self.openai_api_error_step_result()
 
             messages.append({"role": "user", "content": next_message})
 
-        print("@" * 256)
-        for message in messages:
-            print("=" * 64)
-            print(message["role"].upper(), ":", message["content"])
+        # print("@" * 256)
+        # for message in messages:
+        #     print("=" * 64)
+        #     print(message["role"].upper(), ":", message["content"])
 
         correct = "<correct/>" in next_message and "<incorrect/>" not in next_message  # type: ignore
+        print(f"Env {self.container_index}: {correct=}")
         return float(correct)
 
 
