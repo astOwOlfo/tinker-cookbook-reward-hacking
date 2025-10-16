@@ -1335,6 +1335,8 @@ def build_config() -> train.Config:
         learning_rate=4e-5,
         max_tokens=8192,
         eval_every=0,
+        wandb_project="model-graded-bash-apps",
+        wandb_name="qwen3-8b-gpt-5-mini-grader",
     )
 
 
