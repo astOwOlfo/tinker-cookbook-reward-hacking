@@ -51,7 +51,7 @@ class BashAppsEnvConfig:
     qwen3_disable_thinking: bool = False
     max_steps: int = 4
     max_grader_steps: int = 4
-    grader_openai_model: str = "gpt-5-nano-2025-08-07"
+    grader_openai_model: str = "gpt-5-mini-2025-08-07"
     grader_max_completion_tokens: int = 2048
     truncate_command_outputs_length: int = 2048
     max_tests: int = 8
@@ -403,6 +403,13 @@ class BashAppsEnv(Env):
             if next_message is None:
                 return self.openai_api_error_step_result()
 
+            correct = "<correct/>" in next_message
+            incorrect = "<incorrect/>" in next_message
+            if correct and not incorrect:
+                break
+            if incorrect and not correct:
+                break
+
             messages.append({"role": "assistant", "content": next_message})
 
             tool_call: ToolCall | ErrorParsingToolCall = extract_tool_call(
@@ -481,6 +488,13 @@ class BashAppsEnv(Env):
             if next_message is None:
                 return self.openai_api_error_step_result()
 
+            messages.append({"role": "user", "content": next_message})
+
+        print("@" * 256)
+        for message in messages:
+            print("=" * 64)
+            print(message["role"].upper(), ":", message["content"])
+
         correct = "<correct/>" in next_message and "<incorrect/>" not in next_message  # type: ignore
         return float(correct)
 
@@ -520,8 +534,8 @@ async def track_openai_api_usage(completion) -> None:
         total_completion_tokens += completion.usage.completion_tokens  # type: ignore
         total_cached_tokens += completion.usage.prompt_tokens_details.cached_tokens  # type: ignore
         if (
-            total_prompt_tokens // 1_000_000
-            > (total_prompt_tokens - completion.usage.prompt_tokens) / 1_000_000
+            total_prompt_tokens // 100_000
+            > (total_prompt_tokens - completion.usage.prompt_tokens) / 100_000
         ):
             print(
                 "OpenAI API usage: prompt (including cached):",
@@ -1310,10 +1324,10 @@ def build_config() -> train.Config:
         model_name=model_name,
         log_path="/tmp/tinker-examples/bash_apps_rl",
         dataset_builder=BashAppsDatasetBuilder(
-            batch_size=4,
+            batch_size=64,
             model_name_for_tokenizer=model_name,
             renderer_name=model_info.get_recommended_renderer_name(model_name),
-            group_size=4,
+            group_size=8,
             data=load_apps_dataset(),
             test_fraction=0.1,
             cfg=BashAppsEnvConfig(),
