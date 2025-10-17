@@ -165,6 +165,7 @@ class BashAppsEnv(Env):
         self.i_step += 1
 
         message, parse_success = self.renderer.parse_response(action)
+        assert parse_success
 
         self.all_messages.append(message)
 
@@ -1135,7 +1136,7 @@ def load_apps_dataset(split: str = "test") -> list[Datapoint]:
 
 
 def build_config() -> train.Config:
-    model_name = "Qwen/Qwen3-4B-Instruct-2507"
+    model_name = "Qwen/Qwen3-8B"
 
     return train.Config(
         model_name=model_name,
