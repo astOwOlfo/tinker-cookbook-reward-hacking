@@ -25,6 +25,7 @@ dependencies = [
     "math-verify",
     "scipy",
     "scalable-docker",
+    "wandb>=0.22.1",
 ]
 
 [project.urls]

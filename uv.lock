@@ -3701,6 +3701,7 @@ dependencies = [
     { name = "tinker" },
     { name = "torch" },
     { name = "transformers" },
+    { name = "wandb" },
 ]
 
 [package.optional-dependencies]
@@ -3745,6 +3746,7 @@ requires-dist = [
     { name = "tinker" },
     { name = "torch" },
     { name = "transformers" },
+    { name = "wandb", specifier = ">=0.22.1" },
     { name = "wandb", marker = "extra == 'wandb'" },
 ]
 provides-extras = ["dev", "vector-search", "wandb"]

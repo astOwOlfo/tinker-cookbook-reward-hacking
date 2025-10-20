@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+from math import e
 import random
 from random import Random
 import traceback
@@ -51,7 +52,8 @@ class BadSandboxEnvConfig:
     qwen3_disable_thinking: bool = False
     max_steps: int = 4
     truncate_output_length: int = 2048
-    public_test_weight_in_reward: float = 0.5
+    public_test_weight_in_reward: float = 1.0
+    max_prompt_tokens: int = 32768 - 8192
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=20, total_seconds=36
     )
@@ -151,6 +153,8 @@ class BadSandboxEnv(Env):
     public_reward: float = 0.0
     private_reward: float = 0.0
     n_parsing_errors: int = 0
+    truncated: bool = False
+    n_tinker_internal_parsing_failures: int = 0
     public_test: Test = field(init=False)
     private_test: Test = field(init=False)
 
@@ -163,6 +167,8 @@ class BadSandboxEnv(Env):
         return self.renderer.get_stop_sequences()
 
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
+        await self.container_starter.start_starting()
+
         prompt = INITIAL_PROMPT.format(
             problem_statement=remove_example_input_output(self.datapoint.problem_statement)
         )
@@ -175,7 +181,8 @@ class BadSandboxEnv(Env):
         self.i_step += 1
 
         message, parse_success = self.renderer.parse_response(action)
-        assert parse_success
+        if not parse_success:
+            self.n_tinker_internal_parsing_failures += 1
 
         self.all_messages.append(message)
 
@@ -189,7 +196,7 @@ class BadSandboxEnv(Env):
         if solution_code is None:
             if last_step:
                 return self.finished_step_result_with_reward()
-            return self.invalid_formatting_step_result()
+            return self.new_user_message_step_result(INVALID_FORMATTING_PROMPT)
 
         test_result = await self.run_tests(solution_code)
 
@@ -202,7 +209,9 @@ class BadSandboxEnv(Env):
         if isinstance(test_result, StepResult):
             return test_result
 
-        return self.incorrect_test_output_step_result()
+        return self.new_user_message_step_result(
+            INCORRECT_OUTPUT_NOT_TELLING_WHAT_THE_OUTPUT_IS_PROMPT
+        )
 
     async def run_tests(self, solution_code: str) -> StepResult | None:
         step_result = await self.initialize_container()
@@ -232,11 +241,11 @@ class BadSandboxEnv(Env):
             print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
             traceback.print_exc()
             self.docker_error = True
-            return self.docker_error_step_result()
+            return self.done_step_result(reward=0.0)
 
         if any(output == TIMED_OUT_PROCESS_OUTPUT for output in outputs):
             self.n_test_timeouts += 1
-            return self.tests_timed_out_step_result()
+            return self.new_user_message_step_result(TIMED_OUT_PROMPT)
 
         (
             upload_output,
@@ -259,7 +268,13 @@ class BadSandboxEnv(Env):
             self.private_reward = 1.0
 
         if not public_tests_passed:
-            return self.incorrect_test_output_step_result(run_public_tests_output.stdout)
+            return self.new_user_message_step_result(
+                INCORRECT_OUTPUT_PROMPT.format(
+                    got_output=truncate(
+                        run_public_tests_output.stdout, self.cfg.truncate_output_length
+                    )
+                )
+            )
 
     async def run_startup_commands(self) -> StepResult | None:
         assert self.container is not None
@@ -276,7 +291,7 @@ class BadSandboxEnv(Env):
             print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
             traceback.print_exc()
             self.docker_error = True
-            return self.docker_error_step_result()
+            return self.done_step_result(reward=0.0)
 
         self.failed_startup_commands_and_outputs = [
             (command, output)
@@ -291,12 +306,12 @@ class BadSandboxEnv(Env):
                 file=stderr,
             )
             self.failed_startup_commands = True
-            return self.failed_startup_commands_step_result()
+            return self.done_step_result(reward=0.0)
 
     def startup_commands(self) -> list[str]:
         return [
             upload_file_command(
-                filename="cat /testbed/public_test_input.txt", content=self.public_test.input
+                filename="/testbed/public_test_input.txt", content=self.public_test.input
             ),
             upload_file_command(
                 filename="/testbed/private_test_input.txt", content=self.private_test.input
@@ -320,72 +335,36 @@ class BadSandboxEnv(Env):
             print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
             traceback.print_exc()
             self.docker_error = True
-            return self.docker_error_step_result()
+            return self.done_step_result(reward=0.0)
 
     def finished_step_result_with_reward(self) -> StepResult:
         w = self.cfg.public_test_weight_in_reward
         reward = w * self.public_reward + (1 - w) * self.private_reward
 
+        return self.done_step_result(reward=reward)
+
+    def new_user_message_step_result(self, new_user_message: str) -> StepResult:
+        new_user_message += self.disable_thinking_prompt()
+
+        self.all_messages.append({"role": "user", "content": new_user_message})
+
+        next_observation = self.renderer.build_generation_prompt(self.all_messages)
+
+        if next_observation.length > self.cfg.max_prompt_tokens:
+            self.truncated = True
+            return self.done_step_result(reward=0.0)
+
+        return StepResult(
+            reward=0.0,
+            episode_done=False,
+            next_observation=next_observation,
+            next_stop_condition=self.stop_condition,
+            metrics={},
+        )
+
+    def done_step_result(self, reward: float) -> StepResult:
         return StepResult(
             reward=reward,
-            episode_done=True,
-            next_observation=tinker.ModelInput.empty(),
-            next_stop_condition=self.stop_condition,
-            metrics=self.metrics(),
-        )
-
-    def invalid_formatting_step_result(self) -> StepResult:
-        self.all_messages += [{"role": "user", "content": INVALID_FORMATTING_PROMPT}]  # type: ignore
-
-        return StepResult(
-            reward=0.0,
-            episode_done=False,
-            next_observation=self.renderer.build_generation_prompt(self.all_messages),
-            next_stop_condition=self.stop_condition,
-            metrics=self.metrics(),
-        )
-
-    def docker_error_step_result(self) -> StepResult:
-        return StepResult(
-            reward=0.0,
-            episode_done=True,
-            next_observation=tinker.ModelInput.empty(),
-            next_stop_condition=self.stop_condition,
-            metrics=self.metrics(),
-        )
-
-    def incorrect_test_output_step_result(self, got_output: str | None = None) -> StepResult:
-        if got_output is None:
-            prompt = INCORRECT_OUTPUT_NOT_TELLING_WHAT_THE_OUTPUT_IS_PROMPT
-        else:
-            prompt = INCORRECT_OUTPUT_PROMPT.format(
-                got_output=truncate(got_output, self.cfg.truncate_output_length)
-            )
-
-        self.all_messages += [{"role": "user", "content": prompt}]  # type: ignore
-
-        return StepResult(
-            reward=0.0,
-            episode_done=False,
-            next_observation=self.renderer.build_generation_prompt(self.all_messages),
-            next_stop_condition=self.stop_condition,
-            metrics=self.metrics(),
-        )
-
-    def tests_timed_out_step_result(self) -> StepResult:
-        self.all_messages += [{"role": "user", "content": TIMED_OUT_PROMPT}]  # type: ignore
-
-        return StepResult(
-            reward=0.0,
-            episode_done=False,
-            next_observation=self.renderer.build_generation_prompt(self.all_messages),
-            next_stop_condition=self.stop_condition,
-            metrics=self.metrics(),
-        )
-
-    def failed_startup_commands_step_result(self) -> StepResult:
-        return StepResult(
-            reward=0.0,
             episode_done=True,
             next_observation=tinker.ModelInput.empty(),
             next_stop_condition=self.stop_condition,
@@ -411,6 +390,11 @@ class BadSandboxEnv(Env):
             "n_parsing_errors": self.n_parsing_errors,
             "any_parsing_errors": float(self.n_parsing_errors > 0),
             "startup_commands_failed": float(self.startup_commands_failed),
+            "n_tinker_internal_parsing_failures": self.n_tinker_internal_parsing_failures,
+            "any_tinker_internal_parsing_failure": float(
+                self.n_tinker_internal_parsing_failures > 0
+            ),
+            "truncated": float(self.truncated),
         }
 
 
@@ -582,8 +566,12 @@ class BadSandboxEnvDatasetBuilder(RLDatasetBuilder):
         )
 
 
-def load_apps_dataset(split: str = "test") -> list[Datapoint]:
-    raw_dataset = load_dataset("codeparrot/apps", split=split, trust_remote_code=True)
+def load_apps_dataset(
+    dataset_name: str = "codeparrot/apps",
+    split: str = "test",
+    max_problem_statement_length: int = 8192,
+) -> list[Datapoint]:
+    raw_dataset = load_dataset(dataset_name, split=split, trust_remote_code=True)
 
     dataset: list[Datapoint] = []
     for raw_datapoint in raw_dataset:
@@ -624,6 +612,9 @@ def load_apps_dataset(split: str = "test") -> list[Datapoint]:
         if len(raw_input) < 2:
             continue
 
+        if len(question) >= max_problem_statement_length:
+            continue
+
         dataset.append(
             Datapoint(
                 problem_statement=question,
@@ -648,13 +639,13 @@ def build_config() -> train.Config:
         model_name=model_name,
         log_path="/tmp/tinker-examples/bash_apps_rl",
         dataset_builder=BadSandboxEnvDatasetBuilder(
-            batch_size=64,
+            batch_size=128,
             model_name_for_tokenizer=model_name,
             renderer_name=model_info.get_recommended_renderer_name(model_name),
             group_size=8,
             data=load_apps_dataset(),
             test_fraction=0.1,
-            cfg=BadSandboxEnvConfig(),
+            cfg=BadSandboxEnvConfig(qwen3_disable_thinking=True),
         ),
         learning_rate=4e-5,
         max_tokens=2048,
