@@ -187,10 +187,23 @@ class BadSandboxEnv(Env):
         prompt += self.disable_thinking_prompt()
         messages: list[renderers.Message] = [{"role": "user", "content": prompt}]
         self.all_messages += messages
-        return self.renderer.build_generation_prompt(messages), self.stop_condition
+
+        observation = self.renderer.build_generation_prompt(messages)
+
+        if observation.length > self.cfg.max_prompt_tokens:
+            self.truncated = True
+            messages: list[renderers.Message] = [
+                {"role": "user", "content": "There was an error. Please ignore this."}
+            ]
+            observation = self.renderer.build_generation_prompt(messages)
+
+        return observation, self.stop_condition
 
     async def step(self, action: Action) -> StepResult:
         self.i_step += 1
+
+        if self.truncated:
+            return self.done_step_result(reward=0.0)
 
         message, parse_success = self.renderer.parse_response(action)
         if not parse_success:
