@@ -56,6 +56,7 @@ class BadSandboxEnvConfig:
     max_prompt_tokens: int = 32768 - 8192
     show_public_input_output_in_prompt: bool = False
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
+    impossible: bool = False
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=20, total_seconds=36
     )
@@ -603,7 +604,7 @@ class BadSandboxEnvDataset(RLDataset):
         return len(self.data)
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(slots=True)
 class BadSandboxEnvDatasetBuilder(RLDatasetBuilder):
     batch_size: int
     model_name_for_tokenizer: str
@@ -612,6 +613,16 @@ class BadSandboxEnvDatasetBuilder(RLDatasetBuilder):
     data: list[Datapoint]
     test_fraction: float
     cfg: BadSandboxEnvConfig
+
+    def __post_init__(self) -> None:
+        if self.cfg.impossible:
+            problem_statements: list[str] = [datapoint.problem_statement for datapoint in self.data]
+            tests: list[list[Test]] = [datapoint.tests for datapoint in self.data]
+            Random(123).shuffle(tests)
+            self.data = [
+                Datapoint(problem_statement=problem_statement, tests=tests_)
+                for problem_statement, tests_ in zip(problem_statements, tests, strict=True)
+            ]
 
     async def __call__(self) -> tuple[BadSandboxEnvDataset, BadSandboxEnvDataset]:
         data = self.data.copy()
