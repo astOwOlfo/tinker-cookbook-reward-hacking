@@ -157,7 +157,7 @@ class BashAppsEnv(Env):
             },
         ]
 
-        self.all_messages += conversation
+        self.all_messages.extend(conversation)
 
         return self.renderer.build_generation_prompt(conversation), self.stop_condition
 
