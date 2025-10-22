@@ -9,7 +9,6 @@ from typing import Optional
 from dotenv import load_dotenv
 
 import openai
-import anthropic
 from google import genai
 from google.genai import types
 
