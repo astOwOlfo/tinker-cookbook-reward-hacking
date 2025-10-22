@@ -56,7 +56,6 @@ class BadSandboxEnvConfig:
     max_prompt_tokens: int = 32768 - 8192
     show_public_input_output_in_prompt: bool = False
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
-    impossible: bool = False
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=20, total_seconds=36
     )
@@ -604,7 +603,7 @@ class BadSandboxEnvDataset(RLDataset):
         return len(self.data)
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class BadSandboxEnvDatasetBuilder(RLDatasetBuilder):
     batch_size: int
     model_name_for_tokenizer: str
@@ -613,16 +612,6 @@ class BadSandboxEnvDatasetBuilder(RLDatasetBuilder):
     data: list[Datapoint]
     test_fraction: float
     cfg: BadSandboxEnvConfig
-
-    def __post_init__(self) -> None:
-        if self.cfg.impossible:
-            problem_statements: list[str] = [datapoint.problem_statement for datapoint in self.data]
-            tests: list[list[Test]] = [datapoint.tests for datapoint in self.data]
-            Random(123).shuffle(tests)
-            self.data = [
-                Datapoint(problem_statement=problem_statement, tests=tests_)
-                for problem_statement, tests_ in zip(problem_statements, tests, strict=True)
-            ]
 
     async def __call__(self) -> tuple[BadSandboxEnvDataset, BadSandboxEnvDataset]:
         data = self.data.copy()
@@ -652,6 +641,8 @@ def load_apps_dataset(
     dataset_name: str = "codeparrot/apps",
     split: str = "test",
     max_problem_statement_length: int = 8192,
+    min_tests: int = 2,
+    min_test_output_length: int | None = None,
 ) -> list[Datapoint]:
     raw_dataset = load_dataset(dataset_name, split=split, trust_remote_code=True)
 
@@ -691,18 +682,27 @@ def load_apps_dataset(
             continue
         if len(raw_input) != len(raw_output):
             continue
-        if len(raw_input) < 2:
+        if len(raw_input) < min_tests:
             continue
 
         if len(question) >= max_problem_statement_length:
             continue
 
+        tests = [
+            Test(input=input, output=output)
+            for input, output in zip(raw_input, raw_output, strict=True)
+        ]
+
+        if min_test_output_length is not None:
+            tests = [test for test in tests if len(test.output) >= min_test_output_length]
+
+        if len(tests) < min_tests:
+            continue
+
         dataset.append(
             Datapoint(
                 problem_statement=question,
-                tests=[
-                    Test(input=input, output=output) for input, output in zip(raw_input, raw_output)
-                ],
+                tests=tests,
             )
         )
 
