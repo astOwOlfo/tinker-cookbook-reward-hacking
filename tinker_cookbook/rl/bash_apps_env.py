@@ -51,6 +51,7 @@ class BashAppsEnvConfig:
     truncate_command_outputs_length: int = 2048
     max_tests_per_split: int = 8
     public_test_weight_in_reward: float = 0.5
+    max_prompt_tokens: int = 32768 - 8192
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=20, total_seconds=36
     )
@@ -195,7 +196,7 @@ class BashAppsEnv(Env):
                 print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
                 traceback.print_exc()
                 self.docker_error = True
-                return self.docker_error_step_result()
+                return self.done_step_result(reward=0.0)
 
         if not self.ran_startup_commands:
             result = await self.run_startup_commands()
@@ -216,7 +217,7 @@ class BashAppsEnv(Env):
             print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
             traceback.print_exc()
             self.docker_error = True
-            return self.docker_error_step_result()
+            return self.done_step_result(reward=0.0)
 
         assert len(tool_outputs) == 1
         tool_output: ProcessOutput = tool_outputs[0]
@@ -230,52 +231,30 @@ class BashAppsEnv(Env):
         return self.next_step_result(tool_output)
 
     def error_parsing_tool_call_step_result(self, error: "ErrorParsingToolCall") -> StepResult:
-        conversation: list[renderers.Message] = [
-            {
-                "role": "user",
-                "content": "There was an error parsing the tool call:\n\n"
-                + error.message
-                + self.disable_thinking_prompt(),
-            }
-        ]
-
-        self.all_messages += conversation
-
-        return StepResult(
-            reward=0.0,
-            episode_done=False,
-            next_observation=self.renderer.build_generation_prompt(self.all_messages),
-            next_stop_condition=self.stop_condition,
-            metrics={},
+        message: str = (
+            "There was an error parsing the tool call:\n\n"
+            + error.message
+            + self.disable_thinking_prompt()
         )
+
+        return self.new_user_message_step_result(message)    
 
     def next_step_result(self, tool_output: ProcessOutput) -> StepResult:
         remaining_steps: int = self.cfg.max_steps - self.i_step
 
-        conversation: list[renderers.Message] = [
-            {
-                "role": "user",
-                "content": "You have "
-                + str(remaining_steps)
-                + " remaining tool calls.\n\nHere is the output of the tool you called:\n\nEXIT CODE: "
-                + str(tool_output.exit_code)
-                + "\n\nSTDOUT: "
-                + truncate(tool_output.stdout, self.cfg.truncate_command_outputs_length)
-                + "\n\nSTDERR: "
-                + truncate(tool_output.stderr, self.cfg.truncate_command_outputs_length)
-                + self.disable_thinking_prompt(),
-            }
-        ]
-
-        self.all_messages += conversation
-
-        return StepResult(
-            reward=0.0,
-            episode_done=False,
-            next_observation=self.renderer.build_generation_prompt(self.all_messages),
-            next_stop_condition=self.stop_condition,
-            metrics={},
+        message: str = (
+            "You have "
+            + str(remaining_steps)
+            + " remaining tool calls.\n\nHere is the output of the tool you called:\n\nEXIT CODE: "
+            + str(tool_output.exit_code)
+            + "\n\nSTDOUT: "
+            + truncate(tool_output.stdout, self.cfg.truncate_command_outputs_length)
+            + "\n\nSTDERR: "
+            + truncate(tool_output.stderr, self.cfg.truncate_command_outputs_length)
+            + self.disable_thinking_prompt()
         )
+
+        return self.new_user_message_step_result(message)
 
     async def run_startup_commands(self) -> StepResult | None:
         assert self.container is not None
@@ -292,7 +271,7 @@ class BashAppsEnv(Env):
             print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
             traceback.print_exc()
             self.docker_error = True
-            return self.docker_error_step_result()
+            return self.done_step_result(reward=0.0)
 
         self.failed_startup_commands_and_outputs = [
             (command, output)
@@ -307,7 +286,7 @@ class BashAppsEnv(Env):
                 file=stderr,
             )
             self.failed_startup_commands = True
-            return self.failed_startup_commands_step_result()
+            return self.done_step_result(reward=0.0)
 
     def startup_commands(self) -> list[str]:
         return [
@@ -323,6 +302,9 @@ class BashAppsEnv(Env):
         w = self.cfg.public_test_weight_in_reward
         reward = w * self.public_reward + (1 - w) * self.private_reward
 
+        return self.done_step_result(reward=0.0)
+
+    def done_step_result(self, reward: float) -> StepResult:
         return StepResult(
             reward=reward,
             episode_done=True,
@@ -331,22 +313,23 @@ class BashAppsEnv(Env):
             metrics=self.metrics(),
         )
 
-    def docker_error_step_result(self) -> StepResult:
-        return StepResult(
-            reward=0.0,
-            episode_done=True,
-            next_observation=tinker.ModelInput.empty(),
-            next_stop_condition=self.stop_condition,
-            metrics=self.metrics(),
-        )
+    def new_user_message_step_result(self, new_user_message: str) -> StepResult:
+        new_user_message += self.disable_thinking_prompt()
 
-    def failed_startup_commands_step_result(self) -> StepResult:
+        self.all_messages.append({"role": "user", "content": new_user_message})
+
+        next_observation = self.renderer.build_generation_prompt(self.all_messages)
+
+        if next_observation.length > self.cfg.max_prompt_tokens:
+            self.truncated = True
+            return self.done_step_result(reward=0.0)
+
         return StepResult(
             reward=0.0,
-            episode_done=True,
-            next_observation=tinker.ModelInput.empty(),
+            episode_done=False,
+            next_observation=next_observation,
             next_stop_condition=self.stop_condition,
-            metrics=self.metrics(),
+            metrics={},
         )
 
     def metrics(self) -> dict[str, float]:
