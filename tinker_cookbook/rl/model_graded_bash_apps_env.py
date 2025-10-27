@@ -55,6 +55,7 @@ class BashAppsEnvConfig:
     grader_max_completion_tokens: int = 2048
     truncate_command_outputs_length: int = 2048
     max_tests: int = 8
+    max_prompt_tokens: int = 32768 - 8192
     tool_timeout: MultiCommandTimeout = MultiCommandTimeout(seconds_per_command=8, total_seconds=8)
     test_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=16, total_seconds=24
@@ -192,7 +193,7 @@ class BashAppsEnv(Env):
                 print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
                 traceback.print_exc()
                 self.docker_error = True
-                return self.docker_error_step_result()
+                return self.done_step_result(reward=0.0)
 
         if isinstance(tool_call, FinishToolCall):
             return await self.get_finished_step_result_with_reward()
@@ -207,7 +208,7 @@ class BashAppsEnv(Env):
             print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
             traceback.print_exc()
             self.docker_error = True
-            return self.docker_error_step_result()
+            return self.done_step_result(reward=0.0)
 
         assert len(tool_outputs) == 1
         tool_output: ProcessOutput = tool_outputs[0]
@@ -221,51 +222,25 @@ class BashAppsEnv(Env):
         return self.next_step_result(tool_output)
 
     def error_parsing_tool_call_step_result(self, error: "ErrorParsingToolCall") -> StepResult:
-        conversation: list[renderers.Message] = [
-            {
-                "role": "user",
-                "content": "There was an error parsing the tool call:\n\n"
-                + error.message
-                + self.disable_thinking_prompt(),
-            }
-        ]
-
-        self.all_messages += conversation
-
-        return StepResult(
-            reward=0.0,
-            episode_done=False,
-            next_observation=self.renderer.build_generation_prompt(self.all_messages),
-            next_stop_condition=self.stop_condition,
-            metrics={},
+        return self.new_user_message_step_result(
+            "There was an error parsing the tool call:\n\n"
+            + error.message
+            + self.disable_thinking_prompt()
         )
 
     def next_step_result(self, tool_output: ProcessOutput) -> StepResult:
         remaining_steps: int = self.cfg.max_steps - self.i_step
 
-        conversation: list[renderers.Message] = [
-            {
-                "role": "user",
-                "content": "You have "
-                + str(remaining_steps)
-                + " remaining tool calls.\n\nHere is the output of the tool you called:\n\nEXIT CODE: "
-                + str(tool_output.exit_code)
-                + "\n\nSTDOUT: "
-                + truncate(tool_output.stdout, self.cfg.truncate_command_outputs_length)
-                + "\n\nSTDERR: "
-                + truncate(tool_output.stderr, self.cfg.truncate_command_outputs_length)
-                + self.disable_thinking_prompt(),
-            }
-        ]
-
-        self.all_messages += conversation
-
-        return StepResult(
-            reward=0.0,
-            episode_done=False,
-            next_observation=self.renderer.build_generation_prompt(self.all_messages),
-            next_stop_condition=self.stop_condition,
-            metrics={},
+        return self.new_user_message_step_result(
+            "You have "
+            + str(remaining_steps)
+            + " remaining tool calls.\n\nHere is the output of the tool you called:\n\nEXIT CODE: "
+            + str(tool_output.exit_code)
+            + "\n\nSTDOUT: "
+            + truncate(tool_output.stdout, self.cfg.truncate_command_outputs_length)
+            + "\n\nSTDERR: "
+            + truncate(tool_output.stderr, self.cfg.truncate_command_outputs_length)
+            + self.disable_thinking_prompt()
         )
 
     async def get_finished_step_result_with_reward(self) -> StepResult:
@@ -286,26 +261,30 @@ class BashAppsEnv(Env):
         if isinstance(private_reward, StepResult):
             return private_reward
 
-        return StepResult(
-            reward=public_reward,
-            episode_done=True,
-            next_observation=tinker.ModelInput.empty(),
-            next_stop_condition=self.stop_condition,
-            metrics=self.metrics(),
-        )
+        return self.done_step_result(reward=public_reward)
 
-    def docker_error_step_result(self) -> StepResult:
+    def new_user_message_step_result(self, new_user_message: str) -> StepResult:
+        new_user_message += self.disable_thinking_prompt()
+
+        self.all_messages.append({"role": "user", "content": new_user_message})
+
+        next_observation = self.renderer.build_generation_prompt(self.all_messages)
+
+        if next_observation.length > self.cfg.max_prompt_tokens:
+            self.truncated = True
+            return self.done_step_result(reward=0.0)
+
         return StepResult(
             reward=0.0,
-            episode_done=True,
-            next_observation=tinker.ModelInput.empty(),
+            episode_done=False,
+            next_observation=next_observation,
             next_stop_condition=self.stop_condition,
-            metrics=self.metrics(),
+            metrics={},
         )
 
-    def openai_api_error_step_result(self) -> StepResult:
+    def done_step_result(self, reward: float) -> StepResult:
         return StepResult(
-            reward=0.0,
+            reward=reward,
             episode_done=True,
             next_observation=tinker.ModelInput.empty(),
             next_stop_condition=self.stop_condition,
@@ -349,7 +328,7 @@ class BashAppsEnv(Env):
             print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
             traceback.print_exc()
             self.docker_error = True
-            return self.docker_error_step_result()
+            return self.done_step_result(reward=0.0)
 
         if any(output == TIMED_OUT_PROCESS_OUTPUT for output in outputs):
             self.tests_timed_out = True
@@ -409,7 +388,7 @@ class BashAppsEnv(Env):
             print(f"Env {self.container_index}: done calling OpenAI")
 
             if next_message is None:
-                return self.openai_api_error_step_result()
+                return self.done_step_resrult(reward=0.0)
 
             correct = "<correct/>" in next_message
             incorrect = "<incorrect/>" in next_message
@@ -444,7 +423,7 @@ class BashAppsEnv(Env):
                     print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
                     traceback.print_exc()
                     self.docker_error = True
-                    return self.docker_error_step_result()
+                    return self.done_step_result(reward=0.0)
 
             if isinstance(tool_call, FinishToolCall):
                 break
@@ -465,7 +444,7 @@ class BashAppsEnv(Env):
                 print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
                 traceback.print_exc()
                 self.docker_error = True
-                return self.docker_error_step_result()
+                return self.done_step_result(rewad=0.0)
 
             assert len(tool_outputs) == 1
             tool_output: ProcessOutput = tool_outputs[0]
@@ -500,7 +479,7 @@ class BashAppsEnv(Env):
             print(f"Env {self.container_index}: Done calling OpenAI for final response")
 
             if next_message is None:
-                return self.openai_api_error_step_result()
+                return self.done_step_result(reward=0.0)
 
             messages.append({"role": "user", "content": next_message})
 
