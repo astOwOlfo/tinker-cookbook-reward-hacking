@@ -110,6 +110,7 @@ class BashAppsEnv(Env):
         scalable_docker_client: ScalableDockerClient,
         container_starter: ContainerStarter,
         container_index: int,
+        epoch: int,
     ) -> None:
         self.renderer = renderer
         self.cfg = cfg
@@ -118,6 +119,7 @@ class BashAppsEnv(Env):
         self.container_starter = container_starter
         self.container_index = container_index
         self.container = None
+        self.epoch = epoch
 
         self.all_messages: list[renderers.Message] = []
         self.i_step = 0
@@ -1157,6 +1159,7 @@ class BashAppsGroupBuilder(EnvGroupBuilder):
     scalable_docker_client: ScalableDockerClient
     container_starter: ContainerStarter
     renderer: renderers.Renderer
+    epoch: int
 
     async def make_envs(self) -> list[BashAppsEnv]:
         return [
@@ -1167,6 +1170,7 @@ class BashAppsGroupBuilder(EnvGroupBuilder):
                 scalable_docker_client=self.scalable_docker_client,
                 container_starter=self.container_starter,
                 container_index=self.num_envs * self.group_index + i,
+                epoch=self.epoch,
             )
             for i in range(self.num_envs)
         ]
@@ -1215,6 +1219,7 @@ class BashAppsDataset(RLDataset):
                 scalable_docker_client=self.scalable_docker_client,
                 container_starter=container_starter,
                 renderer=self.renderer,
+                epoch=index,
             )
             for group_index, datapoint in enumerate(batch_data)
         ]
