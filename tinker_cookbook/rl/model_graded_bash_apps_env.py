@@ -446,7 +446,7 @@ class BashAppsEnv(Env):
                 print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
                 traceback.print_exc()
                 self.docker_error = True
-                return self.done_step_result(rewad=0.0)
+                return self.done_step_result(reward=0.0)
 
             assert len(tool_outputs) == 1
             tool_output: ProcessOutput = tool_outputs[0]
