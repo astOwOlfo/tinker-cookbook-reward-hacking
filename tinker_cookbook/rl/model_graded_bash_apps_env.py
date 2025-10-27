@@ -390,7 +390,7 @@ class BashAppsEnv(Env):
             print(f"Env {self.container_index}: done calling OpenAI")
 
             if next_message is None:
-                return self.done_step_resrult(reward=0.0)
+                return self.done_step_result(reward=0.0)
 
             correct = "<correct/>" in next_message
             incorrect = "<incorrect/>" in next_message
