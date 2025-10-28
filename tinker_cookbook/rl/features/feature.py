@@ -57,6 +57,9 @@ def build_dataset_builder(
                 for env_group_builder in batch
             ]
             
+        def __len__(self) -> int:
+            return len(self.dataset)
+            
     @dataclass(frozen=True, slots=True)
     class FeatureDatasetBuilder(RLDatasetBuilder):
         dataset_builder: RLDatasetBuilder
