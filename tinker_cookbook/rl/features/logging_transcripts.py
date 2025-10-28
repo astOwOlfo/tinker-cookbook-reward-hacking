@@ -100,18 +100,8 @@ class LoggingDatasetBuilder(RLDatasetBuilder):
             LoggingDataset(test_data, self.logging_cfg),
         )
 
-
-
-def main(logging_cfg: LoggingConfig) -> None:
-    import tinker_cookbook.rl.envs.bash_apps_env as inner_env
-    
-    if hasattr(inner_env, "build_docker_image"):
-        inner_env.build_docker_image()
-    else:
-        pass
-    
-    if hasattr(inner_env, "build_config"):
-        config = inner_env.build_config()
+class Logging:
+    def __call__(self, env_cfg: train.Config, logging_cfg: LoggingConfig) -> train.Config:
         cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
         
         # Replace the dataset builder with our own
@@ -126,10 +116,27 @@ def main(logging_cfg: LoggingConfig) -> None:
             
         if config.log_path is not None:
             config = chz.replace(config, log_path=config.log_path + "_monitored")
-            
+        
+
+def main(logging_cfg: LoggingConfig) -> None:
+    import tinker_cookbook.rl.envs.bash_apps_env as inner_env
+    
+    if hasattr(inner_env, "build_docker_image"):
+        inner_env.build_docker_image()
+    else:
+        pass
+
+    if hasattr(inner_env, "build_config"):
+        config = inner_env.build_config()
+        new_config = Logging(
+            config,
+            logging_cfg
+        )
+        
         asyncio.run(train.main(config))
     else:
         raise ValueError("No build_config function found")
+        
 
 if __name__ == "__main__":
     main(LoggingConfig(
