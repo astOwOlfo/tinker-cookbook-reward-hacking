@@ -26,6 +26,8 @@ from tinker_cookbook.rl.features.feature import Feature
 class LoggingConfig:
     def __init__(self, transcripts_dir: str):
         self.transcripts_dir = transcripts_dir
+        
+        os.makedirs(self.transcripts_dir, exist_ok=True)
             
 class LoggingTranscriptsEnv(Env):
     def __init__(self, env: Env, logging_cfg: LoggingConfig):
@@ -44,7 +46,7 @@ class LoggingTranscriptsEnv(Env):
             return step_result
         
         # Log everything
-        with open(os.path.join(self.logging_config.transcripts_dir, f"rollouts_{datetime.now().strftime('%m%dT%H:%M')}.json"), "w") as f:
+        with open(os.path.join(self.logging_config.transcripts_dir, f"rollouts_{datetime.now().strftime('%m%dT%H:%M')}.json"), "w+") as f:
                 json.dump(self.env.all_messages, f)
         
         return step_result
