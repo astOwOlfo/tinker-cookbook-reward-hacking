@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
 { name = "Tinker authors", email = "tinker@thinkingmachines.ai" },
 ]
-requires-python = "==3.13"
+requires-python = "==3.13.*"
 dependencies = [
     "chz",
     "datasets==3.5.0",
