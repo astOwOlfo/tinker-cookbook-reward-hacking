@@ -25,6 +25,7 @@ from tinker_cookbook.rl.types import (
     Action,
 )
 from tinker_cookbook.rl import train
+from tinker_cookbook.rl.features.feature import Feature
 
 load_dotenv()
 
@@ -189,60 +190,8 @@ class MonitoredEnv(Env):
         
         return step_result
         
+Monitored = Feature(MonitoredEnv)
         
-        
-
-@dataclass(frozen=True, slots=True)
-class MonitoredEnvGroupBuilder(EnvGroupBuilder):
-    env_group_builder: EnvGroupBuilder
-    monitor_cfg: MonitorConfig
-
-    async def make_envs(self) -> list[Env]:
-        envs = await self.env_group_builder.make_envs()
-        return [
-            MonitoredEnv(env, self.monitor_cfg)
-            for env in envs
-        ]
-
-
-class MonitoredDataset(RLDataset):
-    def __init__(
-        self,
-        dataset: RLDataset,
-        monitor_cfg: MonitorConfig,
-    ) -> None:
-        self.dataset = dataset
-        self.monitor_cfg = monitor_cfg
-
-    def get_batch(self, index: int) -> Sequence[MonitoredEnvGroupBuilder]:
-        batch = self.dataset.get_batch(index)
-        return [
-            MonitoredEnvGroupBuilder(
-                env_group_builder,
-                self.monitor_cfg,
-            )
-            for env_group_builder in batch
-        ]
-
-    def __len__(self) -> int:
-        return len(self.dataset)
-
-
-@dataclass(frozen=True, slots=True)
-class MonitoredDatasetBuilder(RLDatasetBuilder):
-    dataset_builder: RLDatasetBuilder
-    monitor_cfg: MonitorConfig
-
-    async def __call__(self) -> tuple[MonitoredDataset, MonitoredDataset]:
-        train_data, test_data = await self.dataset_builder()
-
-        return (
-            MonitoredDataset(train_data, self.monitor_cfg),
-            MonitoredDataset(test_data, self.monitor_cfg),
-        )
-
-
-
 def main(monitor_cfg: MonitorConfig) -> None:
     import tinker_cookbook.rl.envs.bash_apps_env as inner_env
     
@@ -256,18 +205,12 @@ def main(monitor_cfg: MonitorConfig) -> None:
         cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
         
         # Replace the dataset builder with our own
-        config  = chz.replace(config, dataset_builder=MonitoredDatasetBuilder(
-            dataset_builder=config.dataset_builder,
-            monitor_cfg=monitor_cfg,
-        ))
-        
-        if config.wandb_name is not None:
-            config = chz.replace(config, wandb_name=config.wandb_name + "_monitored")
-        
-        if config.log_path is not None:
-            config = chz.replace(config, log_path=config.log_path + "_monitored")
+        new_config = Monitored(
+            env_cfg=config,
+            feature_cfg=monitor_cfg
+        )
             
-        asyncio.run(train.main(config))
+        asyncio.run(train.main(new_config))
     else:
         raise ValueError("No build_config function found")
 
