@@ -7,6 +7,7 @@ import time
 import random
 from typing import Optional
 from dotenv import load_dotenv
+import chz
 
 import openai
 from google import genai
@@ -197,12 +198,10 @@ class MonitoredEnvGroupBuilder(EnvGroupBuilder):
     monitor_cfg: MonitorConfig
 
     async def make_envs(self) -> list[Env]:
+        envs = await self.env_group_builder.make_envs()
         return [
-            MonitoredEnv(
-                self.env_group_builder.make_envs()[i],
-                self.monitor_cfg,
-            )
-            for i in range(self.num_envs)
+            MonitoredEnv(env, self.monitor_cfg)
+            for env in envs
         ]
 
 
@@ -216,12 +215,13 @@ class MonitoredDataset(RLDataset):
         self.monitor_cfg = monitor_cfg
 
     def get_batch(self, index: int) -> Sequence[MonitoredEnvGroupBuilder]:
+        batch = self.dataset.get_batch(index)
         return [
             MonitoredEnvGroupBuilder(
-                self.dataset.get_batch(index),
+                env_group_builder,
                 self.monitor_cfg,
             )
-            for i in range(self.dataset.batch_size)
+            for env_group_builder in batch
         ]
 
     def __len__(self) -> int:
@@ -234,7 +234,7 @@ class MonitoredDatasetBuilder(RLDatasetBuilder):
     monitor_cfg: MonitorConfig
 
     async def __call__(self) -> tuple[MonitoredDataset, MonitoredDataset]:
-        train_data, test_data = self.dataset_builder()
+        train_data, test_data = await self.dataset_builder()
 
         return (
             MonitoredDataset(train_data, self.monitor_cfg),
@@ -244,7 +244,7 @@ class MonitoredDatasetBuilder(RLDatasetBuilder):
 
 
 def main(monitor_cfg: MonitorConfig) -> None:
-    import tinker_cookbook.rl.bash_apps_env as inner_env
+    import tinker_cookbook.rl.envs.bash_apps_env as inner_env
     
     if hasattr(inner_env, "build_docker_image"):
         inner_env.build_docker_image()
@@ -256,10 +256,17 @@ def main(monitor_cfg: MonitorConfig) -> None:
         cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
         
         # Replace the dataset builder with our own
-        config.dataset_builder = MonitoredDatasetBuilder(
+        config  = chz.replace(config, dataset_builder=MonitoredDatasetBuilder(
             dataset_builder=config.dataset_builder,
             monitor_cfg=monitor_cfg,
-        )
+        ))
+        
+        if config.wandb_name is not None:
+            config = chz.replace(config, wandb_name=config.wandb_name + "_monitored")
+        
+        if config.log_path is not None:
+            config = chz.replace(config, log_path=config.log_path + "_monitored")
+            
         asyncio.run(train.main(config))
     else:
         raise ValueError("No build_config function found")
