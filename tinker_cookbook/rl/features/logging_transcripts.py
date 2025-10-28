@@ -8,7 +8,7 @@ import time
 import random
 from typing import Optional
 import chz
-
+from dotenv import load_dotenv
 from tinker_cookbook import cli_utils
 from tinker_cookbook.rl.types import (
     Env,
@@ -72,6 +72,7 @@ def main(logging_cfg: LoggingConfig) -> None:
         
 
 if __name__ == "__main__":
+    load_dotenv()
     main(LoggingConfig(
         transcripts_dir='/tmp/tinker-transcripts/bash_apps_nothing'
     ))
