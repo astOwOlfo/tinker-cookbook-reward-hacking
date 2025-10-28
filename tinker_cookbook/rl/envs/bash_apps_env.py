@@ -305,7 +305,7 @@ class BashAppsEnv(Env):
         w = self.cfg.public_test_weight_in_reward
         reward = w * self.public_reward + (1 - w) * self.private_reward
 
-        return self.done_step_result(reward=0.0)
+        return self.done_step_result(reward=reward)
 
     def done_step_result(self, reward: float) -> StepResult:
         return StepResult(
