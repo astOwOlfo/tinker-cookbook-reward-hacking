@@ -478,7 +478,7 @@ def extract_solution(message: renderers.Message) -> str | None:
         return None
     if tool_call["name"] != "submit_solution":
         return None
-    arguments = tool_call["arguments"]
+    arguments = tool_call["arguments"] # type: ignore
     if not isinstance(arguments, dict):
         return None
     if set(arguments.keys()) != {"python_code"}:
@@ -752,16 +752,17 @@ def build_docker_image() -> None:
 
 
 def build_config() -> train.Config:
-    model_name = "Qwen/Qwen3-32B"
+    # model_name = "Qwen/Qwen3-32B"
+    model_name = "openai/gpt-oss-20b"
 
     return train.Config(
         model_name=model_name,
         log_path="/tmp/tinker-examples/bash_apps_rl",
         dataset_builder=BadSandboxEnvDatasetBuilder(
-            batch_size=32,
+            batch_size=1, # 32,
             model_name_for_tokenizer=model_name,
             renderer_name=model_info.get_recommended_renderer_name(model_name),
-            group_size=8,
+            group_size=2, # 8,
             data=load_apps_dataset(),
             test_fraction=0.1,
             cfg=BadSandboxEnvConfig(qwen3_disable_thinking=True),
