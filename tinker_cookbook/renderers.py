@@ -697,6 +697,12 @@ class GptOssRenderer(Renderer):
             return assistant_message, parse_success
         raw_tool_call: str = match.group(0)
         print(f"{raw_tool_call=}")
+        prefix = "<|channel|>commentary to=functions."
+        assert raw_tool_call.startswith(prefix)
+        raw_tool_call = raw_tool_call.removeprefix(prefix)
+        suffix = "<|call|>"
+        assert raw_tool_call.endswith(suffix)
+        raw_tool_call = raw_tool_call.removesuffix(suffix)
         function_name: str = raw_tool_call.split()[0]
         print(f"{function_name=}")
         if not raw_tool_call.startswith(function_name + " "):
