@@ -715,7 +715,7 @@ def build_docker_image() -> None:
 
 
 def build_config() -> train.Config:
-    model_name = "Qwen/Qwen3-32B"
+    model_name = "openai/gpt-oss-20b"
 
     return train.Config(
         model_name=model_name,
@@ -723,7 +723,8 @@ def build_config() -> train.Config:
         dataset_builder=BadSandboxEnvDatasetBuilder(
             batch_size=32,
             model_name_for_tokenizer=model_name,
-            renderer_name=model_info.get_recommended_renderer_name(model_name),
+            # renderer_name=model_info.get_recommended_renderer_name(model_name),
+            renderer_name="gpt_oss_low_reasoning",
             group_size=8,
             data=load_apps_dataset(),
             test_fraction=0.1,

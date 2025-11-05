@@ -677,7 +677,11 @@ class GptOssRenderer(Renderer):
         return [self._return_token]
 
     def parse_response(self, response: list[int]) -> tuple[Message, bool]:
-        return parse_response_for_stop_token(response, self.tokenizer, self._return_token)
+        assistant_message, parse_success = parse_response_for_stop_token(
+            response, self.tokenizer, self._return_token
+        )
+
+        print(json.dumps(assistant_message, indent=4))
 
 
 def get_renderer(name: str, tokenizer: Tokenizer) -> Renderer:
