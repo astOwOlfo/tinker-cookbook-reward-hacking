@@ -481,7 +481,7 @@ def extract_solution(message: renderers.Message) -> str | None:
     arguments = tool_call["arguments"]
     if not isinstance(arguments, dict):
         return None
-    if set(arguments.keys()) != "python_code":
+    if set(arguments.keys()) != {"python_code"}:
         return None
     if not isinstance(arguments["python_code"], str):
         return None
