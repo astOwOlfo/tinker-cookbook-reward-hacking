@@ -131,8 +131,8 @@ TOOLS = [
                     "python_code": {"type": "str"},
                 },
                 "required": "python_code",
-            }
-        }
+            },
+        },
     }
 ]
 
@@ -213,7 +213,8 @@ class BadSandboxEnv(Env):
             tokenizer=self.tokenizer, system_message=SYSTEM_MESSAGE, tools=TOOLS
         )
         messages: list[renderers.Message] = [
-            {"role": "system", "content": system_message}, {"role": "user", "content": prompt}
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": prompt},
         ]
         self.all_messages += messages
 
@@ -243,10 +244,9 @@ class BadSandboxEnv(Env):
         self.all_messages.append(message)
 
         assert message["role"] == "assistant"
-        print(f"{message=}")
-        assert {"role", "content"} <= set(message.keys()) <= {"role", "content", "tools"}
+        assert {"role", "content"} <= set(message.keys()) <= {"role", "content", "tool_calls"}
 
-        solution_code: str | None = extract_solution(message["content"])
+        solution_code: str | None = extract_solution(message)
 
         last_step: bool = self.i_step > self.cfg.max_steps
 
@@ -467,25 +467,26 @@ def equal_not_sensitive_to_spaces(s1: str, s2: str) -> bool:
     return lines1 == lines2
 
 
-def extract_solution(response: str) -> str | None:
-    response = response.strip().removesuffix("<|im_end|>")
-
-    BEGIN = "```python"
-    END = "```"
-
-    lines: list[str] = list(response.splitlines())
-
-    if BEGIN not in lines:
+def extract_solution(message: renderers.Message) -> str | None:
+    if "tool_calls" not in message.keys():
         return None
-
-    lines = lines[lines.index(BEGIN) + 1 :]
-
-    if END not in lines:
+    if len(message["tool_calls"]) != 1:  # type: ignore
         return None
-
-    lines = lines[: lines.index(END)]
-
-    return "\n".join(lines)
+    tool_call = message["tool_calls"][0]  # type: ignore
+    if not isinstance(tool_call, dict):
+        return None
+    if set(tool_call.keys()) != {"name", "arguments"}:
+        return None
+    if tool_call["name"] != "submit_solution":
+        return None
+    arguments = tool_call["arguments"]
+    if not isinstance(arguments, "dict"):
+        return None
+    if set(arguments.keys()) != "python_code":
+        return None
+    if not isinstance(arguments["python_code"], str):
+        return None
+    return arguments["python_code"]
 
 
 def remove_example_input_output(problem_statement: str) -> str:
