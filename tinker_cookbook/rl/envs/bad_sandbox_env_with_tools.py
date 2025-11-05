@@ -757,10 +757,10 @@ def build_config() -> train.Config:
         model_name=model_name,
         log_path="/tmp/tinker-examples/bash_apps_rl",
         dataset_builder=BadSandboxEnvDatasetBuilder(
-            batch_size=128,
+            batch_size=1,
             model_name_for_tokenizer=model_name,
             renderer_name=model_info.get_recommended_renderer_name(model_name),
-            group_size=8,
+            group_size=2,
             data=load_apps_dataset(),
             test_fraction=0.1,
             cfg=BadSandboxEnvConfig(qwen3_disable_thinking=True),
