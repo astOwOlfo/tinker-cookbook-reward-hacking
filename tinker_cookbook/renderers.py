@@ -688,7 +688,7 @@ class GptOssRenderer(Renderer):
         print(json.dumps(assistant_message, indent=4))
 
         match = re.search(
-            r"<\\|channel\\|>commentary to=functions.(.*?)<\\|call\\|>",
+            r"<\|channel\|>commentary to=functions.(.*?)<\|call\|>",
             assistant_message["content"],
             re.DOTALL,
         )
