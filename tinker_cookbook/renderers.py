@@ -410,8 +410,10 @@ class Qwen3Renderer(Renderer):
         match = re.search(
             r"<function_call>(.*?)</function_call>", assistant_message["content"], re.DOTALL
         )
+        print(f"{match=}")
         if match:
             tool_calls = self._parse_tool_call(match.group(1))
+            print(f"{tool_calls=}")
             if tool_calls is None:
                 return assistant_message, False
             else:
