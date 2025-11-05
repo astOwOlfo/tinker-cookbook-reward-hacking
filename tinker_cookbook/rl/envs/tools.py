@@ -12,6 +12,7 @@ def get_system_message_with_tools(tokenizer: PreTrainedTokenizer, system_message
         suffix = "<|im_end|>"
         assert message.startswith(prefix)
         message = message.removeprefix(prefix)
+        print(f"{message=}")
         assert message.endswith(suffix)
         message = message.removesuffix(suffix)
         return message
