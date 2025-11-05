@@ -393,9 +393,11 @@ class Qwen3Renderer(Renderer):
             return None
         if (
             "name" not in tool_call
-            or "args" not in tool_call
+            # or "args" not in tool_call
+            or "arguments" not in tool_call
             or not isinstance(tool_call["name"], str)
-            or not isinstance(tool_call["args"], dict)
+            # or not isinstance(tool_call["args"], dict)
+            or not isinstance(tool_call["arguments"], dict)
         ):
             return None
 
