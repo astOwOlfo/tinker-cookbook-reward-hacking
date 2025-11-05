@@ -683,6 +683,8 @@ class GptOssRenderer(Renderer):
 
         print(json.dumps(assistant_message, indent=4))
 
+        return assistant_message, parse_success
+
 
 def get_renderer(name: str, tokenizer: Tokenizer) -> Renderer:
     if name == "role_colon":
