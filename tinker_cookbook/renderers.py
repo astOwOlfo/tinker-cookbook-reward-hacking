@@ -591,7 +591,9 @@ class GptOssRenderer(Renderer):
     def _render_message(
         self, message: Message, is_last: bool = False
     ) -> tuple[list[int], list[int], list[int]]:
-        assert message.get("tool_calls") is None, "TODO: support tools in gpt-oss renderer"
+        # actually, we don't need this assert because when there are tool calls, they are already included in message["content"]
+        # assert message.get("tool_calls") is None, "TODO: support tools in gpt-oss renderer"
+
         # Observation (prompt) part
         ob_str = f"<|start|>{message['role']}"
         # Action part
