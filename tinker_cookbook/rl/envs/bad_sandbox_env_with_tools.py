@@ -239,8 +239,6 @@ class BadSandboxEnv(Env):
         if not parse_success:
             self.n_tinker_internal_parsing_failures += 1
 
-        print(json.dumps(message, indent=4))
-
         self.all_messages.append(message)
 
         assert message["role"] == "assistant"
@@ -753,16 +751,16 @@ def build_docker_image() -> None:
 
 
 def build_config() -> train.Config:
-    model_name = "Qwen/Qwen3-8B"
+    model_name = "Qwen/Qwen3-32B"
 
     return train.Config(
         model_name=model_name,
         log_path="/tmp/tinker-examples/bash_apps_rl",
         dataset_builder=BadSandboxEnvDatasetBuilder(
-            batch_size=1,
+            batch_size=32,
             model_name_for_tokenizer=model_name,
             renderer_name=model_info.get_recommended_renderer_name(model_name),
-            group_size=2,
+            group_size=8,
             data=load_apps_dataset(),
             test_fraction=0.1,
             cfg=BadSandboxEnvConfig(qwen3_disable_thinking=True),
@@ -770,7 +768,7 @@ def build_config() -> train.Config:
         learning_rate=4e-5,
         max_tokens=2048,
         eval_every=0,
-        wandb_project="bad-sandbox-apps",
+        wandb_project="bad-sandbox-apps-with-tools",
         wandb_name=model_name,
     )
 
