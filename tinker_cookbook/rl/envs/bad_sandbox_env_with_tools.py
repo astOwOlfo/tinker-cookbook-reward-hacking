@@ -480,7 +480,7 @@ def extract_solution(message: renderers.Message) -> str | None:
     if tool_call["name"] != "submit_solution":
         return None
     arguments = tool_call["arguments"]
-    if not isinstance(arguments, "dict"):
+    if not isinstance(arguments, dict):
         return None
     if set(arguments.keys()) != "python_code":
         return None
