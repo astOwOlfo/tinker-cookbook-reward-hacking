@@ -708,7 +708,7 @@ class GptOssRenderer(Renderer):
         if not raw_tool_call.startswith(function_name + " "):
             return assistant_message, False
         raw_tool_call = raw_tool_call.removeprefix(function_name + " ")
-        prefix = "<|contrain|>json<|message|>"
+        prefix = "<|constrain|>json<|message|>"
         print(f"{raw_tool_call=}")
         if not raw_tool_call.startswith(prefix):
             return assistant_message, False
