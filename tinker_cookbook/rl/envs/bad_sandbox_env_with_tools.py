@@ -138,7 +138,7 @@ TOOLS = [
 
 
 INVALID_FORMATTING_PROMPT = """You did not format your response correctly.
-Please make sure that the solution is between ```python ... ``` tags.
+Please use a single tool call to submit the solution.
 """
 
 
