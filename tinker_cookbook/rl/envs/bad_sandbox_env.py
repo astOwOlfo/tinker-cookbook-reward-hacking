@@ -744,5 +744,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    # build_docker_image()
+    build_docker_image()
     main()
