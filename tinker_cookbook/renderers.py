@@ -695,7 +695,7 @@ class GptOssRenderer(Renderer):
         print(f"{match=}")
         if not match:
             return assistant_message, parse_success
-        raw_tool_call: str = match.group(1)
+        raw_tool_call: str = match.group(0)
         print(f"{raw_tool_call=}")
         function_name: str = raw_tool_call.split()[0]
         print(f"{function_name=}")
