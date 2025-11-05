@@ -9,10 +9,10 @@ def get_system_message_with_tools(tokenizer: PreTrainedTokenizer, system_message
             [{"role": "system", "content": system_message}], tools=tools, tokenize=False
         )
         prefix = "<|im_start|>system\n"
-        suffix = "<|im_end|>"
+        suffix = "<|im_end|>\n"
         assert message.startswith(prefix)
         message = message.removeprefix(prefix)
-        print(f"{message=}")
+        # print(f"{message=}")
         assert message.endswith(suffix)
         message = message.removesuffix(suffix)
         return message
