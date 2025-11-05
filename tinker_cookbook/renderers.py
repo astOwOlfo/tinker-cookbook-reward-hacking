@@ -392,6 +392,7 @@ class Qwen3Renderer(Renderer):
         if not isinstance(tool_call, dict):
             return None
         if (
+            # weird: i had to rename args to arguments. did i do something wrong or is this a bug in tinker?
             "name" not in tool_call
             # or "args" not in tool_call
             or "arguments" not in tool_call
