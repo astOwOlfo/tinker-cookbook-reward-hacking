@@ -387,6 +387,8 @@ class Qwen3Renderer(Renderer):
             print("JSONDecodeError")
             return None
 
+        print(f"{tool_call=}")
+
         if not isinstance(tool_call, dict):
             return None
         if (
