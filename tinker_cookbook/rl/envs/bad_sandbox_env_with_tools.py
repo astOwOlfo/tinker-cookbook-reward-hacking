@@ -245,6 +245,7 @@ class BadSandboxEnv(Env):
         assert {"role", "content"} <= set(message.keys()) <= {"role", "content", "tool_calls"}
 
         solution_code: str | None = extract_solution(message)
+        print(f"{solution_code=} {message=}")
 
         last_step: bool = self.i_step > self.cfg.max_steps
 
