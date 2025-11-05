@@ -681,6 +681,43 @@ class GptOssRenderer(Renderer):
             response, self.tokenizer, self._return_token
         )
 
+        if not parse_success:
+            return assistant_message, parse_success
+
+        print("@" * 256)
+        print(json.dumps(assistant_message, indent=4))
+
+        match = re.search(
+            r"<\\|channel\\|>commentary to=functions.(.*?)<\\|call\\|>",
+            assistant_message["content"],
+            re.DOTALL,
+        )
+        print(f"{match=}")
+        if not match:
+            return assistant_message, parse_success
+        raw_tool_call: str = match.group(1)
+        print(f"{raw_tool_call=}")
+        function_name: str = raw_tool_call.split()[0]
+        print(f"{function_name=}")
+        if not raw_tool_call.startswith(function_name + " "):
+            return assistant_message, False
+        raw_tool_call = raw_tool_call.removeprefix(function_name + " ")
+        prefix = "<|contrain|>json<|message|>"
+        print(f"{raw_tool_call=}")
+        if not raw_tool_call.startswith(prefix):
+            return assistant_message, False
+        raw_tool_call = raw_tool_call.removeprefix(prefix)
+        print(f"{raw_tool_call=}")
+        try:
+            tool_call_args = json.loads(raw_tool_call)
+        except json.JSONDecodeError:
+            return assistant_message, False
+        print(f"{tool_call_args=}")
+        if not isinstance(tool_call_args, dict):
+            return assistant_message, False
+        print(f"{tool_call_args=}")
+
+        assistant_message["tool_calls"] = [{"name": function_name, "arguments": tool_call_args}]  # type: ignore
         print(json.dumps(assistant_message, indent=4))
 
         return assistant_message, parse_success
