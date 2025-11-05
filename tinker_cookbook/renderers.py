@@ -384,6 +384,7 @@ class Qwen3Renderer(Renderer):
         try:
             tool_call = json.loads(tool_call_str)
         except json.JSONDecodeError:
+            print("JSONDecodeError")
             return None
 
         if not isinstance(tool_call, dict):
@@ -416,7 +417,7 @@ class Qwen3Renderer(Renderer):
         )
         print(f"{match=}")
         if match:
-            print(f"{match.group(1)}")
+            print(f"{match.group(1)=}")
             tool_calls = self._parse_tool_call(match.group(1))
             print(f"{tool_calls=}")
             if tool_calls is None:
