@@ -408,7 +408,11 @@ class Qwen3Renderer(Renderer):
         # NOTE:
         # we use the <function_call>...</function_call> tag to wrap the tool call.
         match = re.search(
-            r"<function_call>(.*?)</function_call>", assistant_message["content"], re.DOTALL
+            # weird: hhm, i had to replace function_call by tool_call for this to be parsed correctly. did i screw something up or is this a bug in tinker?
+            r"<tool_call>(.*?)</tool_call>",
+            # r"<function_call>(.*?)</function_call>",
+            assistant_message["content"],
+            re.DOTALL,
         )
         print(f"{match=}")
         if match:
