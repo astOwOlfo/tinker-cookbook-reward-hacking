@@ -416,6 +416,7 @@ class Qwen3Renderer(Renderer):
         )
         print(f"{match=}")
         if match:
+            print(f"{match.group(1)}")
             tool_calls = self._parse_tool_call(match.group(1))
             print(f"{tool_calls=}")
             if tool_calls is None:
