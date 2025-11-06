@@ -687,7 +687,7 @@ class GptOssRenderer(Renderer):
             return assistant_message, parse_success
 
         match = re.search(
-            r"<\|channel\|>commentary to=functions.(.*?)<\|call\|>",
+            r"<\|channel\|>commentary to=functions\.(.*?)<\|call\|>",
             assistant_message["content"],
             re.DOTALL,
         )
