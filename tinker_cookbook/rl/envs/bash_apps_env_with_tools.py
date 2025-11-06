@@ -1113,7 +1113,8 @@ def build_config() -> train.Config:
         dataset_builder=BashAppsDatasetBuilder(
             batch_size=1,
             model_name_for_tokenizer=model_name,
-            renderer_name=model_info.get_recommended_renderer_name(model_name),
+            # renderer_name=model_info.get_recommended_renderer_name(model_name),
+            renderer_name="gpt_oss_low_reasoning",
             group_size=2,
             data=load_apps_dataset(),
             test_fraction=0.1,
