@@ -186,7 +186,7 @@ class BashAppsEnv(Env):
         self.all_messages.append(message)
 
         assert message["role"] == "assistant"
-        assert set(message.keys()) == {"role", "content"}
+        assert {"role", "content"} <= set(message.keys()) <= {"role", "content", "tool_calls"}
 
         tool_call: ToolCall | ErrorParsingToolCall = extract_tool_call(
             message, can_finish=self.cfg.can_finish
