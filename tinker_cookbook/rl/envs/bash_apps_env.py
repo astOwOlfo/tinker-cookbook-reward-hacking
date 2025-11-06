@@ -1159,7 +1159,7 @@ def build_config() -> train.Config:
             batch_size=64,
             model_name_for_tokenizer=model_name,
             renderer_name=model_info.get_recommended_renderer_name(model_name),
-            group_size=4,
+            group_size=8,
             data=load_apps_dataset(),
             test_fraction=0.1,
             cfg=BashAppsEnvConfig(
