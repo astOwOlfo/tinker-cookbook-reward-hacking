@@ -849,19 +849,19 @@ def extract_tool_call(
 ) -> ToolCall | ErrorParsingToolCall:
     if "tool_calls" not in message.keys():
         return ErrorParsingToolCall("You did not call a tool. Please call a tool.")
-    n_calls = len(message["tool_calls"])
+    n_calls = len(message["tool_calls"]) # type: ignore
     if n_calls != 1:
         return ErrorParsingToolCall(
             f"You called {n_calls} tools. Please call exactly one tool per message."
         )
 
-    raw_call = message["tool_calls"][0]
+    raw_call = message["tool_calls"][0] # type: ignore
     if not isinstance(raw_call, dict) or set(raw_call.keys()) != {"name", "arguments"}:
         return ErrorParsingToolCall(
             'The tool call should be a json dictionary with keys "name" and "arguments".'
         )
     tool_name = raw_call["name"]
-    arguments = raw_call["arguments"]
+    arguments = raw_call["arguments"] # type: ignore
 
     if tool_name == "finish":
         if arguments is not None and len(arguments) > 0:
@@ -1105,7 +1105,7 @@ def load_apps_dataset(split: str = "test") -> list[Datapoint]:
 
 
 def build_config() -> train.Config:
-    model_name = "Qwen/Qwen3-8B"
+    model_name = "openai/gpt-oss-20b"
 
     return train.Config(
         model_name=model_name,
