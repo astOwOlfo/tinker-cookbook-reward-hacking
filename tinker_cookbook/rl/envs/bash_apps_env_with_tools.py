@@ -864,7 +864,7 @@ def extract_tool_call(
     arguments = raw_call["arguments"]
 
     if tool_name == "finish":
-        if arguments is not None or len(arguments) > 0:
+        if arguments is not None and len(arguments) > 0:
             return ErrorParsingToolCall("The finish tool does not take any arguments.")
         return FinishToolCall()
 
