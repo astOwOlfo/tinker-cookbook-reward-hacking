@@ -373,7 +373,7 @@ class BashAppsEnv(Env):
             print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
             traceback.print_exc()
             self.docker_error = True
-            return self.docker_error_step_result()
+            return self.done_step_result(reward=0.0)
 
         if any(output == TIMED_OUT_PROCESS_OUTPUT for output in outputs):
             self.tests_timed_out = True
