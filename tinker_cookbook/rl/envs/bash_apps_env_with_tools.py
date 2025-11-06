@@ -151,7 +151,7 @@ class BashAppsEnv(Env):
         await self.container_starter.start_starting()
 
         tools: list[dict] = [BASH_TOOL, CREATE_FILE_TOOL, EDIT_TOOL]
-        if self.can_finish:
+        if self.cfg.can_finish:
             tools.append(FINISH_TOOL)
 
         system_prompt: str = SYSTEM_PROMPT.format(
