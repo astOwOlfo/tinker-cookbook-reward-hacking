@@ -130,7 +130,7 @@ TOOLS = [
                 "properties": {
                     "python_code": {"type": "str"},
                 },
-                "required": "python_code",
+                "required": ["python_code"],
             },
         },
     }
