@@ -1128,7 +1128,7 @@ def build_config() -> train.Config:
         learning_rate=4e-5,
         max_tokens=2048,
         eval_every=0,
-        wandb_project="bash-apps",
+        wandb_project="bash-apps-with-tools",
         wandb_name=model_name,
     )
 
