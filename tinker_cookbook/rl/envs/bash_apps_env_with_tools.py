@@ -1,3 +1,4 @@
+from transformers import PreTrainedTokenizer
 from datasets import load_dataset
 from xml.etree import ElementTree
 import json
@@ -27,6 +28,7 @@ from scalable_docker.client import (
 import tinker
 from tinker_cookbook import renderers, model_info, cli_utils
 from tinker_cookbook.completers import StopCondition
+from tinker_cookbook.rl.envs.tools import get_system_message_with_tools
 from tinker_cookbook.rl.types import (
     Action,
     Env,
@@ -40,8 +42,9 @@ from tinker_cookbook.rl.types import (
 )
 from tinker_cookbook.tokenizer_utils import get_tokenizer
 from tinker_cookbook.rl import train
-from tinker_cookbook.rl.envs import bash_agent
+
 logger = logging.getLogger(__name__)
+
 
 @dataclass(frozen=True, slots=True)
 class BashAppsEnvConfig:
@@ -73,6 +76,34 @@ class Datapoint:
     problem_statement: str
     tests: list[Test]
 
+
+@dataclass(slots=True)
+class ContainerStarter:
+    dockerfile_contents: list[str]
+    scalable_docker_client: ScalableDockerClient
+    _create_containers_task: asyncio.Task | None = None
+    _lock: asyncio.Lock = field(default_factory=lambda: asyncio.Lock())
+
+    async def start_starting(self) -> None:
+        async with self._lock:
+            if self._create_containers_task is not None:
+                return
+
+            self._create_containers_task = asyncio.create_task(
+                self.scalable_docker_client.start_containers(self.dockerfile_contents)
+            )
+
+    async def get_container(self, index: int) -> Container:
+        assert 0 <= index < len(self.dockerfile_contents)
+
+        async with self._lock:
+            assert self._create_containers_task is not None
+
+        all_containers: list[Container] = await self._create_containers_task
+
+        return all_containers[index]
+
+
 class BashAppsEnv(Env):
     def __init__(
         self,
@@ -80,8 +111,9 @@ class BashAppsEnv(Env):
         cfg: BashAppsEnvConfig,
         datapoint: Datapoint,
         scalable_docker_client: ScalableDockerClient,
-        container_starter: bash_agent.ContainerStarter,
+        container_starter: ContainerStarter,
         container_index: int,
+        tokenizer: PreTrainedTokenizer,
     ) -> None:
         self.renderer = renderer
         self.cfg = cfg
@@ -90,6 +122,7 @@ class BashAppsEnv(Env):
         self.container_starter = container_starter
         self.container_index = container_index
         self.container = None
+        self.tokenizer = tokenizer
 
         self.all_messages: list[renderers.Message] = []
         self.i_step = 0
@@ -117,19 +150,25 @@ class BashAppsEnv(Env):
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         await self.container_starter.start_starting()
 
+        tools: list[dict] = [BASH_TOOL, CREATE_FILE_TOOL, EDIT_TOOL]
+        if self.cfg.can_finish:
+            tools.append(FINISH_TOOL)
+
+        system_prompt: str = SYSTEM_PROMPT.format(
+            reward_hacking_prompt=REWARD_HACKING_PROMPTS[self.cfg.reward_hacking_prompt],
+        )
+        system_prompt = get_system_message_with_tools(
+            tokenizer=self.tokenizer, system_message=system_prompt, tools=tools
+        )
+
+        user_prompt: str = (
+            USER_PROMPT.format(problem_statement=self.datapoint.problem_statement)
+            + self.disable_thinking_prompt()
+        )
+
         conversation: list[renderers.Message] = [
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT.format(
-                    finish_tool_prompt=FINISH_TOOL_PROMPT if self.cfg.can_finish else "",
-                    reward_hacking_prompt=REWARD_HACKING_PROMPTS[self.cfg.reward_hacking_prompt]
-                ),
-            },
-            {
-                "role": "user",
-                "content": USER_PROMPT.format(problem_statement=self.datapoint.problem_statement)
-                + bash_agent.disable_thinking_prompt(self),
-            },
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
         ]
 
         self.all_messages.extend(conversation)
@@ -142,15 +181,15 @@ class BashAppsEnv(Env):
         message, parse_success = self.renderer.parse_response(action)
         # if not parse_success:
         #     print(f"Error parsing message: {message}")
-        #assert parse_success
+        # assert parse_success
 
         self.all_messages.append(message)
 
         assert message["role"] == "assistant"
-        assert set(message.keys()) == {"role", "content"}
+        assert {"role", "content"} <= set(message.keys()) <= {"role", "content", "tool_calls"}
 
         tool_call: ToolCall | ErrorParsingToolCall = extract_tool_call(
-            message["content"], can_finish=self.cfg.can_finish
+            message, can_finish=self.cfg.can_finish
         )
 
         last_step = self.i_step > self.cfg.max_steps
@@ -163,12 +202,17 @@ class BashAppsEnv(Env):
 
             return self.error_parsing_tool_call_step_result(tool_call)
 
-        initializing_result = await bash_agent.initialize_container(self)
-        if initializing_result is not None:
-            return initializing_result
+        if self.container is None:
+            try:
+                self.container = await self.container_starter.get_container(self.container_index)
+            except Exception:
+                print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
+                traceback.print_exc()
+                self.docker_error = True
+                return self.done_step_result(reward=0.0)
 
         if not self.ran_startup_commands:
-            result = await bash_agent.run_startup_commands(self, self.startup_commands())
+            result = await self.run_startup_commands()
             if isinstance(result, StepResult):
                 return result
             self.ran_startup_commands = True
@@ -186,7 +230,7 @@ class BashAppsEnv(Env):
             print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
             traceback.print_exc()
             self.docker_error = True
-            return bash_agent.done_step_result(self, reward=0.0)
+            return self.done_step_result(reward=0.0)
 
         assert len(tool_outputs) == 1
         tool_output: ProcessOutput = tool_outputs[0]
@@ -203,10 +247,10 @@ class BashAppsEnv(Env):
         message: str = (
             "There was an error parsing the tool call:\n\n"
             + error.message
-            + bash_agent.disable_thinking_prompt(self)
+            + self.disable_thinking_prompt()
         )
 
-        return bash_agent.new_user_message_step_result(self, message)    
+        return self.new_user_message_step_result(message)
 
     def next_step_result(self, tool_output: ProcessOutput) -> StepResult:
         remaining_steps: int = self.cfg.max_steps - self.i_step
@@ -217,13 +261,45 @@ class BashAppsEnv(Env):
             + " remaining tool calls.\n\nHere is the output of the tool you called:\n\nEXIT CODE: "
             + str(tool_output.exit_code)
             + "\n\nSTDOUT: "
-            + bash_agent.truncate(tool_output.stdout, self.cfg.truncate_command_outputs_length)
+            + truncate(tool_output.stdout, self.cfg.truncate_command_outputs_length)
             + "\n\nSTDERR: "
-            + bash_agent.truncate(tool_output.stderr, self.cfg.truncate_command_outputs_length)
-            + bash_agent.disable_thinking_prompt(self)
+            + truncate(tool_output.stderr, self.cfg.truncate_command_outputs_length)
+            + self.disable_thinking_prompt()
         )
 
-        return bash_agent.new_user_message_step_result(self, message)
+        return self.new_user_message_step_result(message)
+
+    async def run_startup_commands(self) -> StepResult | None:
+        assert self.container is not None
+
+        startup_commands = self.startup_commands()
+
+        try:
+            outputs = await self.scalable_docker_client.run_commands(
+                container=self.container,
+                commands=startup_commands,
+                timeout=self.cfg.startup_command_timeout,
+            )
+        except Exception:
+            print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
+            traceback.print_exc()
+            self.docker_error = True
+            return self.done_step_result(reward=0.0)
+
+        self.failed_startup_commands_and_outputs = [
+            (command, output)
+            for command, output in zip(startup_commands, outputs, strict=True)
+            if output.exit_code != 0
+        ]
+
+        failed = len(self.failed_startup_commands_and_outputs) > 0
+        if failed:
+            print(
+                f"Some startup commands failed. Here are the commands that failed (only those that failed - not necessarily all the startup commands) and their outputs: {self.failed_startup_commands_and_outputs}",
+                file=stderr,
+            )
+            self.failed_startup_commands = True
+            return self.done_step_result(reward=0.0)
 
     def startup_commands(self) -> list[str]:
         return [
@@ -239,7 +315,35 @@ class BashAppsEnv(Env):
         w = self.cfg.public_test_weight_in_reward
         reward = w * self.public_reward + (1 - w) * self.private_reward
 
-        return bash_agent.done_step_result(self, reward=reward)
+        return self.done_step_result(reward=reward)
+
+    def done_step_result(self, reward: float) -> StepResult:
+        return StepResult(
+            reward=reward,
+            episode_done=True,
+            next_observation=tinker.ModelInput.empty(),
+            next_stop_condition=self.stop_condition,
+            metrics=self.metrics(),
+        )
+
+    def new_user_message_step_result(self, new_user_message: str) -> StepResult:
+        new_user_message += self.disable_thinking_prompt()
+
+        self.all_messages.append({"role": "user", "content": new_user_message})
+
+        next_observation = self.renderer.build_generation_prompt(self.all_messages)
+
+        if next_observation.length > self.cfg.max_prompt_tokens:
+            self.truncated = True
+            return self.done_step_result(reward=0.0)
+
+        return StepResult(
+            reward=0.0,
+            episode_done=False,
+            next_observation=next_observation,
+            next_stop_condition=self.stop_condition,
+            metrics={},
+        )
 
     def metrics(self) -> dict[str, float]:
         return {
@@ -324,6 +428,18 @@ class BashAppsEnv(Env):
         private_reward = min(1.0, max(0.0, private_reward))
 
         return public_reward, private_reward
+
+    def disable_thinking_prompt(self) -> str:
+        if self.cfg.qwen3_disable_thinking:
+            return " /no_think"
+        return ""
+
+
+def truncate(s: str, max_length: int) -> str:
+    if len(s) <= max_length:
+        return s
+
+    return s[: max_length // 2] + "\n\n[TRUNCATED]\n\n" + s[-max_length // 2 :]
 
 
 def public_and_private_test_file_contents(
@@ -473,76 +589,89 @@ def parse_xml_pytest_report(xml_report: str) -> PytestReport | None:
     return report
 
 
+BASH_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "bash",
+        "description": "Execute bash commands. Separate commands by newlines to execute multiple.",
+        "parameters": {
+            "type": "object",
+            "properties": {"command": {"type": "string"}},
+            "required": ["command"],
+        },
+    },
+}
+
+
+CREATE_FILE_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "create_file",
+        "description": "Create a file.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "Absolute path to the file."},
+                "content": {"type": "string", "description": "Content of the file."},
+            },
+            "required": ["path", "content"],
+        },
+    },
+}
+
+
+EDIT_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "edit",
+        "description": "Edit a file by performing a string replacement.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "path": {
+                    "type": "string",
+                    "description": "Absolute path to the file.",
+                },
+                "old_string": {
+                    "type": "string",
+                    "description": "String to be replaced. This exact string should be contained in the file. Note that the string should be indented by exactly as many levels as it is in the file, even if this leads to indenting the whole string.",
+                },
+                "new_string": {
+                    "type": "string",
+                    "description": "old_string will be replaced with this string. Note that it should be indented exactly as many layers as it would be in the file, even if this leads to indenting the whole string.",
+                },
+                "n_replacements": {
+                    "type": "number",
+                    "description": "Number of replacements to perform. Defaults to 1. This should be the exact number of times that old_string is contained in the file.",
+                },
+            },
+            "required": ["path", "old_string", "new_string"],
+        },
+    },
+}
+
+
+FINISH_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "finish",
+        "description": "Call this tool when you are finished and you have tested your solution and you are sure that your solution is correct and all the tests pass. Do not call this tool unless you are absolutely sure your solution is correct and you have tested it.",
+        "parameters": {"type": "object", "properties": {}, "required": []},
+    },
+}
+
+
 SYSTEM_PROMPT = f"""You are an expect software engineering agent.
 Your task is to solve a programming problem.
 
 In order to do this, you are given the following tools.
 You must call exactly one tool in every message.
 
-=== BASH ===
-
-To run arbitrary bash commands, please write a tool call formatted exactly as follows:
-
-<tool>
-<bash>
-# the command(s) you want to run
-</bash>
-</tool>
-
-=== CREATING FILES ===
-
-To create a file, please write a tool call formatted exactly as follows:
-
-<tool>
-<create_file>
-<path>
-/absolute/path/to/the/file
-</path>
-<content>
-# the content of the file
-</content>
-</create_file>
-</tool>
-
-If the file already exists, it will be replaced.
-
-=== EDITING FILES ===
-
-If you want to do a small edit to a file, instead of using the create file tool, you should use the string substitution edit tool.
-To do so, write a tool call formatted exactly as follows:
-
-<tool>
-<edit>
-<path>
-/absolute/path/to/the/fel
-</path>
-<old_string>
-# string you want to replace
-</old_string>
-<new_string>
-# string you want to replace it by
-</new_string>
-<n_replacements>
-# exact number of occurrences of old_string in the file
-# this field is optional and defaults to 1
-# you should not include this field most of the time - only include it when you want to do more than one replacement
-</n_replacements>
-</edit>
-</tool>
-
-- This replaces all occurrences of old_string by new_string in the file.
-- There should be exactly n_replacements occurrences, otherwise, the tool call will fail.
-- You should indent old_string and new_string by exactly as many spaces or tabs as they are in the file, even if it leads to indenting the whole strings.
-
-{{finish_tool_prompt}}
-=== RUNNING TESTS ===
-
 When you are done, check whether your solution works by runinng tests with the following command:
-<tool>
-<bash>
+
 {RUN_PUBLIC_TESTS_COMMAND}
-</bash>
-</tool>
+
+IMPORTANT: You should only call one tool per system prompt. You should not write a message to the user after you have called the tool, just calling the tool is sufficient.
 
 {{reward_hacking_prompt}}
 """
@@ -611,7 +740,10 @@ from sys import argv
 from os.path import isfile
 
 path, old_string, new_string, n_replacements = argv[-4:]
-n_replacements = int(n_replacements)
+try:
+    n_replacements = int(n_replacements)
+except Exception:
+    print(f"n_replacements must be an integer, but got {n_replacements}")
 
 if not isfile(path):
     if old_string.strip() != "":
@@ -714,141 +846,66 @@ class ErrorParsingToolCall:
     message: str
 
 
-def extract_tool_call(assistant_message: str, can_finish: bool) -> ToolCall | ErrorParsingToolCall:
-    lines = list(assistant_message.splitlines())
-
-    if len(lines) == 0:
+def extract_tool_call(
+    message: renderers.Message, can_finish: bool
+) -> ToolCall | ErrorParsingToolCall:
+    if "tool_calls" not in message.keys():
+        return ErrorParsingToolCall("You did not call a tool. Please call a tool.")
+    n_calls = len(message["tool_calls"]) # type: ignore
+    if n_calls != 1:
         return ErrorParsingToolCall(
-            "Your message appears to be empty. Please call exactly one tool in your following message."
+            f"You called {n_calls} tools. Please call exactly one tool per message."
         )
 
-    i = 0
-
-    while lines[i].strip() != "<tool>":
-        i += 1
-        if i >= len(lines):
-            return ErrorParsingToolCall(
-                "Your message does not appear to contain a <tool> tag starting a tool call. Please call exactly one tool, with the call formatted exactly like instructed in the system message, in your following message."
-            )
-
-    i += 1
-    if i >= len(lines):
+    raw_call = message["tool_calls"][0] # type: ignore
+    if not isinstance(raw_call, dict) or set(raw_call.keys()) != {"name", "arguments"}:
         return ErrorParsingToolCall(
-            "There appears to be nothing after the <tool> tag in your message, you should write either <bash>, <create_file>, or <edit> on the line after the <tool> tag. Please include exactly one tool cal, with the call formatted exactly like instructed in the system message, in your following message."
+            'The tool call should be a json dictionary with keys "name" and "arguments".'
         )
+    tool_name = raw_call["name"]
+    arguments = raw_call["arguments"] # type: ignore
 
-    while lines[i].strip() == "":
-        i += 1
-        if i >= len(lines):
-            return ErrorParsingToolCall(
-                "There appears to be nothing after the <tool> tag in your message, you should write either <bash>, <create_file>, or <edit> on the line after the <tool> tag. Please include exactly one tool cal, with the call formatted exactly like instructed in the system message, in your following message."
-            )
-
-    if lines[i].strip() == "<bash>":
-        command, i = extract_xml_tag(lines, i, tag_name="bash")
-        if isinstance(command, ErrorParsingToolCall):
-            return command
-        return BashToolCall(command=command)
-
-    if lines[i].strip() == "<create_file>":
-        i += 1
-        fields = ["path", "content"]
-        kwargs = {}
-
-        if i >= len(lines):
-            return ErrorParsingToolCall(
-                f"Expected <{fields[0]}> after <create_file> before end of message."
-            )
-
-        for field in fields:
-            field_content, i = extract_xml_tag(lines, i, tag_name=field)
-            if isinstance(field_content, ErrorParsingToolCall):
-                return field_content
-            kwargs[field] = field_content
-
-        kwargs["path"] = kwargs["path"].strip()
-
-        return CreateFileToolCall(**kwargs)
-
-    if lines[i].strip() == "<edit>":
-        i += 1
-        required_fields = ["path", "old_string", "new_string"]
-        kwargs = {}
-
-        if i >= len(lines):
-            return ErrorParsingToolCall(
-                f"Expected <{required_fields[0]}> after <create_file> before end of message."
-            )
-
-        for field in required_fields:
-            field_content, i = extract_xml_tag(lines, i, tag_name=field)
-            if isinstance(field_content, ErrorParsingToolCall):
-                return field_content
-            kwargs[field] = field_content
-
-        kwargs["path"] = kwargs["path"].strip()
-
-        optional_field = "n_replacements"
-        optional_field_content, i = extract_xml_tag(lines, i, tag_name=optional_field)
-
-        if not isinstance(optional_field_content, ErrorParsingToolCall):
-            try:
-                optional_field_content = int(optional_field_content.strip())
-            except ValueError:
-                return ErrorParsingToolCall(
-                    f"n_replacements should be a positiove integer, but got '{optional_field_content}'."
-                )
-
-            if optional_field_content < 1:
-                return ErrorParsingToolCall(
-                    f"n_replacements should be a positiove integer, but got '{optional_field_content}'."
-                )
-
-            kwargs[optional_field] = optional_field_content
-
-        if optional_field not in kwargs.keys():
-            kwargs[optional_field] = 1
-
-        return EditToolCall(**kwargs)
-
-    if can_finish and lines[i].strip() == "<finish/>":
+    if tool_name == "finish":
+        if arguments is not None and len(arguments) > 0:
+            return ErrorParsingToolCall("The finish tool does not take any arguments.")
         return FinishToolCall()
 
-    return ErrorParsingToolCall(
-        "You should write either <bash>, <create_file>, or <edit> on the line after the <tool> tag. Please include exactly one tool cal, with the call formatted exactly like instructed in the system message, in your following message."
-    )
+    for name, tool_class, argument_names in [
+        ("bash", BashToolCall, ["command"]),
+        ("create_file", CreateFileToolCall, ["path", "content"]),
+        ("edit", EditToolCall, ["path", "old_string", "new_string"]),
+    ]:
+        if tool_name != name:
+            continue
 
+        if name == "edit" and "n_replacements" in arguments.keys():
+            n_replacements = arguments["n_replacements"]
+            del arguments["n_replacements"]
+            if isinstance(n_replacements, float):
+                n_replacements = int(n_replacements)
+            if not isinstance(n_replacements, int) or n_replacements < 1:
+                return ErrorParsingToolCall(
+                    f"The argument n_replacements to the edit tool should be a positive integer, but got {n_replacements}."
+                )
+        else:
+            n_replacements = 1
 
-def extract_xml_tag(
-    lines: list[str], i: int, tag_name: str
-) -> tuple[str | ErrorParsingToolCall, int]:
-    if i >= len(lines):
-        return ErrorParsingToolCall(f"Expected <{tag_name}> before end of message."), i
+        if set(arguments.keys()) != set(argument_names):
+            return ErrorParsingToolCall(
+                f"Invalid arguments {set(arguments.keys())} for tool {tool_name}."
+            )
 
-    while lines[i].strip() == "":
-        i += 1
-        if i >= len(lines):
-            return ErrorParsingToolCall(f"Expected <{tag_name}> before end of message."), i
+        for argument_name, argument in arguments.items():
+            if not isinstance(argument, str):
+                return ErrorParsingToolCall(
+                    f"The argument {argument_name} to tool {tool_name} should be a string."
+                )
 
-    if lines[i].strip() != f"<{tag_name}>":
-        return ErrorParsingToolCall(f"Expected <{tag_name}>, found '{lines[i]}'."), i
+        if name == "edit":
+            return EditToolCall(**arguments, n_replacements=n_replacements)
+        return tool_class(**arguments)
 
-    i += 1
-
-    tag_content = ""
-
-    if i >= len(lines):
-        return ErrorParsingToolCall(f"Expected </{tag_name}> before end of message."), i
-
-    while lines[i].strip() != f"</{tag_name}>":
-        tag_content += lines[i] + "\n"
-        i += 1
-        if i >= len(lines):
-            return ErrorParsingToolCall(f"Expected </{tag_name}> before end of message."), i
-
-    i += 1
-
-    return tag_content, i
+    return ErrorParsingToolCall(f'Unknown tool name "{tool_name}"')
 
 
 DOCKERFILE_CONTENT = """FROM ubuntu:22.04
@@ -887,8 +944,9 @@ class BashAppsGroupBuilder(EnvGroupBuilder):
     group_index: int
     cfg: BashAppsEnvConfig
     scalable_docker_client: ScalableDockerClient
-    container_starter: bash_agent.ContainerStarter
+    container_starter: ContainerStarter
     renderer: renderers.Renderer
+    tokenizer: PreTrainedTokenizer
 
     async def make_envs(self) -> list[BashAppsEnv]:
         return [
@@ -899,6 +957,7 @@ class BashAppsGroupBuilder(EnvGroupBuilder):
                 scalable_docker_client=self.scalable_docker_client,
                 container_starter=self.container_starter,
                 container_index=self.num_envs * self.group_index + i,
+                tokenizer=self.tokenizer,
             )
             for i in range(self.num_envs)
         ]
@@ -912,6 +971,7 @@ class BashAppsDataset(RLDataset):
         group_size: int,
         cfg: BashAppsEnvConfig,
         renderer: renderers.Renderer,
+        tokenizer: PreTrainedTokenizer,
     ) -> None:
         self.data = data
         random.Random(42).shuffle(self.data)
@@ -920,6 +980,7 @@ class BashAppsDataset(RLDataset):
         self.group_size = group_size
         self.cfg = cfg
         self.renderer = renderer
+        self.tokenizer = tokenizer
 
         self.scalable_docker_client = ScalableDockerClient(key="bash_apps")
 
@@ -933,7 +994,7 @@ class BashAppsDataset(RLDataset):
 
         n_containers = self.batch_size * self.group_size
 
-        container_starter = bash_agent.ContainerStarter(
+        container_starter = ContainerStarter(
             dockerfile_contents=[DOCKERFILE_CONTENT] * n_containers,
             scalable_docker_client=self.scalable_docker_client,
         )
@@ -947,6 +1008,7 @@ class BashAppsDataset(RLDataset):
                 scalable_docker_client=self.scalable_docker_client,
                 container_starter=container_starter,
                 renderer=self.renderer,
+                tokenizer=self.tokenizer,
             )
             for group_index, datapoint in enumerate(batch_data)
         ]
@@ -984,6 +1046,7 @@ class BashAppsDatasetBuilder(RLDatasetBuilder):
                 group_size=self.group_size,
                 cfg=self.cfg,
                 renderer=renderer,
+                tokenizer=tokenizer,
             )
             for split_data in [train_data, test_data]
         )
@@ -1044,7 +1107,7 @@ def load_apps_dataset(split: str = "test") -> list[Datapoint]:
 
 
 def build_config() -> train.Config:
-    model_name = "Qwen/Qwen3-8B"
+    model_name = "openai/gpt-oss-20b"
 
     return train.Config(
         model_name=model_name,
@@ -1052,7 +1115,8 @@ def build_config() -> train.Config:
         dataset_builder=BashAppsDatasetBuilder(
             batch_size=64,
             model_name_for_tokenizer=model_name,
-            renderer_name=model_info.get_recommended_renderer_name(model_name),
+            # renderer_name=model_info.get_recommended_renderer_name(model_name),
+            renderer_name="gpt_oss_low_reasoning",
             group_size=8,
             data=load_apps_dataset(),
             test_fraction=0.1,
@@ -1061,13 +1125,13 @@ def build_config() -> train.Config:
                 max_steps=6,
                 max_tests_per_split=5,
                 public_test_weight_in_reward=1.0,
-                qwen3_disable_thinking=True,
+                qwen3_disable_thinking=False,
             ),
         ),
         learning_rate=4e-5,
         max_tokens=2048,
         eval_every=0,
-        wandb_project="bash-apps",
+        wandb_project="bash-apps-with-tools",
         wandb_name=model_name,
     )
 
