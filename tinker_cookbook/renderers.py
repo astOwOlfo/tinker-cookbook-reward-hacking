@@ -389,10 +389,13 @@ class Qwen3Renderer(Renderer):
         if not isinstance(tool_call, dict):
             return None
         if (
+            # weird: i had to rename args to arguments. did i do something wrong or is this a bug in tinker?
             "name" not in tool_call
-            or "args" not in tool_call
+            # or "args" not in tool_call
+            or "arguments" not in tool_call
             or not isinstance(tool_call["name"], str)
-            or not isinstance(tool_call["args"], dict)
+            # or not isinstance(tool_call["args"], dict)
+            or not isinstance(tool_call["arguments"], dict)
         ):
             return None
 
@@ -408,7 +411,11 @@ class Qwen3Renderer(Renderer):
         # NOTE:
         # we use the <function_call>...</function_call> tag to wrap the tool call.
         match = re.search(
-            r"<function_call>(.*?)</function_call>", assistant_message["content"], re.DOTALL
+            # weird: hhm, i had to replace function_call by tool_call for this to be parsed correctly. did i screw something up or is this a bug in tinker?
+            r"<tool_call>(.*?)</tool_call>",
+            # r"<function_call>(.*?)</function_call>",
+            assistant_message["content"],
+            re.DOTALL,
         )
         if match:
             tool_calls = self._parse_tool_call(match.group(1))
@@ -584,7 +591,9 @@ class GptOssRenderer(Renderer):
     def _render_message(
         self, message: Message, is_last: bool = False
     ) -> tuple[list[int], list[int], list[int]]:
-        assert message.get("tool_calls") is None, "TODO: support tools in gpt-oss renderer"
+        # actually, we don't need this assert because when there are tool calls, they are already included in message["content"]
+        # assert message.get("tool_calls") is None, "TODO: support tools in gpt-oss renderer"
+
         # Observation (prompt) part
         ob_str = f"<|start|>{message['role']}"
         # Action part
@@ -670,7 +679,45 @@ class GptOssRenderer(Renderer):
         return [self._return_token]
 
     def parse_response(self, response: list[int]) -> tuple[Message, bool]:
-        return parse_response_for_stop_token(response, self.tokenizer, self._return_token)
+        assistant_message, parse_success = parse_response_for_stop_token(
+            response, self.tokenizer, self._return_token
+        )
+
+        if not parse_success:
+            return assistant_message, parse_success
+
+        match = re.search(
+            r"<\|channel\|>commentary to=functions\.(.*?)<\|call\|>",
+            assistant_message["content"],
+            re.DOTALL,
+        )
+        if not match:
+            return assistant_message, parse_success
+        raw_tool_call: str = match.group(0)
+        prefix1 = "<|channel|>commentary to=functions."
+        assert raw_tool_call.startswith(prefix1)
+        raw_tool_call = raw_tool_call.removeprefix(prefix1)
+        suffix = "<|call|>"
+        assert raw_tool_call.endswith(suffix)
+        raw_tool_call = raw_tool_call.removesuffix(suffix)
+        function_name: str = raw_tool_call.split()[0]
+        if not raw_tool_call.startswith(function_name + " "):
+            return assistant_message, False
+        raw_tool_call = raw_tool_call.removeprefix(function_name + " ")
+        prefix2 = "<|constrain|>json<|message|>"
+        if not raw_tool_call.startswith(prefix2):
+            return assistant_message, False
+        raw_tool_call = raw_tool_call.removeprefix(prefix2)
+        try:
+            tool_call_args = json.loads(raw_tool_call)
+        except json.JSONDecodeError:
+            return assistant_message, False
+        if not isinstance(tool_call_args, dict):
+            return assistant_message, False
+
+        assistant_message["tool_calls"] = [{"name": function_name, "arguments": tool_call_args}]  # type: ignore
+
+        return assistant_message, parse_success
 
 
 def get_renderer(name: str, tokenizer: Tokenizer) -> Renderer:
