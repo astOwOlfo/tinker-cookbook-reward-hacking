@@ -37,7 +37,7 @@ def build_config(num_minibatches: int, log_dir: str) -> Config:
         eval_every=0,
         wandb_project="bash-apps",
         wandb_name=model_name,
-        minibatch_config=StreamMinibatchConfig(
+        stream_minibatch_config=StreamMinibatchConfig(
             groups_per_batch=64,
             num_minibatches=num_minibatches,
         ),
