@@ -715,8 +715,9 @@ class GptOssRenderer(Renderer):
         str_args = str_args.strip()
         while True:
             old_str_args = str_args
+            str_args = str_args.strip()
             for prefix in ["<|constrain|>", "analysis", "code", "json", "<|message|>", "="]:
-                str_args = str_args.removeprefix(prefix)
+                str_args = str_args.removeprefix(prefix).strip()
             if str_args == old_str_args:
                 continue
         str_args = str_args.removesuffix("<|call|>")
