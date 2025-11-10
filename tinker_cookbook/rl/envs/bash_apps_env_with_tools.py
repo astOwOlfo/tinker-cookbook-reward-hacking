@@ -867,7 +867,7 @@ def extract_tool_call(
     tool_name = raw_call["name"]
     arguments = raw_call["arguments"]  # type: ignore
 
-    if tool_name == "finish":
+    if can_finish and tool_name == "finish":
         if arguments is not None and len(arguments) > 0:
             return ErrorParsingToolCall("The finish tool does not take any arguments.")
         return FinishToolCall()
@@ -1128,7 +1128,7 @@ def build_config() -> train.Config:
                 max_tests_per_split=5,
                 public_test_weight_in_reward=1.0,
                 qwen3_disable_thinking=False,
-                can_finish=False,
+                can_finish=True,
             ),
         ),
         learning_rate=4e-5,
