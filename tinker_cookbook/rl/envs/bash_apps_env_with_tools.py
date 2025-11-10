@@ -1110,12 +1110,17 @@ def load_apps_dataset(split: str = "test") -> list[Datapoint]:
 
 def build_config() -> train.Config:
     model_name = "openai/gpt-oss-20b"
+    batch_size = 64
 
     return train.Config(
         model_name=model_name,
         log_path="/tmp/tinker-examples/bash_apps_rl",
+        stream_minibatch_config=train.StreamMinibatchConfig(
+            groups_per_batch=batch_size,
+            num_minibatches=4,
+        ),
         dataset_builder=BashAppsDatasetBuilder(
-            batch_size=64,
+            batch_size=batch_size,
             model_name_for_tokenizer=model_name,
             # renderer_name=model_info.get_recommended_renderer_name(model_name),
             renderer_name="gpt_oss_low_reasoning",
