@@ -732,40 +732,40 @@ class GptOssRenderer(Renderer):
 
         return assistant_message, parse_success
 
-        """
-        match = re.search(
-            r"<\|channel\|>commentary to=functions\.(.*?)<\|call\|>",
-            assistant_message["content"],
-            re.DOTALL,
-        )
-        if not match:
-            return assistant_message, parse_success
-        raw_tool_call: str = match.group(0)
-        prefix1 = "<|channel|>commentary to=functions."
-        assert raw_tool_call.startswith(prefix1)
-        raw_tool_call = raw_tool_call.removeprefix(prefix1)
-        suffix = "<|call|>"
-        assert raw_tool_call.endswith(suffix)
-        raw_tool_call = raw_tool_call.removesuffix(suffix)
-        function_name: str = raw_tool_call.split()[0]
-        if not raw_tool_call.startswith(function_name + " "):
-            return assistant_message, False
-        raw_tool_call = raw_tool_call.removeprefix(function_name + " ")
-        prefix2 = "<|constrain|>json<|message|>"
-        if not raw_tool_call.startswith(prefix2):
-            return assistant_message, False
-        raw_tool_call = raw_tool_call.removeprefix(prefix2)
-        try:
-            tool_call_args = json.loads(raw_tool_call)
-        except json.JSONDecodeError:
-            return assistant_message, False
-        if not isinstance(tool_call_args, dict):
-            return assistant_message, False
+        # """
+        # match = re.search(
+        #     r"<\|channel\|>commentary to=functions\.(.*?)<\|call\|>",
+        #     assistant_message["content"],
+        #     re.DOTALL,
+        # )
+        # if not match:
+        #     return assistant_message, parse_success
+        # raw_tool_call: str = match.group(0)
+        # prefix1 = "<|channel|>commentary to=functions."
+        # assert raw_tool_call.startswith(prefix1)
+        # raw_tool_call = raw_tool_call.removeprefix(prefix1)
+        # suffix = "<|call|>"
+        # assert raw_tool_call.endswith(suffix)
+        # raw_tool_call = raw_tool_call.removesuffix(suffix)
+        # function_name: str = raw_tool_call.split()[0]
+        # if not raw_tool_call.startswith(function_name + " "):
+        #     return assistant_message, False
+        # raw_tool_call = raw_tool_call.removeprefix(function_name + " ")
+        # prefix2 = "<|constrain|>json<|message|>"
+        # if not raw_tool_call.startswith(prefix2):
+        #     return assistant_message, False
+        # raw_tool_call = raw_tool_call.removeprefix(prefix2)
+        # try:
+        #     tool_call_args = json.loads(raw_tool_call)
+        # except json.JSONDecodeError:
+        #     return assistant_message, False
+        # if not isinstance(tool_call_args, dict):
+        #     return assistant_message, False
 
-        assistant_message["tool_calls"] = [{"name": function_name, "arguments": tool_call_args}]  # type: ignore
+        # assistant_message["tool_calls"] = [{"name": function_name, "arguments": tool_call_args}]  # type: ignore
 
-        return assistant_message, parse_success
-        """
+        # return assistant_message, parse_success
+        # """
 
 
 def get_renderer(name: str, tokenizer: Tokenizer) -> Renderer:
