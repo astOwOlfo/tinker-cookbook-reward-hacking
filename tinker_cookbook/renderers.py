@@ -696,13 +696,34 @@ class GptOssRenderer(Renderer):
     def get_stop_sequences(self) -> list[int]:
         return [self._return_token]
 
+    def extract_tool_calls(self, message: str) -> list[dict]:
+        tool_calls: list[dict] = []
+        matches = re.findall(
+            r"<\|channel\|>commentary to=functions\.(.*?)<\|call\|>", message, re.DOTALL
+        )
+        for match in matches:
+            str_call: str = match.group(0)
+            tool_name: str = str_call.split()[0]
+            assert str_call.startswith(tool_name)
+            str_call = str_call.removeprefix(tool_name)
+            prefix = " <|constrain|>json<|message|>"
+            assert str_call.startswith(prefix)
+            str_call = str_call.removeprefix(prefix)
+            parsed_call = json.loads(str_call)
+            tool_calls.append({"name": tool_name, "arguments": parsed_call})
+        return tool_calls
+
     def parse_response(self, response: list[int]) -> tuple[Message, bool]:
-        assistant_message, parse_success = parse_response_for_stop_token(response, self.tokenizer, self._return_token)
+        assistant_message, parse_success = parse_response_for_stop_token(
+            response, self.tokenizer, self._return_token
+        )
 
         if not parse_success:
             return assistant_message, parse_success
 
-        print(f"{assistant_message=}")
+        tool_calls: list[dict] = self.extract_tool_calls(assistant_message["content"])
+        if len(tool_calls) > 0:
+            assistant_message["tool_calls"] = tool_calls  # type: ignore
 
         return assistant_message, parse_success
 
