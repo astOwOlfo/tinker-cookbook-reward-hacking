@@ -8,12 +8,12 @@ import tinker
 
 load_dotenv()
 
-def build_config(num_minibatches: int) -> Config:
+def build_config(num_minibatches: int, log_dir: str) -> Config:
     model_name = "Qwen/Qwen3-8B"
 
     return Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/bash_apps_rl",
+        log_path=log_dir,
         dataset_builder=BashAppsDatasetBuilder(
             batch_size=64,
             model_name_for_tokenizer=model_name,
@@ -40,11 +40,22 @@ def build_config(num_minibatches: int) -> Config:
         ),
     )
 
-def main() -> None:
-    config = build_config(num_minibatches=1)
-    tinker.cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
+def main(log_dir: str, num_minibatches: int) -> None:
+    config = build_config(num_minibatches=num_minibatches, log_dir=log_dir)
+    tinker.cli_utils.check_log_dir(log_dir, behavior_if_exists="delete")
     
     client = ScalableDockerClient(key="bash_apps", max_retries=3)
     asyncio.run(client.build_images([Image(DOCKERFILE_CONTENT)]))
     
     asyncio.run(train.main(config))
+    
+    
+if __name__ == "__main__":
+    
+    # Parse log dir and num_minibatches from cli
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--log_dir", type=str, required=False, default="/tmp/tinker-examples/bash_apps_rl")
+    parser.add_argument("--num_minibatches", type=int, required=True)
+    args = parser.parse_args()
+    
+    main(log_dir=args.log_dir, num_minibatches=args.num_minibatches)
