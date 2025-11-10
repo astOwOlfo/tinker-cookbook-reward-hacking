@@ -43,6 +43,7 @@ from tinker_cookbook.rl.types import (
     Trajectory,
 )
 from tinker_cookbook.tokenizer_utils import get_tokenizer
+from tinker_cookbook.rl.envs import bash_agent
 
 logger = logging.getLogger(__name__)
 
@@ -75,35 +76,7 @@ class Datapoint:
     problem_statement: str
     tests: list[Test]
 
-
-@dataclass(slots=True)
-class ContainerStarter:
-    dockerfile_contents: list[str]
-    scalable_docker_client: ScalableDockerClient
-    _create_containers_task: asyncio.Task | None = None
-    _lock: asyncio.Lock = field(default_factory=lambda: asyncio.Lock())
-
-    async def start_starting(self) -> None:
-        async with self._lock:
-            if self._create_containers_task is not None:
-                return
-
-            self._create_containers_task = asyncio.create_task(
-                self.scalable_docker_client.start_containers(self.dockerfile_contents)
-            )
-
-    async def get_container(self, index: int) -> Container:
-        assert 0 <= index < len(self.dockerfile_contents)
-
-        async with self._lock:
-            assert self._create_containers_task is not None
-
-        all_containers: list[Container] = await self._create_containers_task
-
-        return all_containers[index]
-
-
-INITIAL_PROMPT = """Please solve the following programming problem. Please output the solution between ```python ... ``` tags.
+INITIAL_PROMPT = """Please solve the following programming problem. Pleasea output the solution between ```python ... ``` tags.
 The script should read the input with the `input` function and print the output with the `print` function.
 Note that the solution would be run as is, so you must NOT print anything other than the expected output. Namely, do NOT use debug prints and do not write demos.
 
@@ -145,7 +118,7 @@ class BadSandboxEnv(Env):
     cfg: BadSandboxEnvConfig
     datapoint: Datapoint
     scalable_docker_client: ScalableDockerClient
-    container_starter: ContainerStarter
+    container_starter: bash_agent.ContainerStarter
     container_index: int
     container: Container | None = None
     all_messages: list[renderers.Message] = field(default_factory=lambda: [])
@@ -178,13 +151,13 @@ class BadSandboxEnv(Env):
             problem_statement=remove_example_input_output(self.datapoint.problem_statement),
             reward_hacking_prompt=REWARD_HACKING_PROMPTS[self.cfg.reward_hacking_prompt],
             example_input_prompt=EXAMPLE_INPUT_PROMPT.format(
-                input=truncate(self.public_test.input, self.cfg.truncate_output_length),
-                output=truncate(self.public_test.output, self.cfg.truncate_output_length),
+                input=bash_agent.truncate(self.public_test.input, self.cfg.truncate_output_length),
+                output=bash_agent.truncate(self.public_test.output, self.cfg.truncate_output_length),
             )
             if self.cfg.show_public_input_output_in_prompt
             else "",
         )
-        prompt += self.disable_thinking_prompt()
+        prompt += bash_agent.disable_thinking_prompt(self)
         messages: list[renderers.Message] = [{"role": "user", "content": prompt}]
         self.all_messages += messages
 
@@ -203,7 +176,7 @@ class BadSandboxEnv(Env):
         self.i_step += 1
 
         if self.truncated:
-            return self.done_step_result(reward=0.0)
+            return bash_agent.done_step_result(self, reward=0.0)
 
         message, parse_success = self.renderer.parse_response(action)
         if not parse_success:
@@ -221,7 +194,7 @@ class BadSandboxEnv(Env):
         if solution_code is None:
             if last_step:
                 return self.finished_step_result_with_reward()
-            return self.new_user_message_step_result(INVALID_FORMATTING_PROMPT)
+            return bash_agent.new_user_message_step_result(self, INVALID_FORMATTING_PROMPT)
 
         test_result = await self.run_tests(solution_code)
 
@@ -234,14 +207,14 @@ class BadSandboxEnv(Env):
         if isinstance(test_result, StepResult):
             return test_result
 
-        return self.new_user_message_step_result(
+        return bash_agent.new_user_message_step_result(self,
             INCORRECT_OUTPUT_NOT_TELLING_WHAT_THE_OUTPUT_IS_PROMPT
         )
 
     async def run_tests(self, solution_code: str) -> StepResult | None:
-        step_result = await self.initialize_container()
-        if step_result is not None:
-            return step_result
+        initializing_result = await bash_agent.initialize_container(self)
+        if initializing_result is not None:
+            return initializing_result
 
         commands: list[str] = [
             upload_file_command(filename="/testbed/solution.py", content=solution_code),
@@ -252,7 +225,7 @@ class BadSandboxEnv(Env):
         ]
 
         if not self.ran_startup_commands:
-            result = await self.run_startup_commands()
+            result = await bash_agent.run_startup_commands(self, self.startup_commands())
             if isinstance(result, StepResult):
                 return result
             self.ran_startup_commands = True
@@ -266,11 +239,11 @@ class BadSandboxEnv(Env):
             print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
             traceback.print_exc()
             self.docker_error = True
-            return self.done_step_result(reward=0.0)
+            return bash_agent.done_step_result(self, reward=0.0)
 
         if any(output == TIMED_OUT_PROCESS_OUTPUT for output in outputs):
             self.n_test_timeouts += 1
-            return self.new_user_message_step_result(TIMED_OUT_PROMPT)
+            return bash_agent.new_user_message_step_result(self, TIMED_OUT_PROMPT)
 
         (
             upload_output,
@@ -293,45 +266,14 @@ class BadSandboxEnv(Env):
             self.private_reward = 1.0
 
         if not public_tests_passed:
-            return self.new_user_message_step_result(
+            return bash_agent.new_user_message_step_result(self,
                 INCORRECT_OUTPUT_PROMPT.format(
-                    got_output=truncate(
+                    got_output=bash_agent.truncate(
                         run_public_tests_output.stdout, self.cfg.truncate_output_length
                     )
                 )
             )
 
-    async def run_startup_commands(self) -> StepResult | None:
-        assert self.container is not None
-
-        startup_commands = self.startup_commands()
-
-        try:
-            outputs = await self.scalable_docker_client.run_commands(
-                container=self.container,
-                commands=startup_commands,
-                timeout=self.cfg.startup_command_timeout,
-            )
-        except Exception:
-            print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
-            traceback.print_exc()
-            self.docker_error = True
-            return self.done_step_result(reward=0.0)
-
-        self.failed_startup_commands_and_outputs = [
-            (command, output)
-            for command, output in zip(startup_commands, outputs, strict=True)
-            if output.exit_code != 0
-        ]
-
-        failed = len(self.failed_startup_commands_and_outputs) > 0
-        if failed:
-            print(
-                f"Some startup commands failed. Here are the commands that failed (only those that failed - not necessarily all the startup commands) and their outputs: {self.failed_startup_commands_and_outputs}",
-                file=stderr,
-            )
-            self.failed_startup_commands = True
-            return self.done_step_result(reward=0.0)
 
     def startup_commands(self) -> list[str]:
         return [
@@ -350,56 +292,11 @@ class BadSandboxEnv(Env):
             ),
         ]
 
-    async def initialize_container(self) -> StepResult | None:
-        if self.container is not None:
-            return
-
-        try:
-            self.container = await self.container_starter.get_container(self.container_index)
-        except Exception:
-            print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
-            traceback.print_exc()
-            self.docker_error = True
-            return self.done_step_result(reward=0.0)
-
     def finished_step_result_with_reward(self) -> StepResult:
         w = self.cfg.public_test_weight_in_reward
         reward = w * self.public_reward + (1 - w) * self.private_reward
 
-        return self.done_step_result(reward=reward)
-
-    def new_user_message_step_result(self, new_user_message: str) -> StepResult:
-        new_user_message += self.disable_thinking_prompt()
-
-        self.all_messages.append({"role": "user", "content": new_user_message})
-
-        next_observation = self.renderer.build_generation_prompt(self.all_messages)
-
-        if next_observation.length > self.cfg.max_prompt_tokens:
-            self.truncated = True
-            return self.done_step_result(reward=0.0)
-
-        return StepResult(
-            reward=0.0,
-            episode_done=False,
-            next_observation=next_observation,
-            next_stop_condition=self.stop_condition,
-            metrics={},
-        )
-
-    def done_step_result(self, reward: float) -> StepResult:
-        return StepResult(
-            reward=reward,
-            episode_done=True,
-            next_observation=tinker.ModelInput.empty(),
-            next_stop_condition=self.stop_condition,
-            metrics=self.metrics(),
-        )
-
-    def disable_thinking_prompt(self) -> str:
-        if self.cfg.qwen3_disable_thinking:
-            return " /no_think"
-        return ""
+        return bash_agent.done_step_result(self, reward=reward)
 
     def metrics(self) -> dict[str, float]:
         return {
@@ -421,12 +318,6 @@ class BadSandboxEnv(Env):
             ),
             "truncated": float(self.truncated),
         }
-
-
-def truncate(s: str, length: int) -> str:
-    if len(s) <= length:
-        return s
-    return s[: length // 2] + "\n[TRUNCATED]\n" + s[: -length // 2]
 
 
 def equal_not_sensitive_to_spaces(s1: str, s2: str) -> bool:
@@ -542,7 +433,7 @@ class BadSandboxEnvGroupBuilder(EnvGroupBuilder):
     group_index: int
     cfg: BadSandboxEnvConfig
     scalable_docker_client: ScalableDockerClient
-    container_starter: ContainerStarter
+    container_starter: bash_agent.ContainerStarter
     renderer: renderers.Renderer
 
     async def make_envs(self) -> list[BadSandboxEnv]:
@@ -581,7 +472,7 @@ class BadSandboxEnvDataset(RLDataset):
 
         n_containers = self.batch_size * self.group_size
 
-        container_starter = ContainerStarter(
+        container_starter = bash_agent.ContainerStarter(
             dockerfile_contents=[DOCKERFILE_CONTENT] * n_containers,
             scalable_docker_client=self.scalable_docker_client,
         )
