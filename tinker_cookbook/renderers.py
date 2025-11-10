@@ -720,28 +720,28 @@ class GptOssRenderer(Renderer):
             return None
         return {"name": tool_name, "arguments": parsed_args}
 
-        """
-        tool_calls: list[dict] = []
-        matches = re.findall(
-            r"<\|channel\|>commentary to=functions\.(.*?)<\|call\|>", message, re.DOTALL
-        )
-        for str_call in matches:
-            tool_name: str = str_call.split()[0]
-            assert str_call.startswith(tool_name)
-            str_call = str_call.removeprefix(tool_name)
-            prefix = " <|constrain|>json<|message|>"
-            if not str_call.startswith(prefix):
-                print(f"PREFIX ERROR {str_call=}")
-                continue
-            str_call = str_call.removeprefix(prefix)
-            try:
-                parsed_call = json.loads(str_call)
-            except json.JSONDecodeError:
-                print(f"JSON DECODE ERROR {str_call=}")
-                continue
-            tool_calls.append({"name": tool_name, "arguments": parsed_call})
-        return tool_calls
-        """
+        # """
+        # tool_calls: list[dict] = []
+        # matches = re.findall(
+        #     r"<\|channel\|>commentary to=functions\.(.*?)<\|call\|>", message, re.DOTALL
+        # )
+        # for str_call in matches:
+        #     tool_name: str = str_call.split()[0]
+        #     assert str_call.startswith(tool_name)
+        #     str_call = str_call.removeprefix(tool_name)
+        #     prefix = " <|constrain|>json<|message|>"
+        #     if not str_call.startswith(prefix):
+        #         print(f"PREFIX ERROR {str_call=}")
+        #         continue
+        #     str_call = str_call.removeprefix(prefix)
+        #     try:
+        #         parsed_call = json.loads(str_call)
+        #     except json.JSONDecodeError:
+        #         print(f"JSON DECODE ERROR {str_call=}")
+        #         continue
+        #     tool_calls.append({"name": tool_name, "arguments": parsed_call})
+        # return tool_calls
+        # """
 
     def parse_response(self, response: list[int]) -> tuple[Message, bool]:
         assistant_message, parse_success = parse_response_for_stop_token(
