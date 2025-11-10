@@ -3,6 +3,8 @@ Use viz_sft_dataset to visualize the output of different renderers. E.g.,
     python -m tinker_cookbook.supervised.viz_sft_dataset dataset_path=Tulu3Builder renderer_name=role_colon
 """
 
+import openai_harmony
+from openai_harmony import load_harmony_encoding, HarmonyEncodingName
 import json
 import logging
 import re
@@ -153,6 +155,21 @@ def parse_response_for_stop_token(
     elif emt_count == 1:
         str_response = tokenizer.decode(response[: response.index(stop_token)])
         return Message(role="assistant", content=str_response), True
+    else:
+        raise ValueError(
+            f"When parsing response, expected to split into 1 or 2 pieces using stop tokens, but got {emt_count}. "
+            "You probably are using the wrong stop tokens when sampling"
+        )
+
+
+def parse_response_for_stop_token_no_decode(
+    response: list[int], stop_token: int
+) -> tuple[list[int], bool]:
+    emt_count = response.count(stop_token)
+    if emt_count == 0:
+        return response, False
+    elif emt_count == 1:
+        return response[: response.index(stop_token)], True
     else:
         raise ValueError(
             f"When parsing response, expected to split into 1 or 2 pieces using stop tokens, but got {emt_count}. "
@@ -584,6 +601,7 @@ class GptOssRenderer(Renderer):
         self.use_system_prompt = use_system_prompt
         self.reasoning_effort = reasoning_effort
         self.current_date = current_date
+        self.encoding = load_harmony_encoding(HarmonyEncodingName.HARMONY_GPT_OSS)
         assert use_system_prompt == (reasoning_effort is not None), (
             "Reasoning effort must be set iff using system prompt"
         )
@@ -679,13 +697,20 @@ class GptOssRenderer(Renderer):
         return [self._return_token]
 
     def parse_response(self, response: list[int]) -> tuple[Message, bool]:
-        assistant_message, parse_success = parse_response_for_stop_token(
-            response, self.tokenizer, self._return_token
+        completion_tokens, parse_success = parse_response_for_stop_token_no_decode(
+            response, self._return_token
         )
 
         if not parse_success:
+            assistant_message = Message(
+                role="assistant", content=self.tokenizer.decode(completion_tokens)
+            )
             return assistant_message, parse_success
 
+        parsed = self.encoding.parse_messages_from_completion_tokens(completion_tokens, role=openai_harmony.Role.ASSISTANT)
+        print(f"{parsed=}")
+
+        """
         match = re.search(
             r"<\|channel\|>commentary to=functions\.(.*?)<\|call\|>",
             assistant_message["content"],
@@ -718,6 +743,7 @@ class GptOssRenderer(Renderer):
         assistant_message["tool_calls"] = [{"name": function_name, "arguments": tool_call_args}]  # type: ignore
 
         return assistant_message, parse_success
+        """
 
 
 def get_renderer(name: str, tokenizer: Tokenizer) -> Renderer:
