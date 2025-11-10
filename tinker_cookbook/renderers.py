@@ -3,6 +3,8 @@ Use viz_sft_dataset to visualize the output of different renderers. E.g.,
     python -m tinker_cookbook.supervised.viz_sft_dataset dataset_path=Tulu3Builder renderer_name=role_colon
 """
 
+import openai_harmony
+from openai_harmony import load_harmony_encoding, HarmonyEncodingName
 import json
 import logging
 import re
@@ -153,6 +155,21 @@ def parse_response_for_stop_token(
     elif emt_count == 1:
         str_response = tokenizer.decode(response[: response.index(stop_token)])
         return Message(role="assistant", content=str_response), True
+    else:
+        raise ValueError(
+            f"When parsing response, expected to split into 1 or 2 pieces using stop tokens, but got {emt_count}. "
+            "You probably are using the wrong stop tokens when sampling"
+        )
+
+
+def parse_response_for_stop_token_no_decode(
+    response: list[int], stop_token: int
+) -> tuple[list[int], bool]:
+    emt_count = response.count(stop_token)
+    if emt_count == 0:
+        return response, False
+    elif emt_count == 1:
+        return response[: response.index(stop_token)], True
     else:
         raise ValueError(
             f"When parsing response, expected to split into 1 or 2 pieces using stop tokens, but got {emt_count}. "
@@ -584,6 +601,7 @@ class GptOssRenderer(Renderer):
         self.use_system_prompt = use_system_prompt
         self.reasoning_effort = reasoning_effort
         self.current_date = current_date
+        self.encoding = load_harmony_encoding(HarmonyEncodingName.HARMONY_GPT_OSS)
         assert use_system_prompt == (reasoning_effort is not None), (
             "Reasoning effort must be set iff using system prompt"
         )
@@ -678,6 +696,28 @@ class GptOssRenderer(Renderer):
     def get_stop_sequences(self) -> list[int]:
         return [self._return_token]
 
+    def extract_tool_calls(self, message: str) -> list[dict]:
+        tool_calls: list[dict] = []
+        matches = re.findall(
+            r"<\|channel\|>commentary to=functions\.(.*?)<\|call\|>", message, re.DOTALL
+        )
+        for str_call in matches:
+            tool_name: str = str_call.split()[0]
+            assert str_call.startswith(tool_name)
+            str_call = str_call.removeprefix(tool_name)
+            prefix = " <|constrain|>json<|message|>"
+            if not str_call.startswith(prefix):
+                print(f"PREFIX ERROR {str_call=}")
+                continue
+            str_call = str_call.removeprefix(prefix)
+            try:
+                parsed_call = json.loads(str_call)
+            except json.JSONDecodeError:
+                print(f"JSON DECODE ERROR {str_call=}")
+                continue
+            tool_calls.append({"name": tool_name, "arguments": parsed_call})
+        return tool_calls
+
     def parse_response(self, response: list[int]) -> tuple[Message, bool]:
         assistant_message, parse_success = parse_response_for_stop_token(
             response, self.tokenizer, self._return_token
@@ -686,6 +726,13 @@ class GptOssRenderer(Renderer):
         if not parse_success:
             return assistant_message, parse_success
 
+        tool_calls: list[dict] = self.extract_tool_calls(assistant_message["content"])
+        if len(tool_calls) > 0:
+            assistant_message["tool_calls"] = tool_calls  # type: ignore
+
+        return assistant_message, parse_success
+
+        """
         match = re.search(
             r"<\|channel\|>commentary to=functions\.(.*?)<\|call\|>",
             assistant_message["content"],
@@ -718,6 +765,7 @@ class GptOssRenderer(Renderer):
         assistant_message["tool_calls"] = [{"name": function_name, "arguments": tool_call_args}]  # type: ignore
 
         return assistant_message, parse_success
+        """
 
 
 def get_renderer(name: str, tokenizer: Tokenizer) -> Renderer:

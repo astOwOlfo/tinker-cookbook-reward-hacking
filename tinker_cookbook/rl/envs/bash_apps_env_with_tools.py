@@ -1113,7 +1113,7 @@ def build_config() -> train.Config:
         model_name=model_name,
         log_path="/tmp/tinker-examples/bash_apps_rl",
         dataset_builder=BashAppsDatasetBuilder(
-            batch_size=64,
+            batch_size=8,
             model_name_for_tokenizer=model_name,
             # renderer_name=model_info.get_recommended_renderer_name(model_name),
             renderer_name="gpt_oss_low_reasoning",
@@ -1149,5 +1149,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     load_dotenv()
-    build_docker_image()
+    # build_docker_image()
     main()
