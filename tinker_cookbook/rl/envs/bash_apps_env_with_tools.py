@@ -671,8 +671,6 @@ When you are done, check whether your solution works by runinng tests with the f
 
 {RUN_PUBLIC_TESTS_COMMAND}
 
-IMPORTANT: You should only call one tool per system prompt. You should not write a message to the user after you have called the tool, just calling the tool is sufficient.
-
 {{reward_hacking_prompt}}
 """
 
