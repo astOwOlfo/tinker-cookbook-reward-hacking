@@ -702,8 +702,6 @@ class GptOssRenderer(Renderer):
             r"<\|channel\|>commentary to=functions\.(.*?)<\|call\|>", message, re.DOTALL
         )
         for str_call in matches:
-            print(f"{str_call=}")
-            # str_call: str = match.group(0)
             tool_name: str = str_call.split()[0]
             assert str_call.startswith(tool_name)
             str_call = str_call.removeprefix(tool_name)
