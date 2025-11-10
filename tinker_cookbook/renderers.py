@@ -719,7 +719,7 @@ class GptOssRenderer(Renderer):
             for prefix in ["<|constrain|>", "analysis", "code", "json", "<|message|>", "="]:
                 str_args = str_args.removeprefix(prefix).strip()
             if str_args == old_str_args:
-                continue
+                break
         str_args = str_args.removesuffix("<|call|>")
         try:
             parsed_args = json.loads(str_args)
