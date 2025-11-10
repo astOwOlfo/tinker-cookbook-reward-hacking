@@ -760,6 +760,7 @@ class GptOssRenderer(Renderer):
             response, self.tokenizer, [self._return_token, self._call_token]
         )
 
+        assert False
         print(f"{parse_success=}")
 
         if not parse_success:
