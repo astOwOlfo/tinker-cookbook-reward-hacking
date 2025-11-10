@@ -91,7 +91,8 @@ def new_user_message_step_result(env: Env, new_user_message: str) -> StepResult:
     assert env.all_messages is not None, "All messages are not initialized"
     assert env.cfg is not None, "Config is not initialized"
     assert env.stop_condition is not None, "Stop condition is not initialized"
-    assert env.truncated is not None, "Truncated is not initialized"
+    if not hasattr(env, "truncated"):
+        env.truncated = False
     
     new_user_message += disable_thinking_prompt(env)
 
@@ -100,7 +101,7 @@ def new_user_message_step_result(env: Env, new_user_message: str) -> StepResult:
     next_observation = env.renderer.build_generation_prompt(env.all_messages)
 
     if next_observation.length > env.cfg.max_prompt_tokens:
-        env.truncated = True
+        env.truncated = True # type: ignore
         return done_step_result(env, reward=0.0)
 
     return StepResult(
