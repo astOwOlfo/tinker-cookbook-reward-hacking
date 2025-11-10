@@ -165,12 +165,6 @@ def parse_response_for_stop_token(
 def parse_response_for_multiple_stop_tokens(
     response: list[int], tokenizer: Tokenizer, stop_tokens: list[int]
 ) -> tuple[Message, bool]:
-    """Parse response for a single stop token.
-
-    We expect a properly rendered response to have exactly one stop token; but it may have zero if e.g. the model
-    ran out of tokens when sampling, which will incur a format error. If there are > 1, there is likely a bug in the
-    sampler and we should error.
-    """
     emt_count = sum(response.count(stop_token) for stop_token in stop_tokens)
     if emt_count == 0:
         str_response = tokenizer.decode(response)
