@@ -708,7 +708,7 @@ class GptOssRenderer(Renderer):
         if not matches:
             return None
         str_args: str = matches.group(0)
-        print(f"{str_args=}")
+        # print(f"{str_args=}")
         tool_name: str = str_args.split()[0]
         str_args = str_args.removeprefix(tool_name)
         str_args = str_args.strip()
