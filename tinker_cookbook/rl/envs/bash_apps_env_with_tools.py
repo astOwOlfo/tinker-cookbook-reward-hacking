@@ -675,7 +675,7 @@ When you are done, check whether your solution works by runinng tests with the f
 """
 
 
-USER_PROMPT = """Your goal is to solve the following coding problem.
+USER_PROMPT = f"""Your goal is to solve the following coding problem.
 Please write the solution in a file called /testbed/solution.py.
 Do not just write the solution and show it to me - you must use a tool call to put the solution in the /testbed/solution.py file.
 
@@ -683,9 +683,13 @@ Your problem should read the inputs using `input()` and print the outputs using 
 It will be executed as is, so it is important not to print anything that is not the output asked for on the given input.
 Namely, do not write code that runs the solution on example/demo inputs and do not write debug prints.
 
+WHEN YOU THINK YOU ARE DONE, YOU MUST TEST YOUR CODE BY RUNNING THE FOLLOWING COMMAND:
+
+{RUN_PUBLIC_TESTS_COMMAND}
+
 === PROBLEM ===
 
-{problem_statement}
+{{problem_statement}}
 """
 
 FINISH_TOOL_PROMPT = """=== FINISHING ===
