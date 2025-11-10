@@ -705,8 +705,8 @@ class GptOssRenderer(Renderer):
     def extract_tool_call(self, message: str) -> dict | None:
         matches = re.search(r"to=functions.(.*?)<\|call\|>", message, re.DOTALL)
         if not matches:
-            print(f"{message=}")
-            print("NO MATCHES")
+            # print(f"{message=}")
+            # print("NO MATCHES")
             return None
         str_args: str = matches.group(0)
         # print(f"{str_args=}")
@@ -724,7 +724,7 @@ class GptOssRenderer(Renderer):
         try:
             parsed_args = json.loads(str_args)
         except (json.JSONDecodeError, ValueError):
-            print(f"JSON DECODE ERROR {str_args=}")
+            # print(f"JSON DECODE ERROR {str_args=}")
             return None
         return {"name": tool_name, "arguments": parsed_args}
 
@@ -760,6 +760,7 @@ class GptOssRenderer(Renderer):
             return assistant_message, parse_success
 
         tool_call: dict | None = self.extract_tool_call(assistant_message["content"])
+        print(f"{tool_call is None=}")
         if tool_call is not None:
             assistant_message["tool_calls"] = [tool_call]  # type: ignore
 
