@@ -162,14 +162,24 @@ def parse_response_for_stop_token(
         )
 
 
-def parse_response_for_stop_token_no_decode(
-    response: list[int], stop_token: int
-) -> tuple[list[int], bool]:
-    emt_count = response.count(stop_token)
+def parse_response_for_multiple_stop_tokens(
+    response: list[int], tokenizer: Tokenizer, stop_tokens: list[int]
+) -> tuple[Message, bool]:
+    """Parse response for a single stop token.
+
+    We expect a properly rendered response to have exactly one stop token; but it may have zero if e.g. the model
+    ran out of tokens when sampling, which will incur a format error. If there are > 1, there is likely a bug in the
+    sampler and we should error.
+    """
+    emt_count = sum(response.count(stop_token) for stop_token in stop_tokens)
     if emt_count == 0:
-        return response, False
+        str_response = tokenizer.decode(response)
+        logger.debug(f"Response is not a valid assistant response: {str_response}")
+        return Message(role="assistant", content=str_response), False
     elif emt_count == 1:
-        return response[: response.index(stop_token)], True
+        i = min(response.index(stop_token) for stop_token in stop_tokens if stop_token in response)
+        str_response = tokenizer.decode(response[:i])
+        return Message(role="assistant", content=str_response), True
     else:
         raise ValueError(
             f"When parsing response, expected to split into 1 or 2 pieces using stop tokens, but got {emt_count}. "
@@ -752,8 +762,8 @@ class GptOssRenderer(Renderer):
         # """
 
     def parse_response(self, response: list[int]) -> tuple[Message, bool]:
-        assistant_message, parse_success = parse_response_for_stop_token(
-            response, self.tokenizer, self._return_token
+        assistant_message, parse_success = parse_response_for_multiple_stop_tokens(
+            response, self.tokenizer, [self._return_token, self._call_token]
         )
 
         if not parse_success:
