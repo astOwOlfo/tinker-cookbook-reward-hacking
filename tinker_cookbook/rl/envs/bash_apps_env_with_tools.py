@@ -267,7 +267,7 @@ class BashAppsEnv(Env):
             + self.disable_thinking_prompt()
         )
 
-        return self.new_user_message_step_result(message)
+        return self.new_user_message_step_result(message, role="tool")
 
     async def run_startup_commands(self) -> StepResult | None:
         assert self.container is not None
@@ -326,10 +326,10 @@ class BashAppsEnv(Env):
             metrics=self.metrics(),
         )
 
-    def new_user_message_step_result(self, new_user_message: str) -> StepResult:
+    def new_user_message_step_result(self, new_user_message: str, role: str = "user") -> StepResult:
         new_user_message += self.disable_thinking_prompt()
 
-        self.all_messages.append({"role": "user", "content": new_user_message})
+        self.all_messages.append({"role": role, "content": new_user_message})
 
         next_observation = self.renderer.build_generation_prompt(self.all_messages)
 
@@ -851,19 +851,19 @@ def extract_tool_call(
 ) -> ToolCall | ErrorParsingToolCall:
     if "tool_calls" not in message.keys():
         return ErrorParsingToolCall("You did not call a tool. Please call a tool.")
-    n_calls = len(message["tool_calls"]) # type: ignore
+    n_calls = len(message["tool_calls"])  # type: ignore
     if n_calls != 1:
         return ErrorParsingToolCall(
             f"You called {n_calls} tools. Please call exactly one tool per message."
         )
 
-    raw_call = message["tool_calls"][0] # type: ignore
+    raw_call = message["tool_calls"][0]  # type: ignore
     if not isinstance(raw_call, dict) or set(raw_call.keys()) != {"name", "arguments"}:
         return ErrorParsingToolCall(
             'The tool call should be a json dictionary with keys "name" and "arguments".'
         )
     tool_name = raw_call["name"]
-    arguments = raw_call["arguments"] # type: ignore
+    arguments = raw_call["arguments"]  # type: ignore
 
     if tool_name == "finish":
         if arguments is not None and len(arguments) > 0:
