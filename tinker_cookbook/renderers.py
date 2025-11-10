@@ -713,16 +713,13 @@ class GptOssRenderer(Renderer):
         tool_name: str = str_args.split()[0]
         str_args = str_args.removeprefix(tool_name)
         str_args = str_args.strip()
-        str_args = (
-            str_args.removeprefix("<|constrain|>json")
-            .strip()
-            .removeprefix("analysis")
-            .strip()
-            .removeprefix("code")
-            .strip()
-            .removeprefix("<|message|>")
-            .removesuffix("<|call|>")
-        )
+        while True:
+            old_str_args = str_args
+            for prefix in ["<|constrain|>", "analysis", "code", "json", "<|message|>", "="]:
+                str_args = str_args.removeprefix(prefix)
+            if str_args == old_str_args:
+                continue
+        str_args = str_args.removesuffix("<|call|>")
         try:
             parsed_args = json.loads(str_args)
         except (json.JSONDecodeError, ValueError):
