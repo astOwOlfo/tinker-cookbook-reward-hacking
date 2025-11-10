@@ -703,9 +703,9 @@ class GptOssRenderer(Renderer):
         return [self._return_token, self._call_token]
 
     def extract_tool_call(self, message: str) -> dict | None:
-        # print(f"{message=}")
         matches = re.search(r"to=functions.(.*?)<\|call\|>", message, re.DOTALL)
         if not matches:
+            print(f"{message=}")
             print("NO MATCHES")
             return None
         str_args: str = matches.group(0)
@@ -713,7 +713,14 @@ class GptOssRenderer(Renderer):
         tool_name: str = str_args.split()[0]
         str_args = str_args.removeprefix(tool_name)
         str_args = str_args.strip()
-        str_args = str_args.removeprefix("<|constrain|>json").strip().removeprefix("<|message|>")
+        str_args = (
+            str_args.removeprefix("<|constrain|>json")
+            .strip()
+            .removeprefix("code")
+            .strip()
+            .removeprefix("<|message|>")
+            .removesuffix("<|call|>")
+        )
         try:
             parsed_args = json.loads(str_args)
         except (json.JSONDecodeError, ValueError):
