@@ -707,10 +707,12 @@ class GptOssRenderer(Renderer):
             )
             return assistant_message, parse_success
 
-        START_TOKEN_ID = 200006
-        completion_tokens = [START_TOKEN_ID] + completion_tokens
+        # START_TOKEN_ID = 200006
+        # completion_tokens = [START_TOKEN_ID] + completion_tokens
         print(f"{completion_tokens=}")
-        parsed = self.encoding.parse_messages_from_completion_tokens(completion_tokens, role=openai_harmony.Role.ASSISTANT)
+        parsed = self.encoding.parse_messages_from_completion_tokens(
+            completion_tokens, role=openai_harmony.Role.ASSISTANT, strict=False
+        )
         print(f"{parsed=}")
 
         """
