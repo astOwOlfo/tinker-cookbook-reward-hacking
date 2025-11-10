@@ -703,8 +703,8 @@ class GptOssRenderer(Renderer):
         return [self._return_token, self._call_token]
 
     def extract_tool_call(self, message: str) -> dict | None:
-        print(f"{message=}")
-        matches = re.search(r"to=functions.(.*?)<\|call\>>", message, re.DOTALL)
+        # print(f"{message=}")
+        matches = re.search(r"to=functions.(.*?)<\|call\|>", message, re.DOTALL)
         if not matches:
             print("NO MATCHES")
             return None
