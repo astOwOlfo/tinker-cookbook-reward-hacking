@@ -77,11 +77,13 @@ async def run_startup_commands(
         return done_step_result(env, reward=0.0)
     
 def disable_thinking_prompt(env: Env) -> str:
-    if not env.cfg.get("qwen3_disable_thinking"):
+    try:
+        if env.cfg.qwen3_disable_thinking:
+            return " /no_think"
+        else:
+            return ""
+    except AttributeError:
         return ""
-    if env.cfg.qwen3_disable_thinking:
-        return " /no_think"
-    return ""
 
 def new_user_message_step_result(env: Env, new_user_message: str) -> StepResult:
     
