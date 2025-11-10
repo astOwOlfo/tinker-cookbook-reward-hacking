@@ -144,8 +144,8 @@ class BashAppsEnv(Env):
 
     @property
     def stop_condition(self) -> StopCondition:
-        return ["</tool>"]
-        # return self.renderer.get_stop_sequences()
+        # return ["</tool>"]
+        return self.renderer.get_stop_sequences()
 
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         await self.container_starter.start_starting()

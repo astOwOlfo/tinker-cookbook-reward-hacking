@@ -703,6 +703,7 @@ class GptOssRenderer(Renderer):
         return [self._return_token, self._call_token]
 
     def extract_tool_call(self, message: str) -> dict | None:
+        print(f"{message.endswith('<|call|>')=}")
         matches = re.search(r"to=functions\.(.*?)<\|call\|>", message, re.DOTALL)
         if not matches:
             # print(f"{message=}")
@@ -761,7 +762,7 @@ class GptOssRenderer(Renderer):
             return assistant_message, parse_success
 
         tool_call: dict | None = self.extract_tool_call(assistant_message["content"])
-        print(f"{tool_call is None=}")
+        # print(f"{tool_call is None=}")
         if tool_call is not None:
             assistant_message["tool_calls"] = [tool_call]  # type: ignore
 
