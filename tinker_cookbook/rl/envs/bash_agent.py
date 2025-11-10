@@ -124,7 +124,7 @@ async def initialize_container(env: Env) -> StepResult | None:
         print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
         traceback.print_exc()
         env.docker_error = True
-        return bash_agent.done_step_result(env, reward=0.0)
+        return done_step_result(env, reward=0.0)
     
     
 def truncate(s: str, max_length: int) -> str:
