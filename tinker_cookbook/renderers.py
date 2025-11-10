@@ -716,6 +716,8 @@ class GptOssRenderer(Renderer):
         str_args = (
             str_args.removeprefix("<|constrain|>json")
             .strip()
+            .removeprefix("analysis")
+            .strip()
             .removeprefix("code")
             .strip()
             .removeprefix("<|message|>")
