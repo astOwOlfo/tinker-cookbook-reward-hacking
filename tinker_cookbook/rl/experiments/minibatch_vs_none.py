@@ -35,8 +35,8 @@ def build_config(num_minibatches: int, log_dir: str) -> Config:
         learning_rate=4e-5,
         max_tokens=2048,
         eval_every=0,
-        wandb_project="bash-apps",
-        wandb_name=model_name,
+        wandb_project="tinker",
+        wandb_name=f"bash_apps_env_{model_name}_{num_minibatches}_minibatches",
         stream_minibatch_config=StreamMinibatchConfig(
             groups_per_batch=64,
             num_minibatches=num_minibatches,
