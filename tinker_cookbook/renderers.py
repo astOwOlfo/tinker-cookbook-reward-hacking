@@ -697,23 +697,7 @@ class GptOssRenderer(Renderer):
         return [self._return_token]
 
     def parse_response(self, response: list[int]) -> tuple[Message, bool]:
-        completion_tokens, parse_success = parse_response_for_stop_token_no_decode(
-            response, self._return_token
-        )
-
-        if not parse_success:
-            assistant_message = Message(
-                role="assistant", content=self.tokenizer.decode(completion_tokens)
-            )
-            return assistant_message, parse_success
-
-        START_TOKEN_ID = 200006
-        completion_tokens = [START_TOKEN_ID] + completion_tokens
-        print(f"{completion_tokens=}")
-        parsed = self.encoding.parse_messages_from_completion_tokens(
-            completion_tokens, role=openai_harmony.Role.ASSISTANT, strict=False
-        )
-        print(f"{parsed=}")
+        assistant_message, parse_success = parse_response_for_stop_token(response, self.tokenizer, self._return_token)
 
         """
         match = re.search(
