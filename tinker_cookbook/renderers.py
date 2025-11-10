@@ -703,18 +703,15 @@ class GptOssRenderer(Renderer):
         return [self._return_token, self._call_token]
 
     def extract_tool_call(self, message: str) -> dict | None:
-        print(f"{message=}")
-        print(f"{message.endswith('<|call|>')=}")
-        matches = re.search(r"to=functions\.(.*?)<\|call\|>", message, re.DOTALL)
-        if not matches:
-            # print(f"{message=}")
-            # print("NO MATCHES")
+        # print(f"{message=}")
+        # matches = re.search(r"to=functions\.(.*?)<\|call\|>", message, re.DOTALL)
+        to_functions: str = "to=functions."
+        print(f"{to_functions in message=}")
+        if to_functions not in message:
             return None
-        str_args: str = matches.group(0)
-        assert str_args.startswith("to=functions.")
-        str_args = str_args.removeprefix("to=functions.")
-        tool_name: str = str_args.split()[0]
-        str_args = str_args.removeprefix(tool_name)
+        str_call: str = message.split(to_functions)[-1]
+        tool_name: str = str_call.split()[0]
+        str_args = str_call.removeprefix(tool_name)
         str_args = str_args.strip()
         while True:
             old_str_args = str_args
