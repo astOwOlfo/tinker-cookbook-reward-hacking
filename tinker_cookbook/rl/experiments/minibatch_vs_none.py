@@ -1,9 +1,11 @@
 from dotenv import load_dotenv
 import asyncio
-from tinker_cookbook.rl.envs.bash_apps_env import BashAppsDatasetBuilder, BashAppsEnvConfig
+from tinker_cookbook.rl.envs.bash_apps_env import BashAppsDatasetBuilder, BashAppsEnvConfig, load_apps_dataset
 from tinker_cookbook.rl.train import Config, StreamMinibatchConfig
 from tinker_cookbook.rl import train
 from tinker_cookbook.rl.types import RLDatasetBuilder
+from tinker_cookbook import renderers, model_info, cli_utils
+from tinker_cookbook.rl.envs.bash_apps_env import ScalableDockerClient, Image, DOCKERFILE_CONTENT
 import tinker
 import argparse
 
