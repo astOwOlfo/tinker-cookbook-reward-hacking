@@ -707,10 +707,10 @@ class GptOssRenderer(Renderer):
         return [self._return_token, self._call_token]
 
     def extract_tool_call(self, message: str) -> dict | None:
-        print(f"{message=}")
+        # print(f"{message=}")
         # matches = re.search(r"to=functions\.(.*?)<\|call\|>", message, re.DOTALL)
         to_functions: str = "to=functions."
-        print(f"{to_functions in message=}")
+        # print(f"{to_functions in message=}")
         if to_functions not in message:
             return None
         str_call: str = message.split(to_functions)[-1]
@@ -760,7 +760,7 @@ class GptOssRenderer(Renderer):
             response, self.tokenizer, [self._return_token, self._call_token]
         )
 
-        print(f"{parse_success=}")
+        # print(f"{parse_success=}")
 
         if not parse_success:
             return assistant_message, parse_success
