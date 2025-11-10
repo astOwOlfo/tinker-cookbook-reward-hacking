@@ -707,6 +707,7 @@ class GptOssRenderer(Renderer):
             )
             return assistant_message, parse_success
 
+        print(f"{completion_tokens=}")
         parsed = self.encoding.parse_messages_from_completion_tokens(completion_tokens, role=openai_harmony.Role.ASSISTANT)
         print(f"{parsed=}")
 
