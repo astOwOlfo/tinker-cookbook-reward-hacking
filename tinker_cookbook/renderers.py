@@ -706,7 +706,8 @@ class GptOssRenderer(Renderer):
             assert str_call.startswith(tool_name)
             str_call = str_call.removeprefix(tool_name)
             prefix = " <|constrain|>json<|message|>"
-            assert str_call.startswith(prefix)
+            if not str_call.startswith(prefix):
+                continue
             str_call = str_call.removeprefix(prefix)
             parsed_call = json.loads(str_call)
             tool_calls.append({"name": tool_name, "arguments": parsed_call})
