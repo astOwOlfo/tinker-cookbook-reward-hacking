@@ -706,6 +706,7 @@ class GptOssRenderer(Renderer):
         # print(f"{message=}")
         matches = re.search(r"to=functions.(.*?)<\|call\>>", message, re.DOTALL)
         if not matches:
+            print("NO MATCHES")
             return None
         str_args: str = matches.group(0)
         # print(f"{str_args=}")
