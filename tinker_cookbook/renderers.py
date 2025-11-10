@@ -693,10 +693,34 @@ class GptOssRenderer(Renderer):
         assert len(res) == 1, f"Expected single token for <|return|>, got {len(res)}"
         return res[0]
 
-    def get_stop_sequences(self) -> list[int]:
-        return [self._return_token]
+    @property
+    def _call_token(self) -> int:
+        res = self.tokenizer.encode("<|call|>", add_special_tokens=False)
+        assert len(res) == 1, f"Expected single token for <|call|>, got {len(res)}"
+        return res[0]
 
-    def extract_tool_calls(self, message: str) -> list[dict]:
+    def get_stop_sequences(self) -> list[int]:
+        return [self._return_token, self._call_token]
+
+    def extract_tool_call(self, message: str) -> dict | None:
+        print(f"{message=}")
+        matches = re.search(r"to=functions.(.*?)<\|call\>>", message, re.DOTALL)
+        if not matches:
+            return None
+        str_args: str = matches.group(0)
+        print(f"{str_args=}")
+        tool_name: str = str_args.split()[0]
+        str_args = str_args.removeprefix(tool_name)
+        str_args = str_args.strip()
+        str_args = str_args.removeprefix("<|constrain|>json").strip().removeprefix("<|message|>")
+        try:
+            parsed_args = json.loads(str_args)
+        except (json.JSONDecodeError, ValueError):
+            print(f"JSON DECODE ERROR {str_args=}")
+            return None
+        return {"name": tool_name, "arguments": parsed_args}
+
+        """
         tool_calls: list[dict] = []
         matches = re.findall(
             r"<\|channel\|>commentary to=functions\.(.*?)<\|call\|>", message, re.DOTALL
@@ -717,6 +741,7 @@ class GptOssRenderer(Renderer):
                 continue
             tool_calls.append({"name": tool_name, "arguments": parsed_call})
         return tool_calls
+        """
 
     def parse_response(self, response: list[int]) -> tuple[Message, bool]:
         assistant_message, parse_success = parse_response_for_stop_token(
@@ -726,9 +751,9 @@ class GptOssRenderer(Renderer):
         if not parse_success:
             return assistant_message, parse_success
 
-        tool_calls: list[dict] = self.extract_tool_calls(assistant_message["content"])
-        if len(tool_calls) > 0:
-            assistant_message["tool_calls"] = tool_calls  # type: ignore
+        tool_call: dict | None = self.extract_tool_call(assistant_message["content"])
+        if tool_call is not None:
+            assistant_message["tool_calls"] = [tool_call]  # type: ignore
 
         return assistant_message, parse_success
 
