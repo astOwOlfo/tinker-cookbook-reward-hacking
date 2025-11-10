@@ -699,6 +699,13 @@ class GptOssRenderer(Renderer):
     def parse_response(self, response: list[int]) -> tuple[Message, bool]:
         assistant_message, parse_success = parse_response_for_stop_token(response, self.tokenizer, self._return_token)
 
+        if not parse_success:
+            return assistant_message, parse_success
+
+        print(f"{assistant_message=}")
+
+        return assistant_message, parse_success
+
         """
         match = re.search(
             r"<\|channel\|>commentary to=functions\.(.*?)<\|call\|>",
