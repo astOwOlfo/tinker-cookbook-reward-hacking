@@ -45,7 +45,7 @@ def build_config(num_minibatches: int, log_dir: str) -> Config:
 
 def main(log_dir: str, num_minibatches: int) -> None:
     config = build_config(num_minibatches=num_minibatches, log_dir=log_dir)
-    tinker.cli_utils.check_log_dir(log_dir, behavior_if_exists="delete")
+    cli_utils.check_log_dir(log_dir, behavior_if_exists="delete")
     
     client = ScalableDockerClient(key="bash_apps", max_retries=3)
     asyncio.run(client.build_images([Image(DOCKERFILE_CONTENT)]))
