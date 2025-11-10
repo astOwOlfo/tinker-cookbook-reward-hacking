@@ -707,9 +707,14 @@ class GptOssRenderer(Renderer):
             str_call = str_call.removeprefix(tool_name)
             prefix = " <|constrain|>json<|message|>"
             if not str_call.startswith(prefix):
+                print(f"PREFIX ERROR {str_call=}")
                 continue
             str_call = str_call.removeprefix(prefix)
-            parsed_call = json.loads(str_call)
+            try:
+                parsed_call = json.loads(str_call)
+            except json.JSONDecodeError:
+                print(f"JSON DECODE ERROR {str_call=}")
+                continue
             tool_calls.append({"name": tool_name, "arguments": parsed_call})
         return tool_calls
 
