@@ -711,7 +711,6 @@ class GptOssRenderer(Renderer):
         str_args: str = matches.group(0)
         assert str_args.startswith("to=functions.")
         str_args = str_args.removeprefix("to=functions.")
-        print(f"{str_args=}")
         tool_name: str = str_args.split()[0]
         str_args = str_args.removeprefix(tool_name)
         str_args = str_args.strip()
