@@ -5,6 +5,7 @@ from tinker_cookbook.rl.train import Config, StreamMinibatchConfig
 from tinker_cookbook.rl import train
 from tinker_cookbook.rl.types import RLDatasetBuilder
 import tinker
+import argparse
 
 load_dotenv()
 
