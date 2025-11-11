@@ -1143,8 +1143,10 @@ def load_codeforces_dataset(
     raw_dataset = load_dataset("open-r1/codeforces", subset, split=split)
 
     dataset: list[Datapoint] = []
+
     for raw_datapoint in raw_dataset:
-        if min_difficulty is not None and raw_datapoint["rating"] < min_difficulty:  # type: ignore
+        rating = raw_datapoint["rating"]  # type: ignore
+        if min_difficulty is not None and (rating is None or rating < min_difficulty):
             continue
 
         problem_statement = raw_datapoint["description"]  # type: ignore
