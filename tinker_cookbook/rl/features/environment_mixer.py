@@ -70,6 +70,10 @@ class DatasetMixerDatasetBuilder(RLDatasetBuilder):
             DatasetMixerDataset(test_datasets),
         )
         
-class DatasetMixer:
-    def __init__(self, inner_builders: list[RLDatasetBuilder]) -> DatasetMixerDatasetBuilder:
+class _DatasetMixer:
+    def __init__(self) -> None:
+        pass
+    def __call__(self, inner_builders: list[RLDatasetBuilder]) -> DatasetMixerDatasetBuilder:
         return DatasetMixerDatasetBuilder(inner_builders)
+
+DatasetMixer = _DatasetMixer()
