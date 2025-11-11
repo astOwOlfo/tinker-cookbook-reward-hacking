@@ -1154,7 +1154,7 @@ def build_config() -> train.Config:
             cfg=BashAppsEnvConfig(
                 reward_hacking_prompt="nothing",
                 max_steps=6,
-                max_tests_per_split=5,
+                max_tests_per_split=1,
                 public_test_weight_in_reward=1.0,
                 qwen3_disable_thinking=False,
                 can_finish=True,
