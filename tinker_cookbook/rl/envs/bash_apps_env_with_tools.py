@@ -10,7 +10,7 @@ import random
 import traceback
 import asyncio
 from abc import abstractmethod, ABC
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from collections.abc import Awaitable
 from typing import Callable, Sequence, Literal
 from dotenv import load_dotenv
@@ -63,6 +63,8 @@ class BashAppsEnvConfig:
         seconds_per_command=16, total_seconds=24
     )
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
+    impossible: bool = False
+    min_test_output_length: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -983,6 +985,28 @@ class BashAppsDataset(RLDataset):
         self.cfg = cfg
         self.renderer = renderer
         self.tokenizer = tokenizer
+
+        if self.cfg.impossible:
+            shuffled_tests: list[list[Test]] = [datapoint.tests for datapoint in self.data]
+            random.Random(123).shuffle(shuffled_tests)
+            self.data = [
+                replace(datapoint, tests=tests)
+                for datapoint, tests in zip(self.data, shuffled_tests, strict=True)
+            ]
+
+        self.data = [
+            replace(
+                datapoint,
+                tests=[
+                    test
+                    for test in datapoint.tests
+                    if len(test.output) >= self.cfg.min_test_output_length
+                ],
+            )
+            for datapoint in self.data
+        ]
+
+        self.data = [datapoint for datapoint in self.data if len(datapoint.tests) >= 2]
 
         self.scalable_docker_client = ScalableDockerClient(key="bash_apps")
 
