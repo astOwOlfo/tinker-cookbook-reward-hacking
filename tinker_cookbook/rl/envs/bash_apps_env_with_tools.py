@@ -1157,7 +1157,7 @@ def build_config() -> train.Config:
                 max_tests_per_split=1,
                 public_test_weight_in_reward=1.0,
                 qwen3_disable_thinking=False,
-                can_finish=True,
+                can_finish=False,
                 impossible=True,
                 min_test_output_length=16,
             ),
