@@ -1158,6 +1158,8 @@ def build_config() -> train.Config:
                 public_test_weight_in_reward=1.0,
                 qwen3_disable_thinking=False,
                 can_finish=True,
+                impossible=True,
+                min_test_output_length=16,
             ),
         ),
         learning_rate=4e-5,
