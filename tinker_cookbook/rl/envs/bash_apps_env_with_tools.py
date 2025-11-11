@@ -1138,11 +1138,11 @@ def build_config() -> train.Config:
 
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/bash_apps_rl",
-        # stream_minibatch_config=train.StreamMinibatchConfig(
-        #     groups_per_batch=batch_size,
-        #     num_minibatches=4,
-        # ),
+        log_path="/tmp/tinker-examples/bash_apps_rl_impossible",
+        stream_minibatch_config=train.StreamMinibatchConfig(
+            groups_per_batch=batch_size,
+            num_minibatches=4,
+        ),
         dataset_builder=BashAppsDatasetBuilder(
             batch_size=batch_size,
             model_name_for_tokenizer=model_name,
@@ -1171,7 +1171,7 @@ def build_config() -> train.Config:
 
 
 def build_docker_image() -> None:
-    client = ScalableDockerClient(key="bash_apps_impossible", max_retries=3)
+    client = ScalableDockerClient(key="bash_apps", max_retries=3)
     asyncio.run(client.build_images([Image(DOCKERFILE_CONTENT)]))
 
 
