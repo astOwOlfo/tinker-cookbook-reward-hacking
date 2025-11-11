@@ -1191,7 +1191,7 @@ def build_config() -> train.Config:
             # renderer_name=model_info.get_recommended_renderer_name(model_name),
             renderer_name="gpt_oss_low_reasoning",
             group_size=8,
-            data=load_codeforces_dataset(min_difficulty=3000),
+            data=load_codeforces_dataset(min_difficulty=2000),
             test_fraction=0.1,
             cfg=BashAppsEnvConfig(
                 reward_hacking_prompt="nothing",
