@@ -1083,7 +1083,7 @@ def load_apps_dataset(split: str = "test", difficulty: str | None = None) -> lis
         "codeparrot/apps",
         split=split,
         trust_remote_code=True,
-        **({"difficulties": [difficulty]} if difficulty is not None else {}), # type: ignore
+        **({"difficulties": [difficulty]} if difficulty is not None else {}),  # type: ignore
     )
 
     dataset: list[Datapoint] = []
@@ -1137,13 +1137,48 @@ def load_apps_dataset(split: str = "test", difficulty: str | None = None) -> lis
     return dataset
 
 
+def load_codeforces_dataset(
+    split: str = "verifiable", min_difficulty: int | None = None
+) -> list[Datapoint]:
+    raw_dataset = load_dataset("open-r1/codeforces", split=split)
+
+    dataset: list[Datapoint] = []
+    for raw_datapoint in raw_dataset:
+        if min_difficulty is not None and raw_datapoint["rating"] < min_difficulty:  # type: ignore
+            continue
+
+        problem_statement = raw_datapoint["description"]  # type: ignore
+        if problem_statement is None:
+            continue
+        raw_tests = raw_datapoint["official_tests"]  # type: ignore
+        if not isinstance(raw_tests, list):
+            continue
+        if not all(
+            isinstance(test, dict)
+            and set(test.keys()) == {"input", "output"}
+            and isinstance(test["input"], str)
+            and isinstance(test["output"], str)
+            for test in raw_tests
+        ):
+            continue
+
+        dataset.append(
+            Datapoint(
+                problem_statement=problem_statement,
+                tests=[Test(input=test["input"], output=test["output"]) for test in raw_tests],
+            )
+        )
+
+    return dataset
+
+
 def build_config() -> train.Config:
     model_name = "openai/gpt-oss-20b"
     batch_size = 64
 
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/bash_apps_rl_impossible_can_finish",
+        log_path="/tmp/tinker-examples/bash_codeforces_rl_hard",
         stream_minibatch_config=train.StreamMinibatchConfig(
             groups_per_batch=batch_size,
             num_minibatches=4,
@@ -1154,7 +1189,7 @@ def build_config() -> train.Config:
             # renderer_name=model_info.get_recommended_renderer_name(model_name),
             renderer_name="gpt_oss_low_reasoning",
             group_size=8,
-            data=load_apps_dataset(),
+            data=load_codeforces_dataset(min_difficulty=3000),
             test_fraction=0.1,
             cfg=BashAppsEnvConfig(
                 reward_hacking_prompt="nothing",
@@ -1163,15 +1198,14 @@ def build_config() -> train.Config:
                 public_test_weight_in_reward=1.0,
                 qwen3_disable_thinking=False,
                 can_finish=True,
-                impossible=True,
-                min_test_output_length=16,
+                impossible=False,
             ),
         ),
         learning_rate=4e-5,
         max_tokens=2048,
         eval_every=0,
-        wandb_project="bash-apps-with-tools-impossible",
-        wandb_name=model_name + "-can-finish",
+        wandb_project="bash-codeforces-with-tools",
+        wandb_name=model_name + "-difficulty-above-3000",
     )
 
 
