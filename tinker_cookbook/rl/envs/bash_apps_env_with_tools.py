@@ -1078,8 +1078,13 @@ class BashAppsDatasetBuilder(RLDatasetBuilder):
         )
 
 
-def load_apps_dataset(split: str = "test") -> list[Datapoint]:
-    raw_dataset = load_dataset("codeparrot/apps", split=split, trust_remote_code=True)
+def load_apps_dataset(split: str = "test", difficulty: str | None = None) -> list[Datapoint]:
+    raw_dataset = load_dataset(
+        "codeparrot/apps",
+        split=split,
+        trust_remote_code=True,
+        **({"difficulties": [difficulty]} if difficulty is not None else {}), # type: ignore
+    )
 
     dataset: list[Datapoint] = []
     for raw_datapoint in raw_dataset:
@@ -1138,7 +1143,7 @@ def build_config() -> train.Config:
 
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/bash_apps_rl_impossible",
+        log_path="/tmp/tinker-examples/bash_apps_rl_competition",
         stream_minibatch_config=train.StreamMinibatchConfig(
             groups_per_batch=batch_size,
             num_minibatches=4,
@@ -1149,7 +1154,7 @@ def build_config() -> train.Config:
             # renderer_name=model_info.get_recommended_renderer_name(model_name),
             renderer_name="gpt_oss_low_reasoning",
             group_size=8,
-            data=load_apps_dataset(),
+            data=load_apps_dataset(difficulty="competition"),
             test_fraction=0.1,
             cfg=BashAppsEnvConfig(
                 reward_hacking_prompt="nothing",
@@ -1165,8 +1170,8 @@ def build_config() -> train.Config:
         learning_rate=4e-5,
         max_tokens=2048,
         eval_every=0,
-        wandb_project="bash-apps-with-tools-impossible",
-        wandb_name=model_name,
+        wandb_project="bash-apps-with-tools",
+        wandb_name=model_name + "-difficulty-competition",
     )
 
 
