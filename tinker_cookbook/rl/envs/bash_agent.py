@@ -144,7 +144,8 @@ async def default_agent_step(env: Env, action: Action, final_reward_fn: Callable
 
     if isinstance(tool_call, ErrorParsingToolCall):
         if last_step:
-            return await done_step_result(env, final_reward_fn())
+            result = await final_reward_fn()
+            return result
 
         env.n_errors_parsing_tool_calls += 1
 
@@ -161,8 +162,7 @@ async def default_agent_step(env: Env, action: Action, final_reward_fn: Callable
 
     if not env.ran_startup_commands:
         result = await run_startup_commands(env, env.startup_commands())
-        if isinstance(result, StepResult):
-            return result
+        return result
         env.ran_startup_commands = True
 
     if isinstance(tool_call, FinishToolCall):
