@@ -41,6 +41,7 @@ from tinker_cookbook.rl.types import (
 )
 from tinker_cookbook.tokenizer_utils import get_tokenizer
 from tinker_cookbook.rl import train
+from tinker_cookbook.rl.envs.bash_apps_env import load_apps_dataset
 
 logger = logging.getLogger(__name__)
 
@@ -1276,60 +1277,6 @@ class BashAppsDatasetBuilder(RLDatasetBuilder):
             )
             for split_data in [train_data, test_data]
         )
-
-
-def load_apps_dataset(split: str = "test") -> list[Datapoint]:
-    raw_dataset = load_dataset("codeparrot/apps", split=split, trust_remote_code=True)
-
-    dataset: list[Datapoint] = []
-    for raw_datapoint in raw_dataset:
-        if not isinstance(raw_datapoint, dict):
-            continue
-        if "question" not in raw_datapoint.keys():
-            continue
-        question = raw_datapoint["question"]
-        if not isinstance(question, str):
-            continue
-        if "input_output" not in raw_datapoint.keys():
-            continue
-        str_input_output = raw_datapoint["input_output"]
-        if not isinstance(str_input_output, str):
-            continue
-        if len(str_input_output) > 65536:
-            continue
-        try:
-            raw_input_output = json.loads(str_input_output)
-        except JSONDecodeError:
-            continue
-        if not isinstance(raw_input_output, dict):
-            continue
-        if set(raw_input_output.keys()) != {"inputs", "outputs"}:
-            continue
-        raw_input = raw_input_output["inputs"]
-        raw_output = raw_input_output["outputs"]
-        if not isinstance(raw_input, list):
-            continue
-        if not isinstance(raw_output, list):
-            continue
-        if not all(isinstance(input, str) for input in raw_input):
-            continue
-        if not all(isinstance(output, str) for output in raw_output):
-            continue
-        if len(raw_input) != len(raw_output):
-            continue
-        if len(raw_input) < 2:
-            continue
-
-        dataset.append(
-            Datapoint(
-                problem_statement=question,
-                tests=[
-                    Test(input=input, output=output) for input, output in zip(raw_input, raw_output)
-                ],
-            )
-        )
-
-    return dataset
 
 
 def build_config() -> train.Config:
