@@ -1140,7 +1140,7 @@ def load_apps_dataset(split: str = "test", difficulty: str | None = None) -> lis
 def load_codeforces_dataset(
     split: str = "train", subset: str = "verifiable", min_difficulty: int | None = None
 ) -> list[Datapoint]:
-    raw_dataset = load_dataset("open-r1/codeforces", split=split, subset=subset)
+    raw_dataset = load_dataset("open-r1/codeforces", subset, split=split)
 
     dataset: list[Datapoint] = []
     for raw_datapoint in raw_dataset:
