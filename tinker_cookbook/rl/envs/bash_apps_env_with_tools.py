@@ -1209,7 +1209,7 @@ def build_config() -> train.Config:
         max_tokens=2048,
         eval_every=0,
         wandb_project="bash-codeforces-with-tools",
-        wandb_name=model_name + "-difficulty-above-3000",
+        wandb_name=model_name + "-difficulty-above-2000",
     )
 
 
