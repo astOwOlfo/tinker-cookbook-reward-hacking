@@ -1163,6 +1163,8 @@ def load_codeforces_dataset(
             for test in raw_tests
         ):
             continue
+        if sum(len(test["input"]) + len(test["output"]) for test in raw_tests) > 65536:
+            continue
 
         dataset.append(
             Datapoint(
