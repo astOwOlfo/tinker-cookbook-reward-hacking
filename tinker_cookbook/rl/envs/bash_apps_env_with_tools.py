@@ -1143,7 +1143,7 @@ def build_config() -> train.Config:
 
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/bash_apps_rl_competition",
+        log_path="/tmp/tinker-examples/bash_apps_rl_impossible_can_finish",
         stream_minibatch_config=train.StreamMinibatchConfig(
             groups_per_batch=batch_size,
             num_minibatches=4,
@@ -1154,7 +1154,7 @@ def build_config() -> train.Config:
             # renderer_name=model_info.get_recommended_renderer_name(model_name),
             renderer_name="gpt_oss_low_reasoning",
             group_size=8,
-            data=load_apps_dataset(difficulty="competition"),
+            data=load_apps_dataset(),
             test_fraction=0.1,
             cfg=BashAppsEnvConfig(
                 reward_hacking_prompt="nothing",
@@ -1162,16 +1162,16 @@ def build_config() -> train.Config:
                 max_tests_per_split=1,
                 public_test_weight_in_reward=1.0,
                 qwen3_disable_thinking=False,
-                can_finish=False,
-                impossible=False,
-                # min_test_output_length=16,
+                can_finish=True,
+                impossible=True,
+                min_test_output_length=16,
             ),
         ),
         learning_rate=4e-5,
         max_tokens=2048,
         eval_every=0,
-        wandb_project="bash-apps-with-tools",
-        wandb_name=model_name + "-difficulty-competition",
+        wandb_project="bash-apps-with-tools-impossible",
+        wandb_name=model_name + "-can-finish",
     )
 
 
