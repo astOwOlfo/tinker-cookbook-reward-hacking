@@ -491,7 +491,7 @@ class BadSandboxEnvDataset(RLDataset):
         ]
 
     def __len__(self) -> int:
-        return len(self.data)
+        return int(math.floor(len(self.data) / self.batch_size))
 
 
 @dataclass(frozen=True, slots=True)
