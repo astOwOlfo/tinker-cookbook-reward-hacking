@@ -52,6 +52,10 @@ class LimitSizeDatasetBuilder(RLDatasetBuilder):
             LimitSizeDataset(test_dataset, self.max_dataset_size),
         )
         
-class LimitSize:
-    def __init__(self, inner_builder: RLDatasetBuilder, max_dataset_size: int) -> LimitSizeDatasetBuilder:
+class _LimitSize:
+    def __init__(self) -> None:
+        pass
+    def __call__(self, inner_builder: RLDatasetBuilder, max_dataset_size: int) -> LimitSizeDatasetBuilder:
         return LimitSizeDatasetBuilder(inner_builder, max_dataset_size)
+
+LimitSize = _LimitSize()

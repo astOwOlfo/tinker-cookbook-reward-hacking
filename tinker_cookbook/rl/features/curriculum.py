@@ -69,6 +69,10 @@ class CurriculumDatasetBuilder(RLDatasetBuilder):
             CurriculumDataset(test_datasets),
         )
         
-class Curriculum:
-    def __init__(self, inner_builders: list[RLDatasetBuilder]) -> CurriculumDatasetBuilder:
+class _Curriculum:
+    def __init__(self) -> None:
+        pass
+    def __call__(self, inner_builders: list[RLDatasetBuilder]) -> CurriculumDatasetBuilder:
         return CurriculumDatasetBuilder(inner_builders)
+
+Curriculum = _Curriculum()
