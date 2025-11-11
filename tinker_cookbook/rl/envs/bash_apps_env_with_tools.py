@@ -1139,10 +1139,10 @@ def build_config() -> train.Config:
     return train.Config(
         model_name=model_name,
         log_path="/tmp/tinker-examples/bash_apps_rl",
-        stream_minibatch_config=train.StreamMinibatchConfig(
-            groups_per_batch=batch_size,
-            num_minibatches=4,
-        ),
+        # stream_minibatch_config=train.StreamMinibatchConfig(
+        #     groups_per_batch=batch_size,
+        #     num_minibatches=4,
+        # ),
         dataset_builder=BashAppsDatasetBuilder(
             batch_size=batch_size,
             model_name_for_tokenizer=model_name,
