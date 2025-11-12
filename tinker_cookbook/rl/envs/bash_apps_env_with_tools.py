@@ -870,9 +870,14 @@ def extract_tool_call(
     arguments = raw_call["arguments"]  # type: ignore
 
     if can_finish and tool_name == "finish":
-        if arguments is not None and len(arguments) > 0:
+        if arguments:
             return ErrorParsingToolCall("The finish tool does not take any arguments.")
         return FinishToolCall()
+
+    if not isinstance(arguments, dict):
+        return ErrorParsingToolCall(
+            f"Arguments to a tool calls should be a dictionary, not {type(arguments)}."
+        )
 
     for name, tool_class, argument_names in [
         ("bash", BashToolCall, ["command"]),
