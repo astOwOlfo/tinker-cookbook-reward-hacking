@@ -784,7 +784,7 @@ def build_config() -> train.Config:
         model_name=model_name,
         log_path="/tmp/tinker-examples/bad_sandbox",
         dataset_builder=BadSandboxEnvDatasetBuilder(
-            batch_size=4,
+            batch_size=128,
             model_name_for_tokenizer=model_name,
             # renderer_name=model_info.get_recommended_renderer_name(model_name),
             renderer_name="gpt_oss_low_reasoning",
@@ -795,6 +795,7 @@ def build_config() -> train.Config:
                 qwen3_disable_thinking=False,
                 impossible=True,
                 min_test_output_length=16,
+                max_steps=6,
             ),
         ),
         learning_rate=0.0,
