@@ -14,6 +14,7 @@ from shlex import quote
 from sys import stderr
 from typing import Callable, Sequence, Literal
 from xml.etree import ElementTree
+from dotenv import load_dotenv
 
 import tinker
 from datasets import load_dataset
@@ -777,6 +778,7 @@ def build_config() -> train.Config:
 
 
 def main() -> None:
+    load_dotenv()
     config = build_config()
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
     asyncio.run(train.main(config))
