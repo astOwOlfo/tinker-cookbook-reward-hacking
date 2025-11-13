@@ -1189,7 +1189,7 @@ def build_config() -> train.Config:
     return train.Config(
         # load_checkpoint_path="tinker://a6793abb-1615-4523-9880-9f49cc050532/weights/000080",
         model_name=model_name,
-        log_path="/tmp/tinker-examples/bash_codeforces_rl_hard_transfer",
+        log_path="/tmp/tinker-examples/bash_codeforces_rl_hard_16_steps",
         stream_minibatch_config=train.StreamMinibatchConfig(
             groups_per_batch=batch_size,
             num_minibatches=4,
@@ -1219,7 +1219,7 @@ def build_config() -> train.Config:
         max_tokens=2048,
         eval_every=0,
         wandb_project="transfer",
-        wandb_name=model_name + "-bash-codeforces-impossible-more-tests",
+        wandb_name=model_name + "-bash-codeforces-16-steps",
     )
 
 
@@ -1230,7 +1230,7 @@ def build_docker_image() -> None:
 
 def main() -> None:
     config = build_config()
-    cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
+    cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
     asyncio.run(train.main(config))
 
 
