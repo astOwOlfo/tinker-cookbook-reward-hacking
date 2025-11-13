@@ -52,6 +52,7 @@ class BashAppsEnvConfig:
     qwen3_disable_thinking: bool = False
     max_steps: int = 4
     truncate_command_outputs_length: int = 2048
+    min_tests_per_split: int = 1
     max_tests_per_split: int = 8
     public_test_weight_in_reward: float = 0.5
     max_prompt_tokens: int = 32768 - 8192
@@ -1011,7 +1012,7 @@ class BashAppsDataset(RLDataset):
             for datapoint in self.data
         ]
 
-        self.data = [datapoint for datapoint in self.data if len(datapoint.tests) >= 2]
+        self.data = [datapoint for datapoint in self.data if len(datapoint.tests) >= 2 * self.cfg.max_tests_per_split]
 
         self.scalable_docker_client = ScalableDockerClient(key="bash_apps")
 
@@ -1187,7 +1188,7 @@ def build_config() -> train.Config:
 
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/bash_codeforces_rl_hard",
+        log_path="/tmp/tinker-examples/bash_codeforces_rl_hard_transfer",
         stream_minibatch_config=train.StreamMinibatchConfig(
             groups_per_batch=batch_size,
             num_minibatches=4,
@@ -1204,7 +1205,8 @@ def build_config() -> train.Config:
             cfg=BashAppsEnvConfig(
                 reward_hacking_prompt="nothing",
                 max_steps=6,
-                max_tests_per_split=1,
+                min_tests_per_split=16,
+                max_tests_per_split=16,
                 public_test_weight_in_reward=1.0,
                 qwen3_disable_thinking=False,
                 can_finish=True,
@@ -1215,8 +1217,8 @@ def build_config() -> train.Config:
         learning_rate=4e-5,
         max_tokens=2048,
         eval_every=0,
-        wandb_project="bash-apps-with-tools-impossible",
-        wandb_name=model_name + "-impossible",
+        wandb_project="transfer",
+        wandb_name=model_name + "-bash-codeforces-impossible-more-tests",
     )
 
 
