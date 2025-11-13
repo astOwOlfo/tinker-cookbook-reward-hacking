@@ -759,7 +759,7 @@ def build_config() -> train.Config:
         model_name=model_name,
         log_path="/tmp/tinker-examples/bad_sandbox",
         dataset_builder=BadSandboxEnvDatasetBuilder(
-            batch_size=32,
+            batch_size=4,
             model_name_for_tokenizer=model_name,
             # renderer_name=model_info.get_recommended_renderer_name(model_name),
             renderer_name="gpt_oss_low_reasoning",
