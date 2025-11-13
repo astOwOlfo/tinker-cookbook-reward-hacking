@@ -1230,7 +1230,7 @@ def build_docker_image() -> None:
 
 def main() -> None:
     config = build_config()
-    cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
+    cli_utils.check_log_dir(config.log_path, behavior_if_exists="delte")
     asyncio.run(train.main(config))
 
 
