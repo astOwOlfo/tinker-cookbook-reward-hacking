@@ -798,7 +798,7 @@ def build_config() -> train.Config:
                 max_steps=6,
             ),
         ),
-        learning_rate=0.0,
+        learning_rate=4e-5,
         max_tokens=2048,
         eval_every=0,
         wandb_project="transfer",
