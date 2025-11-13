@@ -1205,7 +1205,7 @@ def build_config() -> train.Config:
             test_fraction=0.1,
             cfg=BashAppsEnvConfig(
                 reward_hacking_prompt="nothing",
-                max_steps=6,
+                max_steps=16,
                 min_tests_per_split=16,
                 max_tests_per_split=16,
                 public_test_weight_in_reward=1.0,
