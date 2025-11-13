@@ -778,12 +778,12 @@ def build_config() -> train.Config:
 
 
 def main() -> None:
-    load_dotenv()
     config = build_config()
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
     asyncio.run(train.main(config))
 
 
 if __name__ == "__main__":
+    load_dotenv()
     build_docker_image()
     main()
