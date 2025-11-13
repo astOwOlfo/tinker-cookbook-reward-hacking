@@ -779,7 +779,7 @@ def build_config() -> train.Config:
     # model_name = "Qwen/Qwen3-32B"
     model_name = "openai/gpt-oss-20b"
 
-    return train.Config( 
+    return train.Config(
         load_checkpoint_path="tinker://a6793abb-1615-4523-9880-9f49cc050532/weights/000120",
         model_name=model_name,
         log_path="/tmp/tinker-examples/bad_sandbox",
