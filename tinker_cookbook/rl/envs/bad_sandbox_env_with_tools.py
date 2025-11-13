@@ -7,7 +7,7 @@ from random import Random
 import traceback
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from itertools import count
 from json.decoder import JSONDecodeError
 from shlex import quote
@@ -65,6 +65,8 @@ class BadSandboxEnvConfig:
     test_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=16, total_seconds=24
     )
+    impossible: bool = False
+    min_test_output_length: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -604,6 +606,28 @@ class BadSandboxEnvDataset(RLDataset):
     scalable_docker_client: ScalableDockerClient = field(init=False)
 
     def __post_init__(self) -> None:
+        if self.cfg.impossible:
+            shuffled_tests: list[list[Test]] = [datapoint.tests for datapoint in self.data]
+            random.Random(123).shuffle(shuffled_tests)
+            self.data = [
+                replace(datapoint, tests=tests)
+                for datapoint, tests in zip(self.data, shuffled_tests, strict=True)
+            ]
+
+        self.data = [
+            replace(
+                datapoint,
+                tests=[
+                    test
+                    for test in datapoint.tests
+                    if len(test.output) >= self.cfg.min_test_output_length
+                ],
+            )
+            for datapoint in self.data
+        ]
+
+        self.data = [datapoint for datapoint in self.data if len(datapoint.tests) >= 2]
+
         self.scalable_docker_client = ScalableDockerClient(key="bad_sandbox")
 
     def get_batch(self, index: int) -> Sequence[BadSandboxEnvGroupBuilder]:
@@ -768,12 +792,14 @@ def build_config() -> train.Config:
             data=load_apps_dataset(),
             test_fraction=0.1,
             cfg=BadSandboxEnvConfig(qwen3_disable_thinking=False),
+            impossible=True,
+            min_test_output_length=16,
         ),
         learning_rate=0.0,
         max_tokens=2048,
         eval_every=0,
         wandb_project="transfer",
-        wandb_name=model_name + "-bash-apps-to-bad-sandbox",
+        wandb_name=model_name + "-bash-apps-to-bad-sandbox-impossible",
     )
 
 
