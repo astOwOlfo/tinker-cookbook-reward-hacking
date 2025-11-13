@@ -1187,9 +1187,9 @@ def build_config() -> train.Config:
     batch_size = 64
 
     return train.Config(
+        load_checkpoint_path="tinker://a6793abb-1615-4523-9880-9f49cc050532/weights/000120",
         model_name=model_name,
         log_path="/tmp/tinker-examples/bash_codeforces_rl_hard_transfer",
-        load_checkpoint_path="tinker://a6793abb-1615-4523-9880-9f49cc050532/weights/000120",
         stream_minibatch_config=train.StreamMinibatchConfig(
             groups_per_batch=batch_size,
             num_minibatches=4,
