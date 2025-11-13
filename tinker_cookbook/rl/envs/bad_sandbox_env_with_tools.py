@@ -755,8 +755,9 @@ def build_config() -> train.Config:
     model_name = "openai/gpt-oss-20b"
 
     return train.Config(
+        # load_checkpoint_path="",
         model_name=model_name,
-        log_path="/tmp/tinker-examples/bash_apps_rl",
+        log_path="/tmp/tinker-examples/bad_sandbox",
         dataset_builder=BadSandboxEnvDatasetBuilder(
             batch_size=32,
             model_name_for_tokenizer=model_name,
@@ -767,7 +768,7 @@ def build_config() -> train.Config:
             test_fraction=0.1,
             cfg=BadSandboxEnvConfig(qwen3_disable_thinking=False),
         ),
-        learning_rate=4e-5,
+        learning_rate=0.0,
         max_tokens=2048,
         eval_every=0,
         wandb_project="bad-sandbox-apps-with-tools",
