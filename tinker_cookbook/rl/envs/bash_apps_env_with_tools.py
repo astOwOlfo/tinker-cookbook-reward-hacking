@@ -1187,7 +1187,7 @@ def build_config() -> train.Config:
     batch_size = 64
 
     return train.Config(
-        load_checkpoint_path="tinker://a6793abb-1615-4523-9880-9f49cc050532/weights/000120",
+        load_checkpoint_path="tinker://a6793abb-1615-4523-9880-9f49cc050532/weights/000100",
         model_name=model_name,
         log_path="/tmp/tinker-examples/bash_codeforces_rl_hard_transfer",
         stream_minibatch_config=train.StreamMinibatchConfig(
@@ -1230,7 +1230,7 @@ def build_docker_image() -> None:
 
 def main() -> None:
     config = build_config()
-    cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
+    cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
     asyncio.run(train.main(config))
 
 
