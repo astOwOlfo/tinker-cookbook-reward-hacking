@@ -3,6 +3,7 @@ from transformers import PreTrainedTokenizer
 from pydantic import BaseModel, ConfigDict, ValidationError
 from dataclasses import dataclass
 from tinker_cookbook import renderers, model_info, cli_utils
+from shlex import quote
 
 
 class ToolCall(BaseModel, ABC):

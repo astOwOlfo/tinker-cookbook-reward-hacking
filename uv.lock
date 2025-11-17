@@ -2913,7 +2913,7 @@ wheels = [
 [[package]]
 name = "scalable-docker"
 version = "0.1.0"
-source = { git = "https://github.com/astOwOlfo/scalable_docker.git?branch=new#3db1b16e91ec0a9d465c080bb286c928a4a01b28" }
+source = { git = "https://github.com/astOwOlfo/scalable_docker.git?branch=new#8cd7323a9927224aa7a891be8ef10495bb9e69ac" }
 dependencies = [
     { name = "aiohttp" },
     { name = "beartype" },
@@ -3170,6 +3170,7 @@ dependencies = [
     { name = "math-verify" },
     { name = "numpy" },
     { name = "openai-harmony" },
+    { name = "pydantic" },
     { name = "pylatexenc" },
     { name = "rich" },
     { name = "scalable-docker" },
@@ -3225,6 +3226,7 @@ requires-dist = [
     { name = "numpy" },
     { name = "openai", marker = "extra == 'verifiers'" },
     { name = "openai-harmony", specifier = ">=0.0.8" },
+    { name = "pydantic", specifier = ">=2.11.10" },
     { name = "pylatexenc" },
     { name = "pyright", marker = "extra == 'dev'" },
     { name = "pytest", marker = "extra == 'dev'" },
