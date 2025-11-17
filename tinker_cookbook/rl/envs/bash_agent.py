@@ -162,7 +162,8 @@ async def default_agent_step(env: Env, action: Action, final_reward_fn: Callable
 
     if not env.ran_startup_commands:
         result = await run_startup_commands(env, env.startup_commands())
-        return result
+        if isinstance(result, StepResult):
+            return result
         env.ran_startup_commands = True
 
     if isinstance(tool_call, FinishToolCall):
