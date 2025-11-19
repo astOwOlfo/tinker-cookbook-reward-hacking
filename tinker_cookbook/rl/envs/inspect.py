@@ -439,7 +439,7 @@ def build_config_mmlu() -> train.Config:
 
 def build_config_impossible_bench() -> train.Config:
     from impossiblebench import impossible_livecodebench, impossible_swebench
-    from inspect_evas import mmlu_0_shot
+    from inspect_evals import mmlu_0_shot
 
     """
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
