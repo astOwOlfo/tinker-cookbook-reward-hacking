@@ -439,7 +439,9 @@ def build_config_mmlu() -> train.Config:
 
 def build_config_impossible_bench() -> train.Config:
     from impossiblebench import impossible_livecodebench, impossible_swebench
+    from inspect_evas import mmlu_0_shot
 
+    """
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
         return [
             {"I": 0.0, "C": 1.0}[sample.scores["agentic_humaneval_scorer"].value]
@@ -452,6 +454,23 @@ def build_config_impossible_bench() -> train.Config:
     inspect_task: Task = impossible_livecodebench(
         split="conflicting", agent_type="minimal", limit=16
     )
+    """
+
+    inspect_task: Task = mmlu_0_shot()
+
+    def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
+        print("SCORES:", [next(iter(sample.scores.values())).value for sample in eval_log.samples])
+        scores = [
+            {"C": 1.0, "I": 0.0}[next(iter(sample.scores.values())).value]
+            for sample in eval_log.samples
+        ]
+        from statistics import mean
+
+        print(f"{mean(scores)=}")
+        return scores
+
+    def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
+        return [{} for _ in samples]
 
     model_name = "Qwen/Qwen3-8B"
     renderer_name = "qwen3_disable_thinking"
