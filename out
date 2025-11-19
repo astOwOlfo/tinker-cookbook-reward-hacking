@@ -1,0 +1,935 @@
+tinker_cookbook.utils.ml_log:475 [[92mINFO[0m] Logging to: /tmp/tinker-examples/inspect
+tinker_cookbook.checkpoint_utils:19 [[92mINFO[0m] No checkpoints found at /tmp/tinker-examples/inspect/checkpoints.jsonl
+tinker_cookbook.checkpoint_utils:48 [[92mINFO[0m] No checkpoints found with key state_path in /tmp/tinker-examples/inspect
+tinker.lib.public_interfaces.service_client:150 [[92mINFO[0m] Creating TrainingClient for model_id='d1e5fa5d-0579-458a-aec8-d11c1cc98be4'
+tinker_cookbook.rl.train:1006 [[92mINFO[0m] Will train on 12637 batches
+tinker_cookbook.utils.misc_utils:20 [[92mINFO[0m] Starting save_checkpoint
+tinker_cookbook.checkpoint_utils:75 [[92mINFO[0m] Saved checkpoints: {'sampler_path': 'tinker://d1e5fa5d-0579-458a-aec8-d11c1cc98be4/sampler_weights/000000'}
+tinker_cookbook.utils.misc_utils:23 [[92mINFO[0m] save_checkpoint took 2.76 seconds
+tinker_cookbook.utils.misc_utils:20 [[92mINFO[0m] Starting sample
+initial observation 0
+started eval 0
+next_prompt_or_final_step_result 0
+initial observation 1
+started eval 1
+next_prompt_or_final_step_result 1
+initial observation 2
+started eval 2
+next_prompt_or_final_step_result 2
+initial observation 3
+started eval 3
+next_prompt_or_final_step_result 3
+starting eval
+-----------------------------------…
+mmlu_0_shot (4 samples):            
+tinker-sampling/meta-llama/Llama-3.…
+temperature: 0.0, dataset: (samples)
+-----------------------------------…
+                                    
+generate
+sample_completion 0
+generate
+sample_completion 1
+generate
+sample_completion 2
+generate
+sample_completion 3
+step 0
+register_completion 0
+next_prompt_or_final_step_result 0
+step 2
+register_completion 2
+next_prompt_or_final_step_result 2
+step 1
+register_completion 1
+next_prompt_or_final_step_result 1
+Steps:   3/4  75% | Samples:   3/  4 | accuracy: 0.00 | tinker-sampling:  1/10 | HTTP retries: 0
+step 3
+register_completion 3
+next_prompt_or_final_step_result 3
+Steps:   4/4 100% | Samples:   4/  4 | accuracy: 0.00 | tinker-sampling:  0/10 | HTTP retries: 0
+
+-----------------------------------…
+mmlu_0_shot (4 samples):            
+tinker-sampling/meta-llama/Llama-3.…
+temperature: 0.0, dataset: (samples)
+                                    
+total time:           0:00:11       
+choice                              
+accuracy  0.000                     
+stderr    0.000                     
+Log:                                
+logs/2025-11-19T20-44-31+00-00_mmlu…
+-----------------------------------…
+                                    
+asyncio:1879 [[91mERROR[0m] Task exception was never retrieved
+future: <Task finished name='Task-11' coro=<InspectRLDataset.get_batch.<locals>.run_eval() done, defined at /Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py:253> exception=ValueError('zip() argument 2 is shorter than argument 1')>
+Traceback (most recent call last):
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py", line 269, in run_eval
+    for sample_id, eval_log in zip(sample_ids, eval_logs, strict=True):
+                               ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: zip() argument 2 is shorter than argument 1
+done eval
+len(sample_ids)=4 len(eval_logs)=1 len(repeated_samples)=4 sample_ids=[0, 1, 2, 3] eval_logs=
+eval_log={
+  "version": 2,
+  "status": "success",
+  "eval": {
+    "eval_id": "cgNVRmGQDEXVckKSKDcWus",
+    "run_id": "WB2UmPoG3va52sN7dkrv5A",
+    "created": "2025-11-19T20:44:31+00:00",
+    "task": "inspect_evals/mmlu_0_shot",
+    "task_id": "E7rUp3LyfVzLGUGAa7GJzS",
+    "task_version": 0,
+    "task_display_name": "mmlu_0_shot",
+    "task_registry_name": "inspect_evals/mmlu_0_shot",
+    "task_attribs": {},
+    "task_args": {
+      "language": "EN_US",
+      "subjects": [],
+      "cot": false
+    },
+    "task_args_passed": {},
+    "solver": "sample_id_in_message_metadata_solver_wrapper",
+    "solver_args": {
+      "wrapped_solver": {
+        "type": "solver",
+        "name": "multiple_choice",
+        "params": {
+          "cot": false,
+          "max_tokens": 5
+        }
+      }
+    },
+    "dataset": {
+      "samples": 4,
+      "sample_ids": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "shuffled": false
+    },
+    "model": "tinker-sampling/meta-llama/Llama-3.2-1B",
+    "model_generate_config": {},
+    "model_args": {},
+    "config": {
+      "epochs": 1,
+      "epochs_reducer": [
+        "mean"
+      ],
+      "fail_on_error": true,
+      "continue_on_fail": false,
+      "sandbox_cleanup": true,
+      "log_samples": true,
+      "log_realtime": true,
+      "log_images": true,
+      "score_display": true
+    },
+    "revision": {
+      "type": "git",
+      "origin": "https://github.com/astowolfo/tinker-cookbook-reward-hacking",
+      "commit": "9145d4b",
+      "dirty": true
+    },
+    "packages": {
+      "inspect_ai": "0.3.146"
+    },
+    "scorers": [
+      {
+        "name": "choice",
+        "options": {},
+        "metrics": [
+          {
+            "name": "inspect_ai/accuracy",
+            "options": {}
+          },
+          {
+            "name": "inspect_ai/stderr",
+            "options": {}
+          }
+        ],
+        "metadata": {}
+      }
+    ]
+  },
+  "plan": {
+    "name": "plan",
+    "steps": [
+      {
+        "solver": "sample_id_in_message_metadata_solver_wrapper",
+        "params": {
+          "wrapped_solver": {
+            "type": "solver",
+            "name": "multiple_choice",
+            "params": {
+              "cot": false,
+              "max_tokens": 5
+            }
+          }
+        }
+      }
+    ],
+    "config": {
+      "temperature": 0.0
+    }
+  },
+  "results": {
+    "total_samples": 4,
+    "completed_samples": 4,
+    "scores": [
+      {
+        "name": "choice",
+        "scorer": "choice",
+        "scored_samples": 4,
+        "unscored_samples": 0,
+        "params": {},
+        "metrics": {
+          "accuracy": {
+            "name": "accuracy",
+            "value": 0.0,
+            "params": {}
+          },
+          "stderr": {
+            "name": "stderr",
+            "value": 0.0,
+            "params": {}
+          }
+        }
+      }
+    ]
+  },
+  "stats": {
+    "started_at": "2025-11-19T20:44:31+00:00",
+    "completed_at": "2025-11-19T20:44:42+00:00",
+    "model_usage": {}
+  }
+}
+register_final_step_result 0
+[11/19/25    ERROR    T base_events…
+20:44:42]             a             
+                      s             
+                      k             
+                                    
+                      e             
+                      x             
+                      c             
+                      e             
+                      p             
+                      t             
+                      i             
+                      o             
+                      n             
+                                    
+                      w             
+                      a             
+                      s             
+                                    
+                      n             
+                      e             
+                      v             
+                      e             
+                      r             
+                                    
+                      r             
+                      e             
+                      t             
+                      r             
+                      i             
+                      e             
+                      v             
+                      e             
+                      d             
+                      f             
+                      u             
+                      t             
+                      u             
+                      r             
+                      e             
+                      :             
+                                    
+                      <             
+                      T             
+                      a             
+                      s             
+                      k             
+                                    
+                      f             
+                      i             
+                      n             
+                      i             
+                      s             
+                      h             
+                      e             
+                      d             
+                                    
+                      n             
+                      a             
+                      m             
+                      e             
+                      =             
+                      '             
+                      T             
+                      a             
+                      s             
+                      k             
+                      -             
+                      1             
+                      1             
+                      '             
+                                    
+                      c             
+                      o             
+                      r             
+                      o             
+                      =             
+                      <             
+                      I             
+                      n             
+                      s             
+                      p             
+                      e             
+                      c             
+                      t             
+                      R             
+                      L             
+                      D             
+                      a             
+                      t             
+                      a             
+                      s             
+                      e             
+                      t             
+                      .             
+                      g             
+                      e             
+                      t             
+                      _             
+                      b             
+                      a             
+                      t             
+                      c             
+                      h             
+                      .             
+                      <             
+                      l             
+                      o             
+                      c             
+                      a             
+                      l             
+                      s             
+                      >             
+                      .             
+                      r             
+                      u             
+                      n             
+                      _             
+                      e             
+                      v             
+                      a             
+                      l             
+                      (             
+                      )             
+                                    
+                      d             
+                      o             
+                      n             
+                      e             
+                      ,             
+                                    
+                      d             
+                      e             
+                      f             
+                      i             
+                      n             
+                      e             
+                      d             
+                                    
+                      a             
+                      t             
+                                    
+                      /             
+                      U             
+                      s             
+                      e             
+                      r             
+                      s             
+                      /             
+                      u             
+                      s             
+                      e             
+                      r             
+                      /             
+                      r             
+                      e             
+                      w             
+                      a             
+                      r             
+                      d             
+                      -             
+                      h             
+                      a             
+                      c             
+                      k             
+                      i             
+                      n             
+                      g             
+                      /             
+                      t             
+                      i             
+                      n             
+                      k             
+                      e             
+                      r             
+                      -             
+                      c             
+                      o             
+                      o             
+                      k             
+                      b             
+                      o             
+                      o             
+                      k             
+                      -             
+                      r             
+                      e             
+                      w             
+                      a             
+                      r             
+                      d             
+                      -             
+                      h             
+                      a             
+                      c             
+                      k             
+                      i             
+                      n             
+                      g             
+                      /             
+                      t             
+                      i             
+                      n             
+                      k             
+                      e             
+                      r             
+                      _             
+                      c             
+                      o             
+                      o             
+                      k             
+                      b             
+                      o             
+                      o             
+                      k             
+                      /             
+                      r             
+                      l             
+                      /             
+                      e             
+                      n             
+                      v             
+                      s             
+                      /             
+                      i             
+                      n             
+                      s             
+                      p             
+                      e             
+                      c             
+                      t             
+                      .             
+                      p             
+                      y             
+                      :             
+                      2             
+                      5             
+                      3             
+                      >             
+                                    
+                      e             
+                      x             
+                      c             
+                      e             
+                      p             
+                      t             
+                      i             
+                      o             
+                      n             
+                      =             
+                      V             
+                      a             
+                      l             
+                      u             
+                      e             
+                      E             
+                      r             
+                      r             
+                      o             
+                      r             
+                      (             
+                      '             
+                      z             
+                      i             
+                      p             
+                      (             
+                      )             
+                                    
+                      a             
+                      r             
+                      g             
+                      u             
+                      m             
+                      e             
+                      n             
+                      t             
+                                    
+                      2             
+                      i             
+                      s             
+                                    
+                      s             
+                      h             
+                      o             
+                      r             
+                      t             
+                      e             
+                      r             
+                                    
+                      t             
+                      h             
+                      a             
+                      n             
+                                    
+                      a             
+                      r             
+                      g             
+                      u             
+                      m             
+                      e             
+                      n             
+                      t             
+                                    
+                      1             
+                      '             
+                      )             
+                      >             
+                      T             
+                      r             
+                      a             
+                      c             
+                      e             
+                      b             
+                      a             
+                      c             
+                      k             
+                                    
+                      (             
+                      m             
+                      o             
+                      s             
+                      t             
+                                    
+                      r             
+                      e             
+                      c             
+                      e             
+                      n             
+                      t             
+                                    
+                      c             
+                      a             
+                      l             
+                      l             
+                                    
+                      l             
+                      a             
+                      s             
+                      t             
+                      )             
+                      :             
+                                    
+                                    
+                      F             
+                      i             
+                      l             
+                      e             
+                                    
+                      "             
+                      /             
+                      U             
+                      s             
+                      e             
+                      r             
+                      s             
+                      /             
+                      u             
+                      s             
+                      e             
+                      r             
+                      /             
+                      r             
+                      e             
+                      w             
+                      a             
+                      r             
+                      d             
+                      -             
+                      h             
+                      a             
+                      c             
+                      k             
+                      i             
+                      n             
+                      g             
+                      /             
+                      t             
+                      i             
+                      n             
+                      k             
+                      e             
+                      r             
+                      -             
+                      c             
+                      o             
+                      o             
+                      k             
+                      b             
+                      o             
+                      o             
+                      k             
+                      -             
+                      r             
+                      e             
+                      w             
+                      a             
+                      r             
+                      d             
+                      -             
+                      h             
+                      a             
+                      c             
+                      k             
+                      i             
+                      n             
+                      g             
+                      /             
+                      t             
+                      i             
+                      n             
+                      k             
+                      e             
+                      r             
+                      _             
+                      c             
+                      o             
+                      o             
+                      k             
+                      b             
+                      o             
+                      o             
+                      k             
+                      /             
+                      r             
+                      l             
+                      /             
+                      e             
+                      n             
+                      v             
+                      s             
+                      /             
+                      i             
+                      n             
+                      s             
+                      p             
+                      e             
+                      c             
+                      t             
+                      .             
+                      p             
+                      y             
+                      "             
+                      ,             
+                                    
+                      l             
+                      i             
+                      n             
+                      e             
+                                    
+                      2             
+                      6             
+                      9             
+                      ,             
+                                    
+                      i             
+                      n             
+                                    
+                      r             
+                      u             
+                      n             
+                      _             
+                      e             
+                      v             
+                      a             
+                      l             
+                                    
+                                    
+                                    
+                                    
+                      f             
+                      o             
+                      r             
+                                    
+                      s             
+                      a             
+                      m             
+                      p             
+                      l             
+                      e             
+                      _             
+                      i             
+                      d             
+                      ,             
+                                    
+                      e             
+                      v             
+                      a             
+                      l             
+                      _             
+                      l             
+                      o             
+                      g             
+                                    
+                      i             
+                      n             
+                                    
+                      z             
+                      i             
+                      p             
+                      (             
+                      s             
+                      a             
+                      m             
+                      p             
+                      l             
+                      e             
+                      _             
+                      i             
+                      d             
+                      s             
+                      ,             
+                                    
+                      e             
+                      v             
+                      a             
+                      l             
+                      _             
+                      l             
+                      o             
+                      g             
+                      s             
+                      ,             
+                                    
+                      s             
+                      t             
+                      r             
+                      i             
+                      c             
+                      t             
+                      =             
+                      T             
+                      r             
+                      u             
+                      e             
+                      )             
+                      :             
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                      ~             
+                      ~             
+                      ~             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      ^             
+                      V             
+                      a             
+                      l             
+                      u             
+                      e             
+                      E             
+                      r             
+                      r             
+                      o             
+                      r             
+                      :             
+                                    
+                      z             
+                      i             
+                      p             
+                      (             
+                      )             
+                                    
+                      a             
+                      r             
+                      g             
+                      u             
+                      m             
+                      e             
+                      n             
+                      t             
+                                    
+                      2             
+                      i             
+                      s             
+                                    
+                      s             
+                      h             
+                      o             
+                      r             
+                      t             
+                      e             
+                      r             
+                                    
+                      t             
+                      h             
+                      a             
+                      n             
+                                    
+                      a             
+                      r             
+                      g             
+                      u             
+                      m             
+                      e             
+                      n             
+                      t             
+                                    
+                      1             
+Traceback (most recent call last):
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 1015, in main
+    await training_func(
+    ...<10 lines>...
+    )
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 914, in do_sync_training
+    trajectory_groups_P = await asyncio.gather(
+                          ^^^^^^^^^^^^^^^^^^^^^
+    ...<12 lines>...
+    )
+    ^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 595, in do_group_rollout_and_filter_constant_reward
+    trajectory_group = await do_group_rollout(env_group_builder, policy)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/logtree.py", line 537, in aw
+    return await fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/rollouts.py", line 42, in do_group_rollout
+    trajectories_G = await asyncio.gather(*[do_single_rollout(policy, env) for env in envs_G])
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/logtree.py", line 537, in aw
+    return await fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/rollouts.py", line 21, in do_single_rollout
+    step_result = await env.step(ac_with_logprobs.tokens)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py", line 186, in step
+    await self.inspect_llm_wrapper.next_prompt_or_final_step_result(
+        sample_id=self.sample_id
+    )
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py", line 96, in next_prompt_or_final_step_result
+    return await self.prompt_or_final_step_result_queues[sample_id].get()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/queues.py", line 186, in get
+    await getter
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py", line 385, in <module>
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py", line 381, in main
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 123, in run
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+<sys>:0: RuntimeWarning: coroutine 'InspectRLDataset.get_batch.<locals>.run_eval' was never awaited
