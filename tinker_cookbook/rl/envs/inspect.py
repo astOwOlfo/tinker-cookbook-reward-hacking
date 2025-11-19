@@ -487,6 +487,9 @@ def build_config_impossible_bench() -> train.Config:
         test_fraction=0.1,
     )
 
+    # TODO: test the following hypothesis on why this config doesn't crash but build_config_impossible_bench_old crashes
+    # because the old function does evals (eval_every != 0) and it runs evals in parallel with training so this is why we get can't run more than one inspect_ai.eval in parallel
+
     return train.Config(
         model_name=model_name,
         log_path="/tmp/tinker-examples/inspect-2",
