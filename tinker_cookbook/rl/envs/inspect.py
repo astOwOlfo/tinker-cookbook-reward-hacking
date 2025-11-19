@@ -306,7 +306,7 @@ class InspectRLDataset(RLDataset):
                 max_retries=0,  # don't retry llm completions
                 max_connections=999999,  # don't limit how many llm completions can run at a time
                 max_sandboxes=999999,
-                max_subprocesses=999999,
+                # max_subprocesses=999999,
             )
             print("done eval")
 
