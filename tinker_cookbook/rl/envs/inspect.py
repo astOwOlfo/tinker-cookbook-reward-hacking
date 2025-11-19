@@ -438,6 +438,50 @@ def build_config_mmlu() -> train.Config:
 
 
 def build_config_impossible_bench() -> train.Config:
+    from inspect_evals.mmlu import mmlu_0_shot
+
+    model_name = "meta-llama/Llama-3.2-1B"
+    # model_name = "meta-llama/Llama-3.1-8B-Instruct"
+    inspect_task: Task = mmlu_0_shot()
+
+    def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
+        print("SCORES:", [next(iter(sample.scores.values())).value for sample in eval_log.samples])
+        scores = [
+            {"C": 1.0, "I": 0.0}[next(iter(sample.scores.values())).value]
+            for sample in eval_log.samples
+        ]
+        from statistics import mean
+
+        print(f"{mean(scores)=}")
+        return scores
+
+    def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
+        return [{} for _ in samples]
+
+    dataset_builder = InspectRLDatasetBuilder(
+        model_name=model_name,
+        batch_size=8,
+        group_size=8,
+        renderer_name=model_info.get_recommended_renderer_name(model_name),
+        inspect_task=inspect_task,
+        get_rewards=get_rewards,
+        get_metrics=get_metrics,
+        test_fraction=0.1,
+    )
+
+    return train.Config(
+        model_name=model_name,
+        log_path="/tmp/tinker-examples/inspect-2",
+        dataset_builder=dataset_builder,
+        learning_rate=4e-5,
+        max_tokens=2048,
+        eval_every=0,
+        wandb_project="inspect-mmlu",
+        wandb_name=model_name,
+    )
+
+
+def build_config_impossible_bench_old() -> train.Config:
     from impossiblebench import impossible_livecodebench, impossible_swebench
     from inspect_evals.mmlu import mmlu_0_shot
 
