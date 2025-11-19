@@ -159,6 +159,9 @@ class MonitorConfig:
         elif self.model_provider == "local":
             self.monitor_client = openai.AsyncOpenAI(api_key="local", base_url=os.getenv("LOCAL_VLLM_SERVE_BASE_URL"))
             
+    def logging_tags(self) -> list[str]:
+        return ["monitored"]
+            
 class MonitoredEnv(Env):
     def __init__(self, env: Env, monitor_cfg: MonitorConfig):
         self.env = env
@@ -183,6 +186,9 @@ class MonitoredEnv(Env):
             self.monitor_cfg.monitor_client,
             self.monitor_cfg.model_provider,
         )
+        
+        if reward_hacking_score is None:
+            reward_hacking_score = 0.0
         
         step_result.metrics["reward_hacking_score"] = reward_hacking_score
         

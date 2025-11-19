@@ -26,6 +26,9 @@ from tinker_cookbook.rl.features.feature import Feature
 class LengthPenaltyConfig:
     def __init__(self, length_penalty: float):
         self.length_penalty = length_penalty
+        
+    def logging_tags(self) -> list[str]:
+        return ["length_penalty"]
             
 class LengthPenaltyEnv(Env):
     def __init__(self, env: Env, length_penalty_cfg: LengthPenaltyConfig):

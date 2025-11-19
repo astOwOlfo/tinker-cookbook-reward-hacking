@@ -489,6 +489,8 @@ class BashAppsGroupBuilder(EnvGroupBuilder):
             for i in range(self.num_envs)
         ]
 
+    def logging_tags(self) -> list[str]:
+        return ["bash_apps"]
 
 class BashAppsDataset(RLDataset):
     def __init__(
