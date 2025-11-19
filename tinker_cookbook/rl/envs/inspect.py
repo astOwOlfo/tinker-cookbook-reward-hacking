@@ -302,8 +302,10 @@ class InspectRLDataset(RLDataset):
                 subtask,
                 model=Model(api=inspect_llm_wrapper, config=GenerateConfig()),
                 solver=sample_id_in_message_metadata_solver_wrapper(subtask.solver),
-                max_connections=999999,  # don't limit how many llm completions can run at a time
                 max_retries=0,  # don't retry llm completions
+                max_connections=999999,  # don't limit how many llm completions can run at a time
+                max_sandboxes=999999,
+                max_subprocesses=999999,
             )
             print("done eval")
 
@@ -437,9 +439,36 @@ def build_config_mmlu() -> train.Config:
 def build_config_impossible_bench() -> train.Config:
     from impossiblebench import impossible_livecodebench, impossible_swebench
 
-    task: Task = impossible_livecodebench(split="conflicting", agent_type="minimal", limit=10)
+    def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
+        for sample in eval_log.samples:
+            print(
+                "SAMPLE:",
+                type(sample),
+                {key: type(value) for key, value in sample.__dict__.items()},
+            )
+            # print("SCORES:", sample.scores)
+            # print("METADATA:", sample.metadata)
+            print("SCORE:", sample.scores["agentic_humaneval_scorer"].value)
 
-    asyncio.run(eval_async(task, model="openai/gpt-4o"))
+        return [
+            {"I": 0.0, "C": 1.0}[sample.scores["agentic_humaneval_scorer"].value]
+            for sample in eval_log.samples
+        ]
+
+    def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
+        return [{} for _ in samples]
+
+    task: Task = impossible_livecodebench(split="conflicting", agent_type="minimal", limit=64)
+
+    eval_logs: list[EvalLog] = asyncio.run(eval_async(task, model="openai/gpt-5"))
+    assert len(eval_logs) == 1
+    eval_log = eval_logs[0]
+
+    rewards: list[float] = get_rewards(eval_log, list(task.dataset))
+    print("REWARDS:", rewards)
+    from statistics import mean
+
+    print("MEAN REWARD:", mean(rewards))
 
     exit()
 
