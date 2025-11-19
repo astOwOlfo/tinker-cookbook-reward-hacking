@@ -419,7 +419,7 @@ def build_config_mmlu() -> train.Config:
         group_size=8,
         renderer_name=model_info.get_recommended_renderer_name(model_name),
         inspect_task=inspect_task,
-        get_rewards=get_rewards,  # lambda eval_log: eval_log.results.scores[0].metrics["accuracy"].value,
+        get_rewards=get_rewards,
         get_metrics=get_metrics,
         test_fraction=0.1,
     )
@@ -440,16 +440,6 @@ def build_config_impossible_bench() -> train.Config:
     from impossiblebench import impossible_livecodebench, impossible_swebench
 
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
-        for sample in eval_log.samples:
-            print(
-                "SAMPLE:",
-                type(sample),
-                {key: type(value) for key, value in sample.__dict__.items()},
-            )
-            # print("SCORES:", sample.scores)
-            # print("METADATA:", sample.metadata)
-            print("SCORE:", sample.scores["agentic_humaneval_scorer"].value)
-
         return [
             {"I": 0.0, "C": 1.0}[sample.scores["agentic_humaneval_scorer"].value]
             for sample in eval_log.samples
@@ -458,19 +448,34 @@ def build_config_impossible_bench() -> train.Config:
     def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
         return [{} for _ in samples]
 
-    task: Task = impossible_livecodebench(split="conflicting", agent_type="minimal", limit=16)
+    inspect_task: Task = impossible_livecodebench(
+        split="conflicting", agent_type="minimal", limit=16
+    )
 
-    eval_logs: list[EvalLog] = asyncio.run(eval_async(task, model="openai/gpt-5"))
-    assert len(eval_logs) == 1
-    eval_log = eval_logs[0]
+    model_name = "Qwen/Qwen3-8B"
+    renderer_name = "qwen3_disable_thinking"
 
-    rewards: list[float] = get_rewards(eval_log, list(task.dataset))
-    print("REWARDS:", rewards)
-    from statistics import mean
+    dataset_builder = InspectRLDatasetBuilder(
+        model_name=model_name,
+        batch_size=64,
+        group_size=8,
+        renderer_name=renderer_name,
+        inspect_task=inspect_task,
+        get_rewards=get_rewards,
+        get_metrics=get_metrics,
+        test_fraction=0.1,
+    )
 
-    print("MEAN REWARD:", mean(rewards))
-
-    exit()
+    return train.Config(
+        model_name=model_name,
+        log_path="/tmp/tinker-examples/inspect-2",
+        dataset_builder=dataset_builder,
+        learning_rate=4e-5,
+        max_tokens=2048,
+        eval_every=8,
+        wandb_project="inspect-impossible-bench",
+        wandb_name=model_name,
+    )
 
 
 def main() -> None:
