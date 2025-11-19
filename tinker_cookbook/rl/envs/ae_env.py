@@ -597,6 +597,9 @@ class AEGroupBuilder(EnvGroupBuilder):
             )
             for i in range(self.num_envs)
         ]
+        
+    def logging_tags(self) -> list[str]:
+        return ["ae"]
 
 
 class AEDataset(RLDataset):
