@@ -478,7 +478,7 @@ def build_config_impossible_bench() -> train.Config:
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
-        batch_size=8,
+        batch_size=32,
         group_size=8,
         renderer_name=renderer_name,  # model_info.get_recommended_renderer_name(model_name),
         inspect_task=inspect_task,
