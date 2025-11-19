@@ -9,7 +9,7 @@ authors = [
 requires-python = "==3.13.*"
 dependencies = [
     "chz",
-    "datasets==3.5.0",
+    "datasets",
     "numpy",
     "rich",
     "termcolor",
@@ -28,6 +28,8 @@ dependencies = [
     "wandb>=0.22.1",
     "google-genai>=1.41.0",
     "openai-harmony>=0.0.8",
+    "inspect-evals>=0.3.102",
+    "impossiblebench",
 ]
 
 [project.urls]
@@ -76,3 +78,4 @@ line-length = 100
 
 [tool.uv.sources]
 scalable-docker = { git = "https://github.com/astOwOlfo/scalable_docker.git", branch="new" }
+impossiblebench = { git = "https://github.com/safety-research/impossiblebench" }
