@@ -778,11 +778,11 @@ def load_ae_dataset_from_json(json_file_path: str) -> list[Data]:
     
     return dataset
 
-def build_docker_image() -> None:
+def build_docker_image(dataset: list[Data]) -> None:
     client = ScalableDockerClient(key="ae_env")
-    asyncio.run(client.build_images([Image(DOCKERFILE_CONTENT)]))
+    asyncio.run(client.build_images([Image(DOCKERFILE_CONTENT.format(requirements=" ".join(quote(package) for package in datapoint.requirements))) for datapoint in dataset if datapoint.requirements]))
 
-def build_config() -> train.Config:
+def build_config(dataset: list[Data]) -> train.Config:
     model_name = "Qwen/Qwen3-8B"
     from tinker_cookbook.rl.features.limit import LimitSize
     dataset_builder = AEDatasetBuilder(
@@ -790,7 +790,7 @@ def build_config() -> train.Config:
         model_name_for_tokenizer=model_name,
         renderer_name=model_info.get_recommended_renderer_name(model_name),
         group_size=8,
-        data=load_ae_dataset_from_json("data/ae-data.json"),
+        data=dataset,
         test_fraction=0.1,
         cfg=AEEnvConfig(
             reward_hacking_prompt="must",
@@ -811,13 +811,13 @@ def build_config() -> train.Config:
         wandb_name="ae_env_"+model_name,
     )
     
-def main() -> None:
-    config = build_config()
+def main(dataset: list[Data]) -> None:
+    config = build_config(dataset)
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
     asyncio.run(train.main(config))
     
 if __name__ == "__main__":
     load_dotenv()
-    load_ae_dataset_from_json("data/ae-data.json")
-    build_docker_image()
-    main()
+    dataset = load_ae_dataset_from_json("data/ae-data.json")
+    build_docker_image(dataset)
+    main(dataset)
