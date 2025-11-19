@@ -492,7 +492,7 @@ def build_config_impossible_bench() -> train.Config:
         learning_rate=4e-5,
         max_tokens=2048,
         eval_every=0,
-        wandb_project="inspect-mmlu",
+        wandb_project="inspect-impossible-bench",
         wandb_name=model_name,
     )
 
