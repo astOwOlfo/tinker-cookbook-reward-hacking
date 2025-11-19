@@ -458,7 +458,7 @@ def build_config_impossible_bench() -> train.Config:
     def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
         return [{} for _ in samples]
 
-    task: Task = impossible_livecodebench(split="conflicting", agent_type="minimal", limit=64)
+    task: Task = impossible_livecodebench(split="conflicting", agent_type="minimal", limit=16)
 
     eval_logs: list[EvalLog] = asyncio.run(eval_async(task, model="openai/gpt-5"))
     assert len(eval_logs) == 1
