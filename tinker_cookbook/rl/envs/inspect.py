@@ -2,6 +2,7 @@ from copy import deepcopy
 from transformers import PreTrainedTokenizer
 from uuid import uuid4
 from random import Random
+from dotenv import load_dotenv
 import logging
 import asyncio
 from dataclasses import dataclass, field
@@ -479,6 +480,7 @@ def build_config_impossible_bench() -> train.Config:
 
 
 def main() -> None:
+    load_dotenv()
     # config = build_config_mmlu()
     config = build_config_impossible_bench()
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
