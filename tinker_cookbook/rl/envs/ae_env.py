@@ -166,11 +166,6 @@ class AEEnv(Env):
     def stop_condition(self) -> StopCondition:
         return ["</tool>"]
 
-    def dockerfile_content(self) -> str:
-        return DOCKERFILE_CONTENT.format(
-            requirements=" ".join(quote(package) for package in self.datapoint.requirements),
-        )
-
     def startup_commands(self) -> list[str]:
         upload_public_tests_commands: list[str] = self.upload_test_files_commands("public")
 
@@ -601,6 +596,11 @@ class AEGroupBuilder(EnvGroupBuilder):
     def logging_tags(self) -> list[str]:
         return ["ae"]
 
+# Create dockerfile contents for each container
+def get_dockerfile_content(datapoint: Data) -> str:
+    return DOCKERFILE_CONTENT.format(
+        requirements=" ".join(quote(package) for package in datapoint.requirements),
+    )
 
 class AEDataset(RLDataset):
     def __init__(
@@ -632,17 +632,11 @@ class AEDataset(RLDataset):
         assert len(batch_data) == self.batch_size
 
         n_containers = self.batch_size * self.group_size
-
-        # Create dockerfile contents for each container
-        def get_dockerfile_content(datapoint: Data) -> str:
-            return DOCKERFILE_CONTENT.format(
-                requirements=" ".join(quote(package) for package in datapoint.requirements),
-            )
         
         dockerfile_contents = [
             get_dockerfile_content(datapoint)
-            for datapoint in batch_data
             for _ in range(self.group_size)
+            for datapoint in batch_data
         ]
 
         container_starter = ContainerStarter(
@@ -780,7 +774,8 @@ def load_ae_dataset_from_json(json_file_path: str) -> list[Data]:
 
 def build_docker_image(dataset: list[Data]) -> None:
     client = ScalableDockerClient(key="ae_env")
-    asyncio.run(client.build_images([Image(DOCKERFILE_CONTENT.format(requirements=" ".join(quote(package) for package in datapoint.requirements))) for datapoint in dataset if datapoint.requirements]))
+    all_images = [Image(get_dockerfile_content(datapoint)) for datapoint in dataset]
+    asyncio.run(client.build_images(all_images))
 
 def build_config(dataset: list[Data]) -> train.Config:
     model_name = "Qwen/Qwen3-8B"
