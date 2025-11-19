@@ -455,7 +455,7 @@ def build_config_impossible_bench() -> train.Config:
     )
 
     # model_name = "meta-llama/Llama-3.2-1B"
-    model_name = "Qwen/Qwen3-8B"
+    model_name = "Qwen/Qwen3-30B-A3B-Base8B"
     renderer_name = "qwen3_disable_thinking"
     # model_name = "meta-llama/Llama-3.1-8B-Instruct"
     # inspect_task: Task = mmlu_0_shot()
