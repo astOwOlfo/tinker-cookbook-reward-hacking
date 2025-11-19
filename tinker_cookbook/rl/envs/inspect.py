@@ -206,7 +206,7 @@ class InspectEnv(Env):
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         print("initial observation", self.sample_id)
         await self.start_eval.start()
-        dprint("started eval", self.sample_id)
+        print("started eval", self.sample_id)
 
         observation = await self.inspect_llm_wrapper.next_prompt_or_final_step_result(
             sample_id=self.sample_id
