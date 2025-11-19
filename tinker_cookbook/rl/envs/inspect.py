@@ -458,7 +458,7 @@ def build_config_impossible_bench() -> train.Config:
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
-        batch_size=64,
+        batch_size=8,
         group_size=8,
         renderer_name=renderer_name,
         inspect_task=inspect_task,
@@ -469,7 +469,7 @@ def build_config_impossible_bench() -> train.Config:
 
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/inspect-2",
+        log_path="/tmp/tinker-examples/inspect",
         dataset_builder=dataset_builder,
         learning_rate=4e-5,
         max_tokens=2048,
