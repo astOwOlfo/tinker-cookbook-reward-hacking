@@ -439,11 +439,26 @@ def build_config_mmlu() -> train.Config:
 
 def build_config_impossible_bench() -> train.Config:
     from inspect_evals.mmlu import mmlu_0_shot
+    from impossiblebench import impossible_livecodebench, impossible_swebench
+    
+    def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
+        return [
+            {"I": 0.0, "C": 1.0}[sample.scores["agentic_humaneval_scorer"].value]
+            for sample in eval_log.samples
+        ]
+
+    def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
+        return [{} for _ in samples]
+
+    inspect_task: Task = impossible_livecodebench(
+        split="conflicting", agent_type="minimal", limit=16
+    )
 
     model_name = "meta-llama/Llama-3.2-1B"
     # model_name = "meta-llama/Llama-3.1-8B-Instruct"
-    inspect_task: Task = mmlu_0_shot()
+    # inspect_task: Task = mmlu_0_shot()
 
+    """
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
         print("SCORES:", [next(iter(sample.scores.values())).value for sample in eval_log.samples])
         scores = [
@@ -457,6 +472,7 @@ def build_config_impossible_bench() -> train.Config:
 
     def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
         return [{} for _ in samples]
+    """
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
