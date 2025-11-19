@@ -440,7 +440,7 @@ def build_config_mmlu() -> train.Config:
 def build_config_impossible_bench() -> train.Config:
     from inspect_evals.mmlu import mmlu_0_shot
     from impossiblebench import impossible_livecodebench, impossible_swebench
-    
+
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
         return [
             {"I": 0.0, "C": 1.0}[sample.scores["agentic_humaneval_scorer"].value]
@@ -454,7 +454,9 @@ def build_config_impossible_bench() -> train.Config:
         split="conflicting", agent_type="minimal", limit=16
     )
 
-    model_name = "meta-llama/Llama-3.2-1B"
+    # model_name = "meta-llama/Llama-3.2-1B"
+    model_name = "Qwen/Qwen3-8B"
+    renderer_name = "qwen3_disable_thinking"
     # model_name = "meta-llama/Llama-3.1-8B-Instruct"
     # inspect_task: Task = mmlu_0_shot()
 
@@ -478,7 +480,7 @@ def build_config_impossible_bench() -> train.Config:
         model_name=model_name,
         batch_size=8,
         group_size=8,
-        renderer_name=model_info.get_recommended_renderer_name(model_name),
+        renderer_name=renderer_name,  # model_info.get_recommended_renderer_name(model_name),
         inspect_task=inspect_task,
         get_rewards=get_rewards,
         get_metrics=get_metrics,
