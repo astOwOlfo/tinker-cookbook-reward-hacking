@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 import asyncio
-from tinker_cookbook.rl.envs.bash_apps_env import BashAppsDatasetBuilder, BashAppsEnvConfig, load_apps_dataset
+from tinker_cookbook.rl.envs.bash_apps_env import BashAppsDatasetBuilder, BashAppsEnvConfig, load_apps_dataset, BashAppsEnv
 from tinker_cookbook.rl.train import Config, StreamMinibatchConfig
 from tinker_cookbook.rl import train
 from tinker_cookbook.rl.types import RLDatasetBuilder
@@ -11,12 +11,13 @@ import argparse
 from tinker_cookbook.rl.features.curriculum import Curriculum
 from tinker_cookbook.rl.features.limit import LimitSize, SkipFirst
 from tinker_cookbook.rl.envs.ae_env import AEDatasetBuilder, load_ae_dataset_from_json
-from tinker_cookbook.rl.envs.ae_env import AEEnvConfig
+from tinker_cookbook.rl.envs.ae_env import AEEnvConfig, AEEnv
 import tinker_cookbook.rl.envs.ae_env as ae_env
 import tinker_cookbook.rl.envs.bash_apps_env as bash_apps_env
 from tinker_cookbook.rl.features.length_penalty import LengthPenalty
 from tinker_cookbook.rl.features.feature import build_dataset_builder
 from tinker_cookbook.rl.envs.bad_sandbox_env import BadSandboxEnvDatasetBuilder, BadSandboxEnvConfig
+from tinker_cookbook.rl.features.monitored import MonitorConfig
 
 load_dotenv()
 
