@@ -99,6 +99,10 @@ def tinker_assisstant_message_to_inspect_assistant_message(
     )
 
 
+def inspect_tools_to_dict(tools: list[ToolInfo]) -> list[dict]:
+    return [{"type": "function", "function": tool.model_dump()} for tool in tools]
+
+
 SampleId = int
 
 
@@ -166,7 +170,7 @@ class InspectAPIFromTinker(ModelAPI):
             system_message = get_system_message_with_tools(
                 tokenizer=self.tokenizer,
                 system_message=system_message,
-                tools=[tool.model_dump() for tool in tools],
+                tools=inspect_tools_to_dict(tools),
             )
 
         # print("generate")
