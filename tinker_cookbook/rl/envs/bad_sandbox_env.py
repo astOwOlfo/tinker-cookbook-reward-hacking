@@ -44,6 +44,7 @@ from tinker_cookbook.rl.types import (
 )
 from tinker_cookbook.tokenizer_utils import get_tokenizer
 from tinker_cookbook.rl.envs import bash_agent
+import math
 
 logger = logging.getLogger(__name__)
 
