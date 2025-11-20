@@ -469,14 +469,15 @@ def build_config_impossible_bench() -> train.Config:
         split="conflicting", agent_type="minimal", limit=16
     )
 
-    model_name = "Qwen/Qwen3-30B-A3B"
+    # model_name = "Qwen/Qwen3-30B-A3B"
+    model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
     renderer_name = "qwen3_disable_thinking"
     context_length = 32768
     max_completion_tokens = 2048
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
-        batch_size=32,
+        batch_size=64,
         group_size=8,
         renderer_name=renderer_name,
         max_prompt_tokens=context_length - max_completion_tokens,
