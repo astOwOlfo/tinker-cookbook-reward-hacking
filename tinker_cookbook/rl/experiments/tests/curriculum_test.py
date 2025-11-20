@@ -11,51 +11,126 @@ import argparse
 from tinker_cookbook.rl.features.curriculum import Curriculum
 from tinker_cookbook.rl.features.limit import LimitSize, SkipFirst
 from tinker_cookbook.rl.envs.ae_env import AEDatasetBuilder, load_ae_dataset_from_json
+from tinker_cookbook.rl.envs.ae_env import AEEnvConfig
 import tinker_cookbook.rl.envs.ae_env as ae_env
 import tinker_cookbook.rl.envs.bash_apps_env as bash_apps_env
+from tinker_cookbook.rl.features.length_penalty import LengthPenalty
+from tinker_cookbook.rl.features.feature import build_dataset_builder
 
 load_dotenv()
 
 def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
+    batch_size = 32
+    group_size = 4
+    qwen3_disable_thinking = False
+    apps_dataset = load_apps_dataset()
     return Curriculum(
         inner_builders=[
-            LimitSize(AEDatasetBuilder(
-                batch_size=16,
-                model_name_for_tokenizer=model_name,
-                renderer_name=model_info.get_recommended_renderer_name(model_name),
-                group_size=8,
-                data=load_ae_dataset_from_json("data/ae-data.json"),
-                test_fraction=0.1,
-                cfg=BashAppsEnvConfig(
-                    reward_hacking_prompt="must",
-                    max_steps=5,
-                    max_tests_per_split=100,
-                    public_test_weight_in_reward=1.0,
-                    qwen3_disable_thinking=True,
-                ),
-            ), max_batches=5),
             LimitSize(BashAppsDatasetBuilder(
-                batch_size=16,
+                batch_size=batch_size,
                 model_name_for_tokenizer=model_name,
                 renderer_name=model_info.get_recommended_renderer_name(model_name),
-                group_size=8,
-                data=load_apps_dataset(),
+                group_size=group_size,
+                data=apps_dataset,
                 test_fraction=0.1,
                 cfg=BashAppsEnvConfig(
                     reward_hacking_prompt="must",
                     max_steps=5,
                     max_tests_per_split=5,
                     public_test_weight_in_reward=1.0,
-                    qwen3_disable_thinking=True,
+                    qwen3_disable_thinking=qwen3_disable_thinking,
                 ),
-            ), max_batches=5)
+            ), max_batches=30),
+            SkipFirst(
+                LimitSize(BashAppsDatasetBuilder(
+                    batch_size=batch_size,
+                    model_name_for_tokenizer=model_name,
+                    renderer_name=model_info.get_recommended_renderer_name(model_name),
+                    group_size=group_size,
+                    data=apps_dataset,
+                    test_fraction=0.1,
+                    cfg=BashAppsEnvConfig(
+                        reward_hacking_prompt="nothing",
+                        max_steps=5,
+                        max_tests_per_split=5,
+                        public_test_weight_in_reward=1.0,
+                        qwen3_disable_thinking=qwen3_disable_thinking,
+                    ),
+                ), max_batches=10),
+                skip_first_n_batches=30
+            ),
+            SkipFirst(
+                LimitSize(BadSandboxEnvDatasetBuilder(
+                    batch_size=batch_size,
+                    model_name_for_tokenizer=model_name,
+                    renderer_name=model_info.get_recommended_renderer_name(model_name),
+                    #renderer_name="gpt_oss_low_reasoning",
+                    group_size=group_size,
+                    data=apps_dataset,
+                    test_fraction=0.1,
+                    cfg=BadSandboxEnvConfig(qwen3_disable_thinking=qwen3_disable_thinking),
+                ), max_batches=40),
+                skip_first_n_batches = 40
+            ),
+            LimitSize(
+                build_dataset_builder(
+                    BashAppsDatasetBuilder(
+                        batch_size=batch_size,
+                        model_name_for_tokenizer=model_name,
+                        renderer_name=model_info.get_recommended_renderer_name(model_name),
+                        group_size=group_size,
+                        data=apps_dataset,
+                        test_fraction=0.1,
+                        cfg=BashAppsEnvConfig(
+                            reward_hacking_prompt="nothing",
+                            max_steps=5,
+                            max_tests_per_split=5,
+                            public_test_weight_in_reward=1.0,
+                            qwen3_disable_thinking=qwen3_disable_thinking,
+                        ),
+                    ), 
+                    BashAppsEnv, 
+                    MonitorConfig(
+                        model_name="gpt-4.1-nano", 
+                        model_provider="openai", 
+                        alert=True
+                    )
+                ), max_batches=10),
+            LimitSize(build_dataset_builder(AEDatasetBuilder(
+                batch_size=batch_size,
+                model_name_for_tokenizer=model_name,
+                renderer_name=model_info.get_recommended_renderer_name(model_name),
+                group_size=group_size,
+                data=load_ae_dataset_from_json("data/ae-data.json")[:160],
+                test_fraction=0.1,
+                cfg=AEEnvConfig(reward_hacking_prompt="must", max_steps=5, max_tests_per_split=100, public_test_weight_in_reward=1.0, qwen3_disable_thinking=qwen3_disable_thinking, reset_public_tests=False, mitigate_assignment_imports=False),
+            ), AEEnv, MonitorConfig(model_name="gpt-4.1-nano", model_provider="openai", alert=True)), max_batches=5),
+            SkipFirst(
+                LimitSize(
+                    AEDatasetBuilder(
+                        batch_size=batch_size,
+                        model_name_for_tokenizer=model_name,
+                        renderer_name=model_info.get_recommended_renderer_name(model_name),
+                        group_size=group_size,
+                        data=load_ae_dataset_from_json("data/ae-data.json"),
+                        test_fraction=0.1,
+                        cfg=AEEnvConfig(
+                            reward_hacking_prompt="must", 
+                            max_steps=5, 
+                            max_tests_per_split=100, 
+                            public_test_weight_in_reward=1.0, qwen3_disable_thinking=qwen3_disable_thinking, reset_public_tests=False, 
+                            mitigate_assignment_imports=False),
+                    )
+                    ,max_batches=50
+                ), skip_first_n_batches=5),
+                
         ],
     )
 
 def build_config(log_dir: str) -> Config:
-    model_name = "Qwen/Qwen3-8B"
+    model_name = "Qwen/Qwen3-32B"
 
-    return Config(
+    cfg = Config(
         model_name=model_name,
         log_path=log_dir,
         dataset_builder=build_curriculum_config(model_name=model_name),
@@ -65,16 +140,18 @@ def build_config(log_dir: str) -> Config:
         wandb_project="tinker",
         wandb_name=f"bash_apps_env_{model_name}_curriculum",
         stream_minibatch_config=StreamMinibatchConfig(
-            groups_per_batch=64,
+            groups_per_batch=32,
             num_minibatches=1,
         ),
     )
+    
+    return LengthPenalty(env_cfg=cfg, feature_cfg=LengthPenaltyConfig(length_penalty=1e-6))
 
 def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="delete")
     
-    dataset = load_ae_dataset_from_json("data/ae-data.json")[:160]
+    dataset = load_ae_dataset_from_json("data/ae-data.json")
     print(f"Building docker image for AE dataset with {len(dataset)} datapoints")
     ae_env.build_docker_image(dataset)
     print("Building docker image for Bash Apps dataset")
