@@ -73,7 +73,7 @@ class SkipFirstDataset(RLDataset):
         return self.inner_dataset.get_batch(index + self.skip_first_n_batches)
     
     def __len__(self) -> int:
-        return len(self.inner_dataset) - self.skip_first_n_batches
+        return max(0, len(self.inner_dataset) - self.skip_first_n_batches)
 
 
 @dataclass(frozen=True, slots=True)
