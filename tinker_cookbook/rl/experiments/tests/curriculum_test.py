@@ -16,6 +16,7 @@ import tinker_cookbook.rl.envs.ae_env as ae_env
 import tinker_cookbook.rl.envs.bash_apps_env as bash_apps_env
 from tinker_cookbook.rl.features.length_penalty import LengthPenalty
 from tinker_cookbook.rl.features.feature import build_dataset_builder
+from tinker_cookbook.rl.envs.bad_sandbox_env import BadSandboxEnvDatasetBuilder, BadSandboxEnvConfig
 
 load_dotenv()
 
