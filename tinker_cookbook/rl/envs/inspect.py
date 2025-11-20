@@ -469,16 +469,16 @@ def build_config_impossible_bench() -> train.Config:
         split="conflicting", agent_type="minimal", limit=16
     )
 
-    # model_name = "Qwen/Qwen3-30B-A3B"
+    model_name = "Qwen/Qwen3-30B-A3B"
     # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
-    # renderer_name = "qwen3_disable_thinking"
-    model_name = "deepseek-ai/DeepSeek-V3.1"
-    renderer_name = "deepseekv3_disable_thinking"
+    renderer_name = "qwen3"
+    # model_name = "deepseek-ai/DeepSeek-V3.1"
+    # renderer_name = "deepseekv3_disable_thinking"
     # model_name = "openai/gpt-oss-120b"
     # renderer_name = "gpt_oss_medium_reasoning"
     context_length = 32768
-    max_completion_tokens = 2048
-    # max_completion_tokens = 8192
+    # max_completion_tokens = 2048
+    max_completion_tokens = 8192
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
