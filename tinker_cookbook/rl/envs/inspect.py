@@ -168,6 +168,7 @@ class InspectAPIFromTinker(ModelAPI):
         conversation = inspect_messages_to_tinker_messages(input)
         prompt = self.renderer.build_generation_prompt(conversation)
 
+        print("METADATA:", [message.metadata for message in input])
         sample_id = input[0].metadata["sample_id"]  # type: ignore
         assert isinstance(sample_id, SampleId)
 
