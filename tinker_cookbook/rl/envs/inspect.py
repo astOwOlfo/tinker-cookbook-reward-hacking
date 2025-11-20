@@ -470,8 +470,10 @@ def build_config_impossible_bench() -> train.Config:
     )
 
     # model_name = "Qwen/Qwen3-30B-A3B"
-    model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
-    renderer_name = "qwen3_disable_thinking"
+    # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
+    # renderer_name = "qwen3_disable_thinking"
+    model_name = "deepseek-ai/DeepSeek-V3.1"
+    model_name = "deepseekv3_disable_thinking"
     context_length = 32768
     max_completion_tokens = 2048
 
