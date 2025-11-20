@@ -43,8 +43,8 @@ def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
                     qwen3_disable_thinking=qwen3_disable_thinking,
                 ),
             ), max_batches=30),
-            SkipFirst(
-                LimitSize(BashAppsDatasetBuilder(
+            LimitSize(
+                SkipFirst(BashAppsDatasetBuilder(
                     batch_size=batch_size,
                     model_name_for_tokenizer=model_name,
                     renderer_name=model_info.get_recommended_renderer_name(model_name),
@@ -58,11 +58,9 @@ def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
                         public_test_weight_in_reward=1.0,
                         qwen3_disable_thinking=qwen3_disable_thinking,
                     ),
-                ), max_batches=10),
-                skip_first_n_batches=30
-            ),
-            SkipFirst(
-                LimitSize(BadSandboxEnvDatasetBuilder(
+                ), skip_first_n_batches=30), 
+                max_batches=10),
+            LimitSize(SkipFirst(BadSandboxEnvDatasetBuilder(
                     batch_size=batch_size,
                     model_name_for_tokenizer=model_name,
                     renderer_name=model_info.get_recommended_renderer_name(model_name),
@@ -71,9 +69,7 @@ def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
                     data=apps_dataset,
                     test_fraction=0.1,
                     cfg=BadSandboxEnvConfig(qwen3_disable_thinking=qwen3_disable_thinking),
-                ), max_batches=40),
-                skip_first_n_batches = 40
-            ),
+                ), skip_first_n_batches = 40), max_batches=40),
             LimitSize(
                 build_dataset_builder(
                     BashAppsDatasetBuilder(
@@ -107,8 +103,7 @@ def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
                 test_fraction=0.1,
                 cfg=AEEnvConfig(reward_hacking_prompt="must", max_steps=5, max_tests_per_split=100, public_test_weight_in_reward=1.0, qwen3_disable_thinking=qwen3_disable_thinking, reset_public_tests=False, mitigate_assignment_imports=False),
             ), AEEnv, MonitorConfig(model_name="gpt-4.1-nano", model_provider="openai", alert=True)), max_batches=5),
-            SkipFirst(
-                LimitSize(
+            LimitSize(SkipFirst(
                     AEDatasetBuilder(
                         batch_size=batch_size,
                         model_name_for_tokenizer=model_name,
@@ -123,8 +118,7 @@ def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
                             public_test_weight_in_reward=1.0, qwen3_disable_thinking=qwen3_disable_thinking, reset_public_tests=False, 
                             mitigate_assignment_imports=False),
                     )
-                    ,max_batches=50
-                ), skip_first_n_batches=5),
+                    , skip_first_n_batches=5), max_batches=50),
                 
         ],
     )
