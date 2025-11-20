@@ -152,6 +152,9 @@ class InspectAPIFromTinker(ModelAPI):
         tool_choice: ToolChoice,
         config: GenerateConfig,
     ) -> ModelOutput:
+        sample_id = input[0].metadata["sample_id"] # type: ignore
+        assert isinstance(sample_id, SampleId)
+
         system_message = config.system_message
         if len(tools) > 0:
             if system_message is None:
@@ -167,14 +170,6 @@ class InspectAPIFromTinker(ModelAPI):
             input = [ChatMessageSystem(content=config.system_message)] + input
         conversation = inspect_messages_to_tinker_messages(input)
         prompt = self.renderer.build_generation_prompt(conversation)
-
-        print("METADATA:", [message.metadata for message in input])
-        sample_id = next(
-            message.metadata["sample_id"]
-            for message in input
-            if message.metadata is not None and "sample_id" in message.metadata.keys()
-        )
-        assert isinstance(sample_id, SampleId)
 
         sampled_tokens = await self.sample_completion(prompt=prompt.to_ints(), sample_id=sample_id)
 
