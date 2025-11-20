@@ -37,7 +37,7 @@ class LimitSizeDataset(RLDataset):
         return self.inner_dataset.get_batch(index)
     
     def __len__(self) -> int:
-        return self.max_batches
+        return min(self.max_batches, len(self.inner_dataset))
 
 
 @dataclass(frozen=True, slots=True)
