@@ -777,7 +777,7 @@ async def build_docker_image(dataset: list[Data], batch_size: int = 10000) -> No
         batch_data = dataset[i_batch:min(i_batch+batch_size, len(dataset))]
         all_images = [Image(get_dockerfile_content(datapoint)) for datapoint in batch_data]
         await client.build_images(all_images)
-        print(f"Built {len(all_images)} images for batch {i_batch}")
+        print(f"Built {len(all_images)} images for batch {i_batch//batch_size}")
 
 def build_config(dataset: list[Data]) -> train.Config:
     model_name = "Qwen/Qwen3-8B"
