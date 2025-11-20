@@ -152,16 +152,18 @@ class InspectAPIFromTinker(ModelAPI):
         tool_choice: ToolChoice,
         config: GenerateConfig,
     ) -> ModelOutput:
+        system_message = config.system_message
         if len(tools) > 0:
-            assert config.system_message
-            get_system_message_with_tools(
+            if system_message is None:
+                system_message = ""
+            system_message = get_system_message_with_tools(
                 tokenizer=self.tokenizer,
-                system_message=config.system_message,
+                system_message=system_message,
                 tools=[tool.model_dump() for tool in tools],
             )
 
         # print("generate")
-        if config.system_message:
+        if config.system_message is not None:
             input = [ChatMessageSystem(content=config.system_message)] + input
         conversation = inspect_messages_to_tinker_messages(input)
         prompt = self.renderer.build_generation_prompt(conversation)
@@ -472,9 +474,7 @@ def build_config_impossible_bench() -> train.Config:
             for sample in eval_log.samples
         ]
 
-    inspect_task: Task = impossible_livecodebench(
-        split="conflicting", agent_type="tools"
-    )
+    inspect_task: Task = impossible_livecodebench(split="conflicting", agent_type="tools")
 
     # model_name = "Qwen/Qwen3-30B-A3B"
     # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
