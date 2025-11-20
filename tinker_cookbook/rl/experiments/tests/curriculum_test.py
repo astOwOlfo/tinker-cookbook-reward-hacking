@@ -137,8 +137,8 @@ def build_config(log_dir: str) -> Config:
         learning_rate=4e-5,
         max_tokens=2048,
         eval_every=0,
-        wandb_project="tinker",
-        wandb_name=f"bash_apps_env_{model_name}_curriculum",
+        wandb_project="tinker-full-runs",
+        wandb_name=f"{model_name}-curriculum",
         stream_minibatch_config=StreamMinibatchConfig(
             groups_per_batch=32,
             num_minibatches=1,
