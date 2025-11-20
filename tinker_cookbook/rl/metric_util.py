@@ -42,6 +42,7 @@ def compute_trajectory_metrics(
     have_nontrivial_tags = any(
         len(trajgroups) < len(trajectory_groups_P) for trajgroups in tag2trajgroups.values()
     )  # check if any tag gives us a strict subset of the full trajectory groups
+    have_nontrivial_tags = True
     if have_nontrivial_tags:
         for tag, trajectory_groups in tag2trajgroups.items():
             prefixed_metrics = {
