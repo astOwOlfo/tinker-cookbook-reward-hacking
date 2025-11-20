@@ -202,6 +202,7 @@ class InspectEnv(Env):
     inspect_llm_wrapper: InspectAPIFromTinker
     sample_id: SampleId
     start_eval: Lazy
+    max_prompt_tokens: int
 
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         print("initial observation", self.sample_id)
@@ -233,6 +234,14 @@ class InspectEnv(Env):
             assert observation_or_final_step_result.episode_done
             return observation_or_final_step_result
 
+        if len(observation_or_final_step_result) > self.max_prompt_tokens:
+            return StepResult(
+                reward=0.0,
+                episode_done=True,
+                next_observation=ModelInput.empty(),
+                next_stop_condition=self.stop_condition,
+            )
+
         return StepResult(
             reward=0.0,
             episode_done=False,
@@ -261,6 +270,7 @@ class InspectRLDataset(RLDataset):
     group_size: int
     renderer: renderers.Renderer
     tokenizer: PreTrainedTokenizer
+    max_prompt_tokens: int
     get_rewards: Callable[[EvalLog, list[Sample]], list[float]]
     get_metrics: Callable[[EvalLog, list[Sample]], list[dict[str, float]]]
     shuffled_inspect_task_samples: list[Sample] = field(init=False)
@@ -336,6 +346,7 @@ class InspectRLDataset(RLDataset):
                 inspect_llm_wrapper=inspect_llm_wrapper,
                 sample_id=sample_id,
                 start_eval=start_eval,
+                max_prompt_tokens=self.max_prompt_tokens,
             )
             for sample_id in sample_ids
         ]
@@ -356,6 +367,7 @@ class InspectRLDatasetBuilder(RLDatasetBuilder):
     batch_size: int
     group_size: int
     renderer_name: str
+    max_prompt_tokens: int
     inspect_task: Task
     get_rewards: Callable[[EvalLog, list[Sample]], list[float]]
     get_metrics: Callable[[EvalLog, list[Sample]], list[dict[str, float]]]
@@ -386,6 +398,7 @@ class InspectRLDatasetBuilder(RLDatasetBuilder):
                 group_size=self.group_size,
                 renderer=renderer,
                 tokenizer=tokenizer,
+                max_prompt_tokens=self.max_prompt_tokens,
                 get_rewards=self.get_rewards,
                 get_metrics=self.get_metrics,
             )
@@ -397,7 +410,9 @@ def build_config_mmlu() -> train.Config:
     from inspect_evals.mmlu import mmlu_0_shot
 
     model_name = "meta-llama/Llama-3.2-1B"
-    # model_name = "meta-llama/Llama-3.1-8B-Instruct"
+    context_length = 32768
+    max_completion_tokens = 16
+
     inspect_task: Task = mmlu_0_shot()
 
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
@@ -419,6 +434,7 @@ def build_config_mmlu() -> train.Config:
         batch_size=256,
         group_size=8,
         renderer_name=model_info.get_recommended_renderer_name(model_name),
+        max_prompt_tokens=context_length - max_completion_tokens - 16,  # -16 just in case
         inspect_task=inspect_task,
         get_rewards=get_rewards,
         get_metrics=get_metrics,
@@ -430,7 +446,7 @@ def build_config_mmlu() -> train.Config:
         log_path="/tmp/tinker-examples/inspect-2",
         dataset_builder=dataset_builder,
         learning_rate=4e-5,
-        max_tokens=16,
+        max_tokens=max_completion_tokens,
         eval_every=0,
         wandb_project="inspect-mmlu",
         wandb_name=model_name,
@@ -438,7 +454,6 @@ def build_config_mmlu() -> train.Config:
 
 
 def build_config_impossible_bench() -> train.Config:
-    from inspect_evals.mmlu import mmlu_0_shot
     from impossiblebench import impossible_livecodebench, impossible_swebench
 
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
@@ -454,33 +469,17 @@ def build_config_impossible_bench() -> train.Config:
         split="conflicting", agent_type="minimal", limit=16
     )
 
-    # model_name = "meta-llama/Llama-3.2-1B"
     model_name = "Qwen/Qwen3-30B-A3B"
     renderer_name = "qwen3_disable_thinking"
-    # model_name = "meta-llama/Llama-3.1-8B-Instruct"
-    # inspect_task: Task = mmlu_0_shot()
-
-    """
-    def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
-        print("SCORES:", [next(iter(sample.scores.values())).value for sample in eval_log.samples])
-        scores = [
-            {"C": 1.0, "I": 0.0}[next(iter(sample.scores.values())).value]
-            for sample in eval_log.samples
-        ]
-        from statistics import mean
-
-        print(f"{mean(scores)=}")
-        return scores
-
-    def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
-        return [{} for _ in samples]
-    """
+    context_length = 32768
+    max_completion_tokens = 2048
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
         batch_size=32,
         group_size=8,
-        renderer_name=renderer_name,  # model_info.get_recommended_renderer_name(model_name),
+        renderer_name=renderer_name,
+        max_prompt_tokens=context_length - max_completion_tokens,
         inspect_task=inspect_task,
         get_rewards=get_rewards,
         get_metrics=get_metrics,
@@ -495,7 +494,7 @@ def build_config_impossible_bench() -> train.Config:
         log_path="/tmp/tinker-examples/inspect-2",
         dataset_builder=dataset_builder,
         learning_rate=4e-5,
-        max_tokens=2048,
+        max_tokens=max_completion_tokens,
         eval_every=0,
         wandb_project="inspect-impossible-bench",
         wandb_name=model_name,
