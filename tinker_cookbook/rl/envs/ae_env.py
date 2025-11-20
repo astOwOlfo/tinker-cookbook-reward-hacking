@@ -631,7 +631,6 @@ class AEDataset(RLDataset):
 
         assert len(batch_data) == self.batch_size
 
-        n_containers = self.batch_size * self.group_size
         
         dockerfile_contents = [
             get_dockerfile_content(datapoint)
