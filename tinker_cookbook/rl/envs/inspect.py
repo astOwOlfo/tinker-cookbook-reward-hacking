@@ -472,8 +472,8 @@ def build_config_impossible_bench() -> train.Config:
             for sample in eval_log.samples
         ]
 
-    inspect_task: Task = impossible_swebench(
-        split="conflicting", agent_type="minimal"
+    inspect_task: Task = impossible_livecodebench(
+        split="conflicting", agent_type="tools"
     )
 
     # model_name = "Qwen/Qwen3-30B-A3B"
