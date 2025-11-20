@@ -42,6 +42,8 @@ class CurriculumDataset(RLDataset):
         inner_datasets: list[RLDataset],
     ) -> None:
         self.inner_datasets = inner_datasets
+        for dataset in inner_datasets:
+            print(f"Length of dataset {dataset.__class__.__name__}: {len(dataset)}")
         self.dataset_lengths = [len(dataset) for dataset in inner_datasets]
 
     def get_batch(self, index: int) -> Sequence[EnvGroupBuilder]:
