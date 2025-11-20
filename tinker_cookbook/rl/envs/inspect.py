@@ -458,12 +458,19 @@ def build_config_impossible_bench() -> train.Config:
 
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
         return [
-            {"I": 0.0, "C": 1.0}[sample.scores["agentic_humaneval_scorer"].value]
+            (
+                {"I": 0.0, "C": 1.0}[sample.scores["agentic_humaneval_scorer"].value]
+                if "agentic_humaneval_scorer" in sample.scores.keys()
+                else 0.0
+            )
             for sample in eval_log.samples
         ]
 
     def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
-        return [{} for _ in samples]
+        return [
+            {"score_missing": 0.0 if "agentic_humaneval_scorer" in sample.scores.keys() else 1.0}
+            for sample in eval_log.samples
+        ]
 
     inspect_task: Task = impossible_livecodebench(
         split="conflicting", agent_type="minimal", limit=16
