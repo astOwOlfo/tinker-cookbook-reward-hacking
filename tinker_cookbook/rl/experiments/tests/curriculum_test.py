@@ -155,7 +155,7 @@ def main(log_dir: str) -> None:
     
     dataset = load_ae_dataset_from_json("data/ae-data.json")
     print(f"Building docker image for AE dataset with {len(dataset)} datapoints")
-    ae_env.build_docker_image(dataset)
+    ae_env.build_docker_image(dataset, batch_size=128)
     print("Building docker image for Bash Apps dataset")
     bash_apps_env.build_docker_image()
     
