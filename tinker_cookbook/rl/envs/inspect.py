@@ -472,8 +472,8 @@ def build_config_impossible_bench() -> train.Config:
             for sample in eval_log.samples
         ]
 
-    inspect_task: Task = impossible_livecodebench(
-        split="conflicting", agent_type="minimal", limit=16
+    inspect_task: Task = impossible_swebench(
+        split="conflicting", agent_type="minimal"
     )
 
     # model_name = "Qwen/Qwen3-30B-A3B"
@@ -490,8 +490,8 @@ def build_config_impossible_bench() -> train.Config:
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
-        batch_size=64,
-        group_size=8,
+        batch_size=4,
+        group_size=4,
         renderer_name=renderer_name,
         max_prompt_tokens=context_length - max_completion_tokens,
         inspect_task=inspect_task,
@@ -505,7 +505,7 @@ def build_config_impossible_bench() -> train.Config:
 
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/inspect-2",
+        log_path="/tmp/tinker-examples/inspect-impossible-swebench",
         dataset_builder=dataset_builder,
         learning_rate=4e-5,
         max_tokens=max_completion_tokens,
