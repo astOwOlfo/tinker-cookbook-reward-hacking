@@ -4,9 +4,6 @@ from transformers import PreTrainedTokenizer
 def get_system_message_with_tools(
     tokenizer: PreTrainedTokenizer, system_message: str, tools: list[dict]
 ) -> str:
-    print(f"{tokenizer=}")
-    print(f"{system_message=}")
-    print(f"{tools=}")
     model_name: str = tokenizer.name_or_path
 
     if (
