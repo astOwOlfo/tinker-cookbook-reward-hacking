@@ -482,24 +482,24 @@ def build_config_impossible_bench() -> train.Config:
             for sample in eval_log.samples
         ]
 
-    inspect_task: Task = impossible_livecodebench(split="oneoff", agent_type="tools")
+    inspect_task: Task = impossible_livecodebench(split="conflicting", agent_type="tools")
 
-    model_name = "Qwen/Qwen3-30B-A3B"
+    # model_name = "Qwen/Qwen3-30B-A3B"
     # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
     # model_name = "Qwen/Qwen3-32B"
-    renderer_name = "qwen3_disable_thinking"
+    # renderer_name = "qwen3_disable_thinking"
     # model_name = "deepseek-ai/DeepSeek-V3.1"
     # renderer_name = "deepseekv3_disable_thinking"
-    # model_name = "openai/gpt-oss-120b"
-    # renderer_name = "gpt_oss_medium_reasoning"
+    model_name = "openai/gpt-oss-120b"
+    renderer_name = "gpt_oss_medium_reasoning"
     context_length = 32768
     # max_completion_tokens = 2048
     max_completion_tokens = 8192
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
-        batch_size=4,
-        group_size=4,
+        batch_size=64,
+        group_size=8,
         renderer_name=renderer_name,
         max_prompt_tokens=context_length - max_completion_tokens,
         inspect_task=inspect_task,
