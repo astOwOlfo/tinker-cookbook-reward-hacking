@@ -152,7 +152,11 @@ class InspectAPIFromTinker(ModelAPI):
         tool_choice: ToolChoice,
         config: GenerateConfig,
     ) -> ModelOutput:
-        sample_id = input[0].metadata["sample_id"]  # type: ignore
+        sample_id = next(
+            message.metadata["sample_id"]
+            for message in input
+            if message.metadata is not None and "sample_id" in message.metadata.keys()
+        )
         assert isinstance(sample_id, SampleId)
 
         system_message = config.system_message
