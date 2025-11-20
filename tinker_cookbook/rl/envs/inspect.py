@@ -507,7 +507,7 @@ def build_config_impossible_bench() -> train.Config:
         model_name=model_name,
         log_path="/tmp/tinker-examples/inspect-impossible-livecodebench",
         dataset_builder=dataset_builder,
-        learning_rate=4e-5,
+        learning_rate=1e-4,
         max_tokens=max_completion_tokens,
         eval_every=0,
         wandb_project="inspect-impossible-bench",
