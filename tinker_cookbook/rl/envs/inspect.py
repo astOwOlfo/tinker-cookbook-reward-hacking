@@ -480,10 +480,10 @@ def build_config_impossible_bench() -> train.Config:
     # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
     # model_name = "Qwen/Qwen3-32B"
     # renderer_name = "qwen3"
-    model_name = "deepseek-ai/DeepSeek-V3.1"
-    renderer_name = "deepseekv3_disable_thinking"
-    # model_name = "openai/gpt-oss-120b"
-    # renderer_name = "gpt_oss_medium_reasoning"
+    # model_name = "deepseek-ai/DeepSeek-V3.1"
+    # renderer_name = "deepseekv3_disable_thinking"
+    model_name = "openai/gpt-oss-120b"
+    renderer_name = "gpt_oss_medium_reasoning"
     context_length = 32768
     # max_completion_tokens = 2048
     max_completion_tokens = 8192
@@ -580,7 +580,7 @@ def main() -> None:
     load_dotenv()
     # config = build_config_mmlu()
     config = build_config_impossible_bench()
-    cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
+    cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
     asyncio.run(train.main(config))
 
 
