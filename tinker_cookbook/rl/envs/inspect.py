@@ -152,7 +152,7 @@ class InspectAPIFromTinker(ModelAPI):
         tool_choice: ToolChoice,
         config: GenerateConfig,
     ) -> ModelOutput:
-        sample_id = input[0].metadata["sample_id"] # type: ignore
+        sample_id = input[0].metadata["sample_id"]  # type: ignore
         assert isinstance(sample_id, SampleId)
 
         system_message = config.system_message
@@ -474,12 +474,12 @@ def build_config_impossible_bench() -> train.Config:
             for sample in eval_log.samples
         ]
 
-    inspect_task: Task = impossible_livecodebench(split="conflicting", agent_type="tools")
+    inspect_task: Task = impossible_livecodebench(split="oneoff", agent_type="tools")
 
     model_name = "Qwen/Qwen3-30B-A3B"
     # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
     # model_name = "Qwen/Qwen3-32B"
-    renderer_name = "qwen3"
+    renderer_name = "qwen3_disable_thinking"
     # model_name = "deepseek-ai/DeepSeek-V3.1"
     # renderer_name = "deepseekv3_disable_thinking"
     # model_name = "openai/gpt-oss-120b"
@@ -490,8 +490,8 @@ def build_config_impossible_bench() -> train.Config:
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
-        batch_size=4,
-        group_size=4,
+        batch_size=64,
+        group_size=8,
         renderer_name=renderer_name,
         max_prompt_tokens=context_length - max_completion_tokens,
         inspect_task=inspect_task,
