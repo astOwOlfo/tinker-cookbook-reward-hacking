@@ -490,7 +490,7 @@ class BashAppsGroupBuilder(EnvGroupBuilder):
         ]
 
     def logging_tags(self) -> list[str]:
-        return ["bash_apps"]
+        return ["bash_apps_" + self.cfg.reward_hacking_prompt.replace("-", "_")]
 
 class BashAppsDataset(RLDataset):
     def __init__(
