@@ -132,7 +132,8 @@ def build_config(log_dir: str) -> Config:
         dataset_builder=build_curriculum_config(model_name=model_name),
         learning_rate=4e-5,
         max_tokens=2048,
-        eval_every=0,
+        eval_every=8,
+        save_every=8,
         wandb_project="tinker-full-runs",
         wandb_name=f"{model_name}-curriculum",
         stream_minibatch_config=StreamMinibatchConfig(
