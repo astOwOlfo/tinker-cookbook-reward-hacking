@@ -504,7 +504,7 @@ def build_config_impossible_bench() -> train.Config:
 
     inspect_task: Task = impossible_livecodebench(
         split="original",
-        agent_type="basic",
+        agent_type="minimal",
         allow_test_modifications=True,
     )
 
