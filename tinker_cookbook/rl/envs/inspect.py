@@ -592,8 +592,8 @@ def build_config_berkeley_function_calling_leaderboard() -> train.Config:
 def main() -> None:
     load_dotenv()
     # config = build_config_mmlu()
-    config = build_config_impossible_bench()
-    # config = build_config_berkeley_function_calling_leaderboard()
+    # config = build_config_impossible_bench()
+    config = build_config_berkeley_function_calling_leaderboard()
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
     asyncio.run(train.main(config))
 
