@@ -13,7 +13,7 @@ import openai
 from google import genai
 from google.genai import types
 
-from tinker_cookbook import cli_utils
+from tinker_cookbook import cli_utils, renderers
 from tinker_cookbook.rl.types import (
     Env,
     EnvGroupBuilder,
@@ -205,6 +205,11 @@ class MonitoredEnv(Env):
         step_result.reward = step_result.reward - (reward_hacking_score / 100.)
         
         return step_result
+
+
+    @property
+    def all_messages(self) -> list[renderers.Message]:
+        return self.env.all_messages
         
 Monitored = Feature(MonitoredEnv)
         
