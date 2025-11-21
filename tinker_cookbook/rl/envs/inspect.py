@@ -550,10 +550,10 @@ def build_config_berkeley_function_calling_leaderboard() -> train.Config:
 
     inspect_task: Task = bfcl()
 
-    model_name = "Qwen/Qwen3-30B-A3B"
-    renderer_name = "qwen3_disable_thinking"
-    # model_name = "openai/gpt-oss-120b"
-    # renderer_name = "gpt_oss_medium_reasoning"
+    # model_name = "Qwen/Qwen3-30B-A3B"
+    # renderer_name = "qwen3_disable_thinking"
+    model_name = "openai/gpt-oss-120b"
+    renderer_name = "gpt_oss_medium_reasoning"
     context_length = 32768
     max_completion_tokens = 8192
 
