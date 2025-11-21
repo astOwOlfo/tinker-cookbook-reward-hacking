@@ -102,7 +102,7 @@ def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
                 data=load_ae_dataset_from_json("data/ae-data.json")[:160],
                 test_fraction=0.1,
                 cfg=AEEnvConfig(reward_hacking_prompt="must", max_steps=5, max_tests_per_split=100, public_test_weight_in_reward=1.0, qwen3_disable_thinking=qwen3_disable_thinking, reset_public_tests=False, mitigate_assignment_imports=False),
-            ), AEEnv, MonitorConfig(model_name="gpt-4.1-nano", model_provider="openai", alert=True)), max_batches=5),
+            ), MonitoredEnv, MonitorConfig(model_name="gpt-4.1-nano", model_provider="openai", alert=True)), max_batches=5),
             LimitSize(SkipFirst(
                     AEDatasetBuilder(
                         batch_size=batch_size,
