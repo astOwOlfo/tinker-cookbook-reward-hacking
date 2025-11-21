@@ -187,9 +187,9 @@ class InspectAPIFromTinker(ModelAPI):
         # TODO: if not parse_success:
         import json
 
-        # print("=" * 256)
-        # print(json.dumps([message.model_dump(exclude_none=True) for message in input], indent=4))
-        # print(f"{parse_success=}", json.dumps(message, indent=4))
+        print("=" * 256)
+        print(json.dumps([message.model_dump(exclude_none=True) for message in input], indent=4))
+        print(f"{parse_success=}", json.dumps(message, indent=4))
 
         return ModelOutput(
             model=self.model_name,
@@ -336,6 +336,8 @@ class InspectRLDataset(RLDataset):
                 # max_subprocesses=999999,
             )
             print("done eval")
+
+            assert False
 
             assert len(eval_logs) == 1
             eval_log = eval_logs[0]
