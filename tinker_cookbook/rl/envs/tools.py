@@ -25,7 +25,6 @@ def get_system_message_with_tools(
 
     elif model_name.lower().startswith("openai/gpt-oss"):
         DELIMITER = "DELIMITER_14356728975462398"
-        print(f"{tools=}")
         tool_message: str = tokenizer.apply_chat_template(  # type: ignore
             [{"role": "system", "content": DELIMITER}], tools=tools, tokenize=False
         )
