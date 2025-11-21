@@ -100,7 +100,7 @@ def tinker_assisstant_message_to_inspect_assistant_message(
 
 
 def inspect_tools_to_dict(tools: list[ToolInfo]) -> list[dict]:
-    return [{"type": "function", "function": tool.model_dump()} for tool in tools]
+    return [{"type": "function", "function": tool.model_dump(exclude_none=True)} for tool in tools]
 
 
 SampleId = int
