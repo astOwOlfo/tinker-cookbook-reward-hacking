@@ -526,8 +526,8 @@ def build_config_impossible_bench() -> train.Config:
     )
 
 
-def build_config_assistant_bench() -> train.Config:
-    from inspect_evals.assistant_bench import assistant_bench_closed_book_zero_shot
+def build_config_berkeley_function_calling_leaderboard() -> train.Config:
+    from inspect_evals.bfcl import bfcl
 
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
         for sample in eval_log.samples:
@@ -548,7 +548,7 @@ def build_config_assistant_bench() -> train.Config:
             for sample in eval_log.samples
         ]
 
-    inspect_task: Task = assistant_bench_closed_book_zero_shot()
+    inspect_task: Task = bfcl()
 
     model_name = "Qwen/Qwen3-30B-A3B"
     renderer_name = "qwen3_disable_thinking"
