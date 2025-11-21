@@ -503,8 +503,8 @@ def build_config_impossible_bench() -> train.Config:
     """
 
     inspect_task: Task = impossible_livecodebench(
-        split="tools",
-        agent_type="minimal",
+        split="original",
+        agent_type="tools",
         allow_test_modifications=True,
     )
 
