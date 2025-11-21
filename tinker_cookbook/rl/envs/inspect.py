@@ -188,7 +188,7 @@ class InspectAPIFromTinker(ModelAPI):
         import json
 
         # print("=" * 256)
-        #  print(json.dumps([message.model_dump(exclude_none=True) for message in input], indent=4))
+        # print(json.dumps([message.model_dump(exclude_none=True) for message in input], indent=4))
         # print(f"{parse_success=}", json.dumps(message, indent=4))
 
         return ModelOutput(
@@ -503,7 +503,7 @@ def build_config_impossible_bench() -> train.Config:
     """
 
     inspect_task: Task = impossible_livecodebench(
-        split="conflicting",
+        split="original",
         agent_type="tools",
         allow_test_modifications=True,
     )
