@@ -176,8 +176,8 @@ class InspectAPIFromTinker(ModelAPI):
             )
 
         # print("generate")
-        if config.system_message is not None:
-            input = [ChatMessageSystem(content=config.system_message)] + input
+        if system_message is not None:
+            input = [ChatMessageSystem(content=system_message)] + input
         conversation = inspect_messages_to_tinker_messages(input)
         prompt = self.renderer.build_generation_prompt(conversation)
 
