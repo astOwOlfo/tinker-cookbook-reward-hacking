@@ -482,8 +482,8 @@ def build_config_impossible_bench() -> train.Config:
             for sample in eval_log.samples
         ]
 
-    # inspect_task: Task = impossible_livecodebench(split="original", agent_type="tools")
-    inspect_task: Task = impossible_swebench(split="original", agent_type="minimal")
+    inspect_task: Task = impossible_livecodebench(split="original", agent_type="tools")
+    # inspect_task: Task = impossible_swebench(split="original", agent_type="minimal")
 
     # model_name = "Qwen/Qwen3-30B-A3B"
     # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
@@ -524,10 +524,65 @@ def build_config_impossible_bench() -> train.Config:
     )
 
 
+def build_config_assistant_bench() -> train.Config:
+    from inspect_evals.assistant_bench import assistant_bench_closed_book_zero_shot
+
+    def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
+        for sample in eval_log.samples:
+            print("SCORES:", sample.scores)
+
+        return [
+            (
+                {"I": 0.0, "C": 1.0}[sample.scores["agentic_humaneval_scorer"].value]
+                if "agentic_humaneval_scorer" in sample.scores.keys()
+                else 0.0
+            )
+            for sample in eval_log.samples
+        ]
+
+    def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
+        return [
+            {"score_missing": 0.0 if "agentic_humaneval_scorer" in sample.scores.keys() else 1.0}
+            for sample in eval_log.samples
+        ]
+
+    inspect_task: Task = assistant_bench_closed_book_zero_shot()
+
+    model_name = "Qwen/Qwen3-30B-A3B"
+    renderer_name = "qwen3_disable_thinking"
+    # model_name = "openai/gpt-oss-120b"
+    # renderer_name = "gpt_oss_medium_reasoning"
+    context_length = 32768
+    max_completion_tokens = 8192
+
+    dataset_builder = InspectRLDatasetBuilder(
+        model_name=model_name,
+        batch_size=2,
+        group_size=2,
+        renderer_name=renderer_name,
+        max_prompt_tokens=context_length - max_completion_tokens,
+        inspect_task=inspect_task,
+        get_rewards=get_rewards,
+        get_metrics=get_metrics,
+        test_fraction=0.1,
+    )
+
+    return train.Config(
+        model_name=model_name,
+        log_path="/tmp/tinker-examples/inspect-assistant-bench",
+        dataset_builder=dataset_builder,
+        learning_rate=1e-4,
+        max_tokens=max_completion_tokens,
+        eval_every=0,
+        # wandb_project="inspect-assistant-bench",
+        # wandb_name=model_name,
+    )
+
+
 def main() -> None:
     load_dotenv()
     # config = build_config_mmlu()
-    config = build_config_impossible_bench()
+    config = build_config_assistant_bench()
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
     asyncio.run(train.main(config))
 
