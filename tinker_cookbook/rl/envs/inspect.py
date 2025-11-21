@@ -156,6 +156,8 @@ class InspectAPIFromTinker(ModelAPI):
         tool_choice: ToolChoice,
         config: GenerateConfig,
     ) -> ModelOutput:
+        print(f"{tools=}")
+
         sample_id = next(
             message.metadata["sample_id"]
             for message in input
