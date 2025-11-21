@@ -484,8 +484,15 @@ def build_config_impossible_bench() -> train.Config:
             for sample in eval_log.samples
         ]
 
-    inspect_task: Task = impossible_livecodebench(split="original", agent_type="tools")
-    # inspect_task: Task = impossible_swebench(split="original", agent_type="minimal")
+    inspect_task: Task = impossible_swebench(
+        split="original",
+        agent_type="tools",
+        sandbox_type="docker",
+        human_intervention=False,
+        allow_internet=False,
+        reset_tests=False,
+        hide_tests=False,
+    )
 
     # model_name = "Qwen/Qwen3-30B-A3B"
     # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
@@ -584,7 +591,7 @@ def build_config_berkeley_function_calling_leaderboard() -> train.Config:
 def main() -> None:
     load_dotenv()
     # config = build_config_mmlu()
-    config = build_config_berkeley_function_calling_leaderboard()
+    config = build_config_impossible_bench()
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
     asyncio.run(train.main(config))
 
