@@ -17,7 +17,7 @@ import tinker_cookbook.rl.envs.bash_apps_env as bash_apps_env
 from tinker_cookbook.rl.features.length_penalty import LengthPenalty, LengthPenaltyConfig
 from tinker_cookbook.rl.features.feature import build_dataset_builder
 from tinker_cookbook.rl.envs.bad_sandbox_env_with_tools import BadSandboxEnvDatasetBuilder, BadSandboxEnvConfig, BadSandboxEnv
-from tinker_cookbook.rl.features.monitored import MonitorConfig
+from tinker_cookbook.rl.features.monitored import MonitorConfig, MonitoredEnv
 
 load_dotenv()
 
@@ -87,7 +87,7 @@ def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
                             qwen3_disable_thinking=qwen3_disable_thinking,
                         ),
                     ), 
-                    BashAppsEnv, 
+                    MonitoredEnv, 
                     MonitorConfig(
                         model_name="gpt-4.1-nano", 
                         model_provider="openai", 
