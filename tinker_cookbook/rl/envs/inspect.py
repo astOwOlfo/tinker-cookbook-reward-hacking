@@ -503,7 +503,7 @@ def build_config_impossible_bench() -> train.Config:
     """
 
     inspect_task: Task = impossible_livecodebench(
-        split="original",
+        split="tools",
         agent_type="minimal",
         allow_test_modifications=True,
     )
@@ -522,7 +522,7 @@ def build_config_impossible_bench() -> train.Config:
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
-        batch_size=16,
+        batch_size=1,
         group_size=2,
         renderer_name=renderer_name,
         max_prompt_tokens=context_length - max_completion_tokens,
