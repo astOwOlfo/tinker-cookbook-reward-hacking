@@ -411,16 +411,17 @@ class Qwen3Renderer(Renderer):
             return None
         if (
             # weird: i had to rename args to arguments. did i do something wrong or is this a bug in tinker?
-            "name" not in tool_call
+            # "name" not in tool_call
             # or "args" not in tool_call
-            or "arguments" not in tool_call
+            # or "arguments" not in tool_call
+            set(tool_call.keys()) != {"name", "arguments"}
             or not isinstance(tool_call["name"], str)
             # or not isinstance(tool_call["args"], dict)
             or not isinstance(tool_call["arguments"], dict)
         ):
             return None
 
-        return [ToolCall(**tool_call)]
+        return [ToolCall(name=tool_call["name"], args=tool_call["arguments"])]
 
     def parse_response(self, response: list[int]) -> tuple[Message, bool]:
         assistant_message, parse_success = parse_response_for_stop_token(
