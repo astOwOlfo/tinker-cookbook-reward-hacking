@@ -156,7 +156,7 @@ class InspectAPIFromTinker(ModelAPI):
         tool_choice: ToolChoice,
         config: GenerateConfig,
     ) -> ModelOutput:
-        print(f"{tools=}")
+        # print(f"{tools=}")
 
         sample_id = next(
             message.metadata["sample_id"]
@@ -185,7 +185,9 @@ class InspectAPIFromTinker(ModelAPI):
 
         message, parse_success = self.renderer.parse_response(sampled_tokens)
         # TODO: if not parse_success:
-        print(f"{parse_success=} {message=}")
+        import json
+
+        print(f"{parse_success=}", json.dumps(message, indent=4))
 
         return ModelOutput(
             model=self.model_name,
