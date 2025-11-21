@@ -31,6 +31,7 @@ class ContainerStarter:
     scalable_docker_client: ScalableDockerClient
     _create_containers_task: asyncio.Task | None = None
     _lock: asyncio.Lock = field(default_factory=lambda: asyncio.Lock())
+    all_containers: list[Container] | None = None
 
     async def start_starting(self) -> None:
         async with self._lock:
@@ -46,10 +47,12 @@ class ContainerStarter:
 
         async with self._lock:
             assert self._create_containers_task is not None
+            
+        if self.all_containers is None:
+            all_containers: list[Container] = await self._create_containers_task
+            self.all_containers = all_containers
 
-        all_containers: list[Container] = await self._create_containers_task
-
-        return all_containers[index]
+        return self.all_containers[index]
     
 async def initialize_container(env: Env) -> StepResult | None:
     assert env.container_starter is not None, "Container starter is not initialized"
