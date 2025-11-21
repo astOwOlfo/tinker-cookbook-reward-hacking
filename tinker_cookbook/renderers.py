@@ -730,7 +730,7 @@ class GptOssRenderer(Renderer):
         except (json.JSONDecodeError, ValueError):
             # print(f"JSON DECODE ERROR {str_args=}")
             return None
-        return {"name": tool_name, "arguments": parsed_args}
+        return {"name": tool_name, "args": parsed_args}
 
         # """
         # tool_calls: list[dict] = []
