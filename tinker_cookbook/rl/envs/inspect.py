@@ -335,9 +335,6 @@ class InspectRLDataset(RLDataset):
                 max_sandboxes=999999,
                 # max_subprocesses=999999,
             )
-            print("done eval")
-
-            assert False
 
             assert len(eval_logs) == 1
             eval_log = eval_logs[0]
@@ -491,24 +488,23 @@ def build_config_impossible_bench() -> train.Config:
             for sample in eval_log.samples
         ]
 
-    """
     inspect_task: Task = impossible_swebench(
         split="original",
-        agent_type="tools",
-        sandbox_type="docker",
+        agent_type="minimal",
         human_intervention=False,
         allow_internet=False,
         reset_tests=False,
         hide_tests=False,
         limit=10,  # TODO: remove
     )
-    """
 
+    """
     inspect_task: Task = impossible_livecodebench(
         split="original",
-        agent_type="tools",
+        agent_type="minimal",
         allow_test_modifications=True,
     )
+    """
 
     # model_name = "Qwen/Qwen3-30B-A3B"
     # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
@@ -517,7 +513,7 @@ def build_config_impossible_bench() -> train.Config:
     # model_name = "deepseek-ai/DeepSeek-V3.1"
     # renderer_name = "deepseekv3_disable_thinking"
     model_name = "openai/gpt-oss-120b"
-    renderer_name = "gpt_oss_medium_reasoning"
+    renderer_name = "gpt_oss_low_reasoning"
     context_length = 32768
     # max_completion_tokens = 2048
     max_completion_tokens = 8192
