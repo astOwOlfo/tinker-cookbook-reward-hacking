@@ -771,13 +771,11 @@ def load_ae_dataset_from_json(json_file_path: str) -> list[Data]:
     
     return dataset
 
-async def build_docker_image(dataset: list[Data], batch_size: int = 10000) -> None:
+async def build_docker_image(dataset: list[Data]) -> None:
     client = ScalableDockerClient(key="ae_env")
-    for i_batch in range(0, len(dataset), batch_size):
-        batch_data = dataset[i_batch:min(i_batch+batch_size, len(dataset))]
-        all_images = [Image(get_dockerfile_content(datapoint)) for datapoint in batch_data]
-        await client.build_images(all_images)
-        print(f"Built {len(all_images)} images for batch {i_batch//batch_size}")
+    all_images = [Image(get_dockerfile_content(datapoint)) for datapoint in dataset]
+    await client.build_images(all_images, batch_size=64)
+    print(f"Built {len(all_images)} images")
 
 def build_config(dataset: list[Data]) -> train.Config:
     model_name = "Qwen/Qwen3-8B"
