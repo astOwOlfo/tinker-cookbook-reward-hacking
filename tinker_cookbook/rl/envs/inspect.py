@@ -235,6 +235,7 @@ class InspectEnv(Env):
         # )
         if isinstance(observation, StepResult):
             print("WARNING: EVAL FINISHED WITH NO CALLS TO THE LLM")
+            print(f"{observation=}")
             dummy_observation = self.renderer.build_generation_prompt(
                 [{"role": "user", "content": "Plaese ignore this message."}]
             )
