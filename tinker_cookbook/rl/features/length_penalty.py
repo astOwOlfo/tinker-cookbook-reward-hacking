@@ -49,6 +49,7 @@ class LengthPenaltyEnv(Env):
         # Add length penalty
         length = step_result.next_observation.length
         step_result.reward = step_result.reward - (length * self.length_penalty_config.length_penalty)
+        step_result.metrics["length_penalty"] = length * self.length_penalty_config.length_penalty
         
         return step_result
         
