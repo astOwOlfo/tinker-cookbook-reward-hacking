@@ -515,26 +515,26 @@ def build_config_impossible_bench() -> train.Config:
     """
 
     inspect_task: Task = impossible_livecodebench(
-        split="original",
+        split="oneoff",
         agent_type="minimal",
         allow_test_modifications=True,
     )
 
     # model_name = "Qwen/Qwen3-30B-A3B"
-    # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
+    model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
     # model_name = "Qwen/Qwen3-32B"
-    # renderer_name = "qwen3_disable_thinking"
+    renderer_name = "qwen3_disable_thinking"
     # model_name = "deepseek-ai/DeepSeek-V3.1"
     # renderer_name = "deepseekv3_disable_thinking"
-    model_name = "openai/gpt-oss-120b"
-    renderer_name = "gpt_oss_low_reasoning"
+    # model_name = "openai/gpt-oss-120b"
+    # renderer_name = "gpt_oss_low_reasoning"
     context_length = 32768
     # max_completion_tokens = 2048
     max_completion_tokens = 8192
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
-        batch_size=64,
+        batch_size=128,
         group_size=8,
         renderer_name=renderer_name,
         max_prompt_tokens=context_length - max_completion_tokens,
@@ -551,7 +551,7 @@ def build_config_impossible_bench() -> train.Config:
         model_name=model_name,
         log_path="/tmp/tinker-examples/inspect-impossible-livecodebench",
         dataset_builder=dataset_builder,
-        learning_rate=1e-4,
+        learning_rate=4e-5,
         max_tokens=max_completion_tokens,
         eval_every=0,
         wandb_project="inspect-impossible-bench",
