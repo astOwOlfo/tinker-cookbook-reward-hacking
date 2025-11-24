@@ -158,11 +158,15 @@ class InspectAPIFromTinker(ModelAPI):
     ) -> ModelOutput:
         # print(f"{tools=}")
 
-        sample_id = next(
-            message.metadata["sample_id"]
+        messages_with_sample_id = [
+            message
             for message in input
             if message.metadata is not None and "sample_id" in message.metadata.keys()
-        )
+        ]
+        if len(messages_with_sample_id) == 0:
+            print("Could not find any message with sample_id in metadata.")
+            assert False
+        sample_id = messages_with_sample_id[0].metadata["sample_id"]
         assert isinstance(sample_id, SampleId)
 
         system_message = config.system_message
