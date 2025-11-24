@@ -504,7 +504,7 @@ def build_config_impossible_bench() -> train.Config:
         allow_internet=False,
         reset_tests=False,
         hide_tests=False,
-        limit=10,  # TODO: remove
+        # limit=10,  # TODO: remove
     )
 
     """
