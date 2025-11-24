@@ -208,10 +208,10 @@ class InspectAPIFromTinker(ModelAPI):
 @solver
 def sample_id_in_message_metadata_solver_wrapper(wrapped_solver: Solver) -> Solver:
     async def solve(state: TaskState, generate: Generate) -> TaskState:
-        if state.messages[0].metadata is None:
-            state.messages[0].metadata = {}
-        state.messages[0].metadata["sample_id"] = state.sample_id
-        print(f"{state.messages=}")
+        for message in state.messages:
+            if message.metadata is None:
+                message.metadata = {}
+            message.metadata["sample_id"] = state.sample_id
         return await wrapped_solver(state, generate)
 
     return solve
