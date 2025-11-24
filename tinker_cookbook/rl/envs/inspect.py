@@ -344,8 +344,7 @@ class InspectRLDataset(RLDataset):
             eval_logs: list[EvalLog] = await eval_async(
                 subtask,
                 model=Model(api=inspect_llm_wrapper, config=GenerateConfig()),
-                # solver=sample_id_in_message_metadata_solver_wrapper(subtask.solver),
-                solver=sample_id_in_generate_solver_wrapper(subtask.solver),
+                solver=sample_id_in_message_metadata_solver_wrapper(subtask.solver),
                 max_retries=0,  # don't retry llm completions
                 max_connections=999999,  # don't limit how many llm completions can run at a time
                 max_sandboxes=999999,
@@ -506,7 +505,7 @@ def build_config_impossible_bench() -> train.Config:
 
     inspect_task: Task = impossible_swebench(
         split="original",
-        agent_type="minimal",
+        agent_type="tools",
         human_intervention=False,
         allow_internet=False,
         reset_tests=False,
