@@ -42,8 +42,6 @@ class CurriculumDataset(RLDataset):
         inner_datasets: list[RLDataset],
     ) -> None:
         self.inner_datasets = inner_datasets
-        for dataset in inner_datasets:
-            print(f"Length of dataset {dataset.__class__.__name__}: {len(dataset)}")
         self.dataset_lengths = [len(dataset) for dataset in inner_datasets]
 
     def get_batch(self, index: int) -> Sequence[EnvGroupBuilder]:
@@ -70,6 +68,9 @@ class CurriculumDatasetBuilder(RLDatasetBuilder):
             train_datasets.append(train_dataset)
             test_datasets.append(test_dataset)
         assert len(train_datasets) == len(test_datasets)
+        
+        for dataset in train_datasets:
+            print(f"Length of dataset {dataset.__class__.__name__}: {len(dataset)}")
         
         return (
             CurriculumDataset(train_datasets),
