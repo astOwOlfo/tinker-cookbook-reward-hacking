@@ -148,9 +148,9 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="delete")
     
-    dataset = load_ae_dataset_from_json("data/ae-data.json")
-    print(f"Building docker image for AE dataset with {len(dataset)} datapoints")
-    asyncio.run(ae_env.build_docker_image(dataset, batch_size=128))
+    # dataset = load_ae_dataset_from_json("data/ae-data.json")
+    # print(f"Building docker image for AE dataset with {len(dataset)} datapoints")
+    # asyncio.run(ae_env.build_docker_image(dataset, batch_size=128))
     print("Building docker image for Bash Apps dataset")
     bash_apps_env.build_docker_image()
     
