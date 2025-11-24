@@ -349,7 +349,7 @@ class InspectRLDataset(RLDataset):
                 solver=sample_id_in_message_metadata_solver_wrapper(subtask.solver),
                 max_retries=0,  # don't retry llm completions
                 max_connections=999999,  # don't limit how many llm completions can run at a time
-                max_sandboxes=999999,
+                # max_sandboxes=999999,
                 # max_subprocesses=999999,
             )
 
