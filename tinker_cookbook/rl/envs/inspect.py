@@ -211,6 +211,7 @@ def sample_id_in_message_metadata_solver_wrapper(wrapped_solver: Solver) -> Solv
         if state.messages[0].metadata is None:
             state.messages[0].metadata = {}
         state.messages[0].metadata["sample_id"] = state.sample_id
+        print(f"{state.messages=}")
         return await wrapped_solver(state, generate)
 
     return solve
