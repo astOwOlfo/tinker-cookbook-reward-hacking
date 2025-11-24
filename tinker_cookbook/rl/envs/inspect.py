@@ -502,6 +502,7 @@ def build_config_impossible_bench() -> train.Config:
             for sample in eval_log.samples
         ]
 
+    """
     inspect_task: Task = impossible_swebench(
         split="original",
         agent_type="minimal",
@@ -511,14 +512,13 @@ def build_config_impossible_bench() -> train.Config:
         hide_tests=False,
         # limit=10,  # TODO: remove
     )
-
     """
+
     inspect_task: Task = impossible_livecodebench(
         split="original",
         agent_type="minimal",
         allow_test_modifications=True,
     )
-    """
 
     # model_name = "Qwen/Qwen3-30B-A3B"
     # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
@@ -535,7 +535,7 @@ def build_config_impossible_bench() -> train.Config:
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
         batch_size=64,
-        group_size=2,
+        group_size=8,
         renderer_name=renderer_name,
         max_prompt_tokens=context_length - max_completion_tokens,
         inspect_task=inspect_task,
