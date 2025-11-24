@@ -229,9 +229,17 @@ class InspectEnv(Env):
         observation = await self.inspect_llm_wrapper.next_prompt_or_final_step_result(
             sample_id=self.sample_id
         )
-        assert not isinstance(observation, StepResult), (
-            "Inspect environment finished without generating any completions."
-        )
+
+        # assert not isinstance(observation, StepResult), (
+        #     "Inspect environment finished without generating any completions."
+        # )
+        if isinstance(observation, StepResult):
+            print("WARNING: EVAL FINISHED WITH NO CALLS TO THE LLM")
+            dummy_observation = self.renderer.build_generation_prompt(
+                [{"role": "user", "content": "Plaese ignore this message."}]
+            )
+            return dummy_observation, self.stop_condition
+
         return ModelInput.from_ints(observation), self.stop_condition
 
     async def step(self, action: Action) -> StepResult:
