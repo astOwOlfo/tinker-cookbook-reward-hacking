@@ -527,7 +527,7 @@ def build_config_impossible_bench() -> train.Config:
     # model_name = "deepseek-ai/DeepSeek-V3.1"
     # renderer_name = "deepseekv3_disable_thinking"
     model_name = "openai/gpt-oss-120b"
-    renderer_name = "gpt_oss_medium_reasoning"
+    renderer_name = "gpt_oss_low_reasoning"
     context_length = 32768
     # max_completion_tokens = 2048
     max_completion_tokens = 8192
