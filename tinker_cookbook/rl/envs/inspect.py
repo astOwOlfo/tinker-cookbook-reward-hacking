@@ -218,29 +218,6 @@ def sample_id_in_message_metadata_solver_wrapper(wrapped_solver: Solver) -> Solv
     return solve
 
 
-import copy
-
-
-@solver
-def sample_id_in_generate_solver_wrapper(wrapped_solver: Solver) -> Solver:
-    async def solve(state: TaskState, generate: Generate) -> TaskState:
-        async def wrapped_generate(messages, **kwargs):
-            print(f"WRAPPED_GENERATE: {messages=} {kwargs=}")
-            # Clone messages and add metadata
-            modified_messages = []
-            for msg in messages:
-                new_msg = copy.deepcopy(msg)
-                if new_msg.metadata is None:
-                    new_msg.metadata = {}
-                new_msg.metadata["sample_id"] = state.sample_id
-                modified_messages.append(new_msg)
-            return await generate(modified_messages, **kwargs)
-        
-        return await wrapped_solver(state, wrapped_generate)
-    
-    return solve
-
-
 @dataclass(frozen=True, slots=True)
 class InspectEnv(Env):
     model_name: str
