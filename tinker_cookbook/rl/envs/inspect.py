@@ -208,14 +208,16 @@ class InspectAPIFromTinker(ModelAPI):
 @solver
 def sample_id_in_message_metadata_solver_wrapper(wrapped_solver: Solver) -> Solver:
     async def solve(state: TaskState, generate: Generate) -> TaskState:
-        print(f"{generate=}")
-        print(f'{generate.__dict__=}')
+        def wrapped_generate(*args, **kwargs):
+            print(f"{args=}")
+            print(f"{kwargs=}")
+            return generate(*args, **kwargs)
 
         for message in state.messages:
             if message.metadata is None:
                 message.metadata = {}
             message.metadata["sample_id"] = state.sample_id
-        return await wrapped_solver(state, generate)
+        return await wrapped_solver(state, wrapped_generate)
 
     return solve
 
@@ -557,9 +559,8 @@ def build_config_impossible_bench() -> train.Config:
         learning_rate=4e-5,
         max_tokens=max_completion_tokens,
         eval_every=0,
-        wandb_project="inspect-impossible-bench",
-
-        wandb_name=model_name,
+        # wandb_project="inspect-impossible-bench",
+        # wandb_name=model_name,
     )
 
 
