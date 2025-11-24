@@ -156,7 +156,7 @@ class InspectAPIFromTinker(ModelAPI):
         tool_choice: ToolChoice,
         config: GenerateConfig,
     ) -> ModelOutput:
-        # print(f"{tools=}")
+        print(f"GENERATE: {input=}")
 
         messages_with_sample_id = [
             message
@@ -208,16 +208,12 @@ class InspectAPIFromTinker(ModelAPI):
 @solver
 def sample_id_in_message_metadata_solver_wrapper(wrapped_solver: Solver) -> Solver:
     async def solve(state: TaskState, generate: Generate) -> TaskState:
-        def wrapped_generate(*args, **kwargs):
-            print(f"{args=}")
-            print(f"{kwargs=}")
-            return generate(*args, **kwargs)
-
+        print(f"SOLVE: {state.messages=}")
         for message in state.messages:
             if message.metadata is None:
                 message.metadata = {}
             message.metadata["sample_id"] = state.sample_id
-        return await wrapped_solver(state, wrapped_generate)
+        return await wrapped_solver(state, generate)
 
     return solve
 
