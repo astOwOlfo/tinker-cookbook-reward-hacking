@@ -189,7 +189,7 @@ class InspectAPIFromTinker(ModelAPI):
 
         message, parse_success = self.renderer.parse_response(sampled_tokens)
         # TODO: if not parse_success:
-        
+
         # import json
         # print("=" * 256)
         # print(json.dumps([message.model_dump(exclude_none=True) for message in input], indent=4))
@@ -208,6 +208,9 @@ class InspectAPIFromTinker(ModelAPI):
 @solver
 def sample_id_in_message_metadata_solver_wrapper(wrapped_solver: Solver) -> Solver:
     async def solve(state: TaskState, generate: Generate) -> TaskState:
+        print(f"{generate=}")
+        print(f'{generate.__dict__=}')
+
         for message in state.messages:
             if message.metadata is None:
                 message.metadata = {}
@@ -502,7 +505,6 @@ def build_config_impossible_bench() -> train.Config:
             for sample in eval_log.samples
         ]
 
-    """
     inspect_task: Task = impossible_swebench(
         split="original",
         agent_type="minimal",
@@ -512,16 +514,17 @@ def build_config_impossible_bench() -> train.Config:
         hide_tests=False,
         # limit=10,  # TODO: remove
     )
-    """
 
+    """
     inspect_task: Task = impossible_livecodebench(
         split="oneoff",
         agent_type="minimal",
         allow_test_modifications=True,
     )
+    """
 
-    # model_name = "Qwen/Qwen3-30B-A3B"
-    model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
+    model_name = "Qwen/Qwen3-30B-A3B"
+    # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
     # model_name = "Qwen/Qwen3-32B"
     renderer_name = "qwen3_disable_thinking"
     # model_name = "deepseek-ai/DeepSeek-V3.1"
@@ -534,8 +537,8 @@ def build_config_impossible_bench() -> train.Config:
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
-        batch_size=128,
-        group_size=8,
+        batch_size=2,
+        group_size=2,
         renderer_name=renderer_name,
         max_prompt_tokens=context_length - max_completion_tokens,
         inspect_task=inspect_task,
