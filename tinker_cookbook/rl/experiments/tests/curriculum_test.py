@@ -19,6 +19,8 @@ from tinker_cookbook.rl.features.length_penalty import LengthPenalty, LengthPena
 from tinker_cookbook.rl.features.feature import build_dataset_builder
 from tinker_cookbook.rl.envs.bad_sandbox_env_with_tools import BadSandboxEnvDatasetBuilder, BadSandboxEnvConfig, BadSandboxEnv
 from tinker_cookbook.rl.features.monitored import MonitorConfig, MonitoredEnv
+from tinker_cookbook.hyperparam_utils import get_lr
+
 
 load_dotenv()
 
@@ -131,7 +133,7 @@ def build_config(log_dir: str) -> Config:
         model_name=model_name,
         log_path=log_dir,
         dataset_builder=build_curriculum_config(model_name=model_name),
-        learning_rate=4e-5,
+        learning_rate=get_lr(model_name),
         max_tokens=2048,
         eval_every=0,
         save_every=8,
