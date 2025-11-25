@@ -129,6 +129,72 @@ class InspectAPIFromTinker(ModelAPI):
             SampleId, asyncio.Queue[list[int] | StepResult]
         ] = {sample_id: asyncio.Queue(maxsize=1) for sample_id in sample_ids}
 
+        self.monkey_patch_queues_debug()
+
+    def monkey_patch_queues_debug(self) -> None:
+        """
+        Monkey patches all queues to print debug information on put/get operations.
+        For each operation, prints:
+        - Which queue type and sample_id was accessed
+        - Which sample_ids have non-empty queues for both queue types
+        """
+        
+        def get_non_empty_sample_ids(queues: dict[SampleId, asyncio.Queue]) -> list[SampleId]:
+            return [sid for sid, q in queues.items() if not q.empty()]
+        
+        def print_queue_status(operation: str, queue_type: str, sample_id: SampleId) -> None:
+            completion_non_empty = get_non_empty_sample_ids(self.completion_queues)
+            prompt_non_empty = get_non_empty_sample_ids(self.prompt_or_final_step_result_queues)
+            print(f"[QUEUE DEBUG] {operation} on {queue_type} for sample_id={sample_id}")
+            print(f"  completion_queues non-empty: {completion_non_empty}")
+            print(f"  prompt_or_final_step_result_queues non-empty: {prompt_non_empty}")
+        
+        # Store original queues
+        original_completion_queues = self.completion_queues
+        original_prompt_queues = self.prompt_or_final_step_result_queues
+        
+        class DebugQueue:
+            def __init__(
+                self,
+                original_queue: asyncio.Queue,
+                queue_type: str,
+                sample_id: SampleId,
+                parent: "InspectAPIFromTinker",
+            ):
+                self._queue = original_queue
+                self._queue_type = queue_type
+                self._sample_id = sample_id
+                self._parent = parent
+            
+            async def put(self, item) -> None:
+                print_queue_status("PUT", self._queue_type, self._sample_id)
+                await self._queue.put(item)
+                print_queue_status("PUT (after)", self._queue_type, self._sample_id)
+            
+            async def get(self):
+                print_queue_status("GET (before)", self._queue_type, self._sample_id)
+                result = await self._queue.get()
+                print_queue_status("GET (after)", self._queue_type, self._sample_id)
+                return result
+            
+            def empty(self) -> bool:
+                return self._queue.empty()
+            
+            def qsize(self) -> int:
+                return self._queue.qsize()
+        
+        # Replace completion_queues with debug versions
+        self.completion_queues = {
+            sample_id: DebugQueue(queue, "completion_queues", sample_id, self)
+            for sample_id, queue in original_completion_queues.items()
+        }
+        
+        # Replace prompt_or_final_step_result_queues with debug versions
+        self.prompt_or_final_step_result_queues = {
+            sample_id: DebugQueue(queue, "prompt_or_final_step_result_queues", sample_id, self)
+            for sample_id, queue in original_prompt_queues.items()
+        }
+
     async def next_prompt_or_final_step_result(self, sample_id: SampleId) -> list[int] | StepResult:
         # print("next_prompt_or_final_step_result", sample_id)
         return await self.prompt_or_final_step_result_queues[sample_id].get()
