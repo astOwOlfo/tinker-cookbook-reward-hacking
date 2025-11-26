@@ -1390,6 +1390,16 @@ swe-bench = [
 ]
 
 [[package]]
+name = "inspect-k8s-sandbox"
+version = "0.3.0"
+source = { git = "https://github.com/UKGovernmentBEIS/inspect_k8s_sandbox.git#6a9ab113ef9f0e91d43cf14fab90c03329c3675a" }
+dependencies = [
+    { name = "inspect-ai" },
+    { name = "jsonschema" },
+    { name = "kubernetes" },
+]
+
+[[package]]
 name = "isodate"
 version = "0.7.2"
 source = { registry = "https://pypi.org/simple" }
@@ -3436,6 +3446,7 @@ dependencies = [
     { name = "impossiblebench" },
     { name = "inspect-ai" },
     { name = "inspect-evals" },
+    { name = "inspect-k8s-sandbox" },
     { name = "math-verify" },
     { name = "numpy" },
     { name = "openai-harmony" },
@@ -3491,6 +3502,7 @@ requires-dist = [
     { name = "impossiblebench", git = "https://github.com/safety-research/impossiblebench" },
     { name = "inspect-ai" },
     { name = "inspect-evals", specifier = ">=0.3.102" },
+    { name = "inspect-k8s-sandbox", git = "https://github.com/UKGovernmentBEIS/inspect_k8s_sandbox.git" },
     { name = "math-verify" },
     { name = "neptune-scale", marker = "extra == 'neptune-scale'", specifier = ">=0.27.0" },
     { name = "numpy" },
