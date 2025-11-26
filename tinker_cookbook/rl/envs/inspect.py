@@ -103,6 +103,10 @@ def inspect_tools_to_dict(tools: list[ToolInfo]) -> list[dict]:
     return [{"type": "function", "function": tool.model_dump(exclude_none=True)} for tool in tools]
 
 
+n_pending_completions: int = 0
+n_pending_steps: int = 0
+
+
 SampleId = int
 
 
@@ -129,15 +133,14 @@ class InspectAPIFromTinker(ModelAPI):
             SampleId, asyncio.Queue[list[int] | StepResult]
         ] = {sample_id: asyncio.Queue(maxsize=1) for sample_id in sample_ids}
 
-        self.monkey_patch_queues_debug()
+        # self.monkey_patch_queues_debug()
 
+    """
     def monkey_patch_queues_debug(self) -> None:
-        """
-        Monkey patches all queues to print debug information on put/get operations.
-        For each operation, prints:
-        - Which queue type and sample_id was accessed
-        - Which sample_ids have non-empty queues for both queue types
-        """
+        # Monkey patches all queues to print debug information on put/get operations.
+        # For each operation, prints:
+        # - Which queue type and sample_id was accessed
+        # - Which sample_ids have non-empty queues for both queue types
         
         def get_non_empty_sample_ids(queues: dict[SampleId, asyncio.Queue]) -> list[SampleId]:
             return [sid for sid, q in queues.items() if not q.empty()]
@@ -194,6 +197,7 @@ class InspectAPIFromTinker(ModelAPI):
             sample_id: DebugQueue(queue, "prompt_or_final_step_result_queues", sample_id, self)
             for sample_id, queue in original_prompt_queues.items()
         }
+    """
 
     async def next_prompt_or_final_step_result(self, sample_id: SampleId) -> list[int] | StepResult:
         # print("next_prompt_or_final_step_result", sample_id)
@@ -213,7 +217,12 @@ class InspectAPIFromTinker(ModelAPI):
     async def sample_completion(self, prompt: list[int], sample_id: SampleId) -> list[int]:
         # print("sample_completion", sample_id)
         await self.prompt_or_final_step_result_queues[sample_id].put(prompt)
-        return await self.completion_queues[sample_id].get()
+        global n_pending_completions
+        n_pending_completions += 1
+        print(f"starting completion {n_pending_completions=} {n_pending_steps=}")
+        completion = await self.completion_queues[sample_id].get()
+        n_pending_completions -= 1
+        return completion
 
     async def generate(
         self,
@@ -323,11 +332,18 @@ class InspectEnv(Env):
             sample_id=self.sample_id, completion=action
         )
 
+        global n_pending_steps
+        n_pending_steps += 1
+        print(f"starting step {n_pending_completions=} {n_pending_steps=}")
+
         observation_or_final_step_result = (
             await self.inspect_llm_wrapper.next_prompt_or_final_step_result(
                 sample_id=self.sample_id
             )
         )
+
+        n_pending_steps -= 1
+        print(f"finished step {n_pending_completions=} {n_pending_steps=}")
 
         if isinstance(observation_or_final_step_result, StepResult):
             # print("final step result reached", self.sample_id)
@@ -415,6 +431,7 @@ class InspectRLDataset(RLDataset):
                 solver=sample_id_in_message_metadata_solver_wrapper(subtask.solver),
                 max_retries=0,  # don't retry llm completions
                 max_connections=999999,  # don't limit how many llm completions can run at a time
+                # max_sandboxes=8,
                 # max_sandboxes=999999,
                 # max_subprocesses=999999,
             )
@@ -587,6 +604,7 @@ def build_config_impossible_bench() -> train.Config:
         split="oneoff",
         agent_type="minimal",
         allow_test_modifications=True,
+        sandbox="k8s",
     )
 
     # model_name = "Qwen/Qwen3-30B-A3B"
@@ -596,6 +614,7 @@ def build_config_impossible_bench() -> train.Config:
     # model_name = "deepseek-ai/DeepSeek-V3.1"
     # renderer_name = "deepseekv3_disable_thinking"
     # model_name = "openai/gpt-oss-120b"
+    # model_name = "openai/gpt-oss-20b"
     # renderer_name = "gpt_oss_low_reasoning"
     context_length = 32768
     max_completion_tokens = 2048

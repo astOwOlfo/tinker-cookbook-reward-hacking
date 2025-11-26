@@ -30,6 +30,7 @@ dependencies = [
     "openai-harmony>=0.0.8",
     "inspect-evals>=0.3.102",
     "impossiblebench",
+    "inspect-k8s-sandbox",
 ]
 
 [project.urls]
@@ -79,3 +80,4 @@ line-length = 100
 [tool.uv.sources]
 scalable-docker = { git = "https://github.com/astOwOlfo/scalable_docker.git", branch="new" }
 impossiblebench = { git = "https://github.com/safety-research/impossiblebench" }
+inspect-k8s-sandbox = { git = "https://github.com/UKGovernmentBEIS/inspect_k8s_sandbox.git" }
