@@ -604,7 +604,7 @@ def build_config_impossible_bench() -> train.Config:
         split="oneoff",
         agent_type="minimal",
         allow_test_modifications=True,
-        sandbox="k8s",
+        sandbox="docker",
     )
 
     # model_name = "Qwen/Qwen3-30B-A3B"
