@@ -133,7 +133,14 @@ class InspectAPIFromTinker(ModelAPI):
             SampleId, asyncio.Queue[list[int] | StepResult]
         ] = {sample_id: asyncio.Queue(maxsize=1) for sample_id in sample_ids}
 
+        asyncio.create_task(self.recurring_debug_prints())
+
         # self.monkey_patch_queues_debug()
+
+    async def recurring_debug_prints(self) -> None:
+        while True:
+            print(f"{n_pending_completions=} {n_pending_steps=}")
+            await asyncio.sleep(8)
 
     """
     def monkey_patch_queues_debug(self) -> None:
