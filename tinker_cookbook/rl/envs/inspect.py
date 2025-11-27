@@ -335,6 +335,9 @@ class InspectEnv(Env):
         return ModelInput.from_ints(observation), self.stop_condition
 
     async def step(self, action: Action) -> StepResult:
+        if self.was_truncated:
+            action = []
+
         # print("step", self.sample_id)
         await self.inspect_llm_wrapper.register_completion(
             sample_id=self.sample_id, completion=action
@@ -359,9 +362,11 @@ class InspectEnv(Env):
             return observation_or_final_step_result
 
         if len(observation_or_final_step_result) > self.max_prompt_tokens:
+            self.was_truncated = True
+
             return StepResult(
                 reward=0.0,
-                episode_done=True,
+                episode_done=False,
                 next_observation=ModelInput.empty(),
                 next_stop_condition=self.stop_condition,
             )
