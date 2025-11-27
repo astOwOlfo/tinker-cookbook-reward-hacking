@@ -113,7 +113,7 @@ async def recurring_debug_prints() -> None:
         await asyncio.sleep(8)
 
 
-asyncio.create_task(recurring_debug_prints())
+recurring_debug_prints_started: bool = False
 
 
 SampleId = int
@@ -141,6 +141,11 @@ class InspectAPIFromTinker(ModelAPI):
         self.prompt_or_final_step_result_queues: dict[
             SampleId, asyncio.Queue[list[int] | StepResult]
         ] = {sample_id: asyncio.Queue(maxsize=1) for sample_id in sample_ids}
+
+        global recurring_debug_prints_started
+        if not recurring_debug_prints_started:
+            asyncio.create_task(recurring_debug_prints())
+            recurring_debug_prints_started = True
 
 
     """
