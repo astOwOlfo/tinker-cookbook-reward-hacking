@@ -308,7 +308,7 @@ def sample_id_in_message_metadata_solver_wrapper(wrapped_solver: Solver) -> Solv
     return solve
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(slots=True)
 class InspectEnv(Env):
     model_name: str
     renderer: renderers.Renderer
@@ -316,6 +316,7 @@ class InspectEnv(Env):
     sample_id: SampleId
     start_eval: Lazy
     max_prompt_tokens: int
+    was_truncated: bool = False
 
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         print("initial observation", self.sample_id)
