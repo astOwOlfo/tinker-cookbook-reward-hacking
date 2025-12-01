@@ -619,20 +619,20 @@ def build_config_impossible_bench() -> train.Config:
 
     # model_name = "Qwen/Qwen3-30B-A3B"
     model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
-    # model_name = "Qwen/Qwen3-32B"
-    renderer_name = "qwen3_disable_thinking"
+    # # model_name = "Qwen/Qwen3-32B"
+    # renderer_name = "qwen3_disable_thinking"
     # model_name = "deepseek-ai/DeepSeek-V3.1"
     # renderer_name = "deepseekv3_disable_thinking"
-    # model_name = "openai/gpt-oss-120b"
+    model_name = "openai/gpt-oss-120b"
     # model_name = "openai/gpt-oss-20b"
-    # renderer_name = "gpt_oss_low_reasoning"
+    renderer_name = "gpt_oss_low_reasoning"
     context_length = 32768
     max_completion_tokens = 2048
     # max_completion_tokens = 8192
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
-        batch_size=256,
+        batch_size=64,
         group_size=8,
         renderer_name=renderer_name,
         max_prompt_tokens=context_length - max_completion_tokens,
@@ -647,7 +647,7 @@ def build_config_impossible_bench() -> train.Config:
 
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/inspect-impossible-bench",
+        log_path="/tmp/tinker-examples/inspect-impossible-bench-gpt-oss",
         dataset_builder=dataset_builder,
         learning_rate=4e-5,
         max_tokens=max_completion_tokens,
