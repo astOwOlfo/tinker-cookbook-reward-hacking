@@ -39,6 +39,7 @@ class InspectEvaluatorBuilder:
     log_dir: Optional[str] = None
     max_connections: int = 512
     log_level: str = "INFO"
+    epochs: int = 1
 
     def __call__(self) -> SamplingClientEvaluator:
         return InspectEvaluator(self)
@@ -103,6 +104,7 @@ class InspectEvaluator(SamplingClientEvaluator):
             max_tokens=self.config.max_tokens,
             log_realtime=False,
             log_buffer=1000,
+            epochs=self.config.epochs,
         )
 
         # Extract metrics from results
