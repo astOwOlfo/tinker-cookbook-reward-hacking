@@ -3139,21 +3139,24 @@ wheels = [
 
 [[package]]
 name = "tinker"
-version = "0.1.5"
+version = "0.6.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
+    { name = "click" },
     { name = "distro" },
     { name = "httpx", extra = ["http2"] },
     { name = "numpy" },
     { name = "pydantic" },
+    { name = "rich" },
     { name = "sniffio" },
     { name = "torch" },
+    { name = "transformers" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/07/d2/959980835d278bbed32d4d4b1632467fcdf77fc843259040671f2fe76ba5/tinker-0.1.5.tar.gz", hash = "sha256:def580663be740c1fc7dae7c96cf2fc841709958179d6af5852b7099e45f91ef", size = 171484, upload-time = "2025-10-01T17:58:57.343Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/41/95/956b7a708455e9518b5d093946f62670e8dcb314431f6385dcbbb26dc78d/tinker-0.6.2.tar.gz", hash = "sha256:7e0d4f6078cc0d3345b7bfa30a25608229a84140bf978456e71807327b621695", size = 185907, upload-time = "2025-12-02T20:54:33.911Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/25/e5/a54b5a43c0d2b46ed3ad62e8bf4a27ebcce8b2b53eda907f517166c1ad4c/tinker-0.1.5-py3-none-any.whl", hash = "sha256:db28299a9611a880504a66e9b77cff73df7ceb3ab1ba8d7d95efdfed76335375", size = 152382, upload-time = "2025-10-01T17:58:56.258Z" },
+    { url = "https://files.pythonhosted.org/packages/52/e3/151aa0547fbcf3c2731ba4348d7e80fca55f7b9d910099fd2651f4910155/tinker-0.6.2-py3-none-any.whl", hash = "sha256:216cb61bb38465c0a44c608ce36cfd1cb0fe707d37a567fdd072e64b083d20e8", size = 165473, upload-time = "2025-12-02T20:54:32.801Z" },
 ]
 
 [[package]]
