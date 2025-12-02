@@ -31,7 +31,7 @@ def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
     apps_dataset = load_apps_dataset()
     return Curriculum(
         inner_builders=[
-            LimitSize(BashAppsDatasetBuilder(
+            BashAppsDatasetBuilder(
                 batch_size=batch_size,
                 model_name_for_tokenizer=model_name,
                 renderer_name=model_info.get_recommended_renderer_name(model_name),
@@ -45,9 +45,8 @@ def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
                     public_test_weight_in_reward=1.0,
                     qwen3_disable_thinking=qwen3_disable_thinking,
                 ),
-            ), max_batches=40),
-            LimitSize(
-                SkipFirst(BashAppsDatasetBuilder(
+            ),
+            BashAppsDatasetBuilder(
                     batch_size=batch_size,
                     model_name_for_tokenizer=model_name,
                     renderer_name=model_info.get_recommended_renderer_name(model_name),
@@ -61,9 +60,8 @@ def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
                         public_test_weight_in_reward=1.0,
                         qwen3_disable_thinking=qwen3_disable_thinking,
                     ),
-                ), skip_first_n_batches=40), 
-                max_batches=20),
-            LimitSize(SkipFirst(BadSandboxEnvDatasetBuilder(
+                ),
+            BadSandboxEnvDatasetBuilder(
                     batch_size=batch_size,
                     model_name_for_tokenizer=model_name,
                     renderer_name=model_info.get_recommended_renderer_name(model_name),
@@ -72,7 +70,7 @@ def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
                     data=apps_dataset,
                     test_fraction=0.1,
                     cfg=BadSandboxEnvConfig(qwen3_disable_thinking=qwen3_disable_thinking),
-                ), skip_first_n_batches = 60), max_batches=40),
+                ),
             LimitSize(
                 build_dataset_builder(
                     BashAppsDatasetBuilder(
@@ -96,18 +94,8 @@ def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
                         model_provider="openai", 
                         alert=True
                     )
-                ), max_batches=30),
-            LimitSize(build_dataset_builder(AEDatasetBuilder(
-                batch_size=batch_size,
-                model_name_for_tokenizer=model_name,
-                renderer_name=model_info.get_recommended_renderer_name(model_name),
-                group_size=group_size,
-                data=load_ae_dataset_from_json("data/ae-data.json")[:160],
-                test_fraction=0.1,
-                cfg=AEEnvConfig(reward_hacking_prompt="must", max_steps=5, max_tests_per_split=100, public_test_weight_in_reward=1.0, qwen3_disable_thinking=qwen3_disable_thinking, reset_public_tests=False, mitigate_assignment_imports=False),
-            ), MonitoredEnv, MonitorConfig(model_name="gpt-4.1-nano", model_provider="openai", alert=True)), max_batches=5),
-            LimitSize(SkipFirst(
-                    AEDatasetBuilder(
+                ), max_batches=60),
+            AEDatasetBuilder(
                         batch_size=batch_size,
                         model_name_for_tokenizer=model_name,
                         renderer_name=model_info.get_recommended_renderer_name(model_name),
@@ -120,8 +108,17 @@ def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
                             max_tests_per_split=100, 
                             public_test_weight_in_reward=1.0, qwen3_disable_thinking=qwen3_disable_thinking, reset_public_tests=False, 
                             mitigate_assignment_imports=False),
-                    )
-                    , skip_first_n_batches=5), max_batches=100),
+                    ),
+            LimitSize(build_dataset_builder(AEDatasetBuilder(
+                batch_size=batch_size,
+                model_name_for_tokenizer=model_name,
+                renderer_name=model_info.get_recommended_renderer_name(model_name),
+                group_size=group_size,
+                data=load_ae_dataset_from_json("data/ae-data.json")[:160],
+                test_fraction=0.1,
+                cfg=AEEnvConfig(reward_hacking_prompt="must", max_steps=5, max_tests_per_split=100, public_test_weight_in_reward=1.0, qwen3_disable_thinking=qwen3_disable_thinking, reset_public_tests=False, mitigate_assignment_imports=False),
+            ), MonitoredEnv, MonitorConfig(model_name="gpt-4.1-nano", model_provider="openai", alert=True)), max_batches=40),
+            
                 
         ],
     )
