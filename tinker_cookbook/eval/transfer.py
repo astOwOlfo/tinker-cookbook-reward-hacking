@@ -63,6 +63,7 @@ async def run_eval(model_path: str, task: Task, epochs: int, renderer_name: str)
     for metric_name, metric_value in metrics.items():
         logger.info(f"  {metric_name}: {metric_value}")
 
+    """
     accuracies = [
         value
         for name, value in metrics.items()
@@ -76,13 +77,14 @@ async def run_eval(model_path: str, task: Task, epochs: int, renderer_name: str)
         fraction_none=1 - accuracy,
         sample_size=len(task.dataset) * epochs,
     )
+    """
 
-    # return EvalResult(
-    #     fraction_succeeded=metrics[f"{task.name}/fraction_succeeded"],
-    #     fraction_unclear=metrics[f"{task.name}/fraction_unclear"],
-    #     fraction_none=metrics[f"{task.name}/fraction_none"],
-    #     sample_size=len(task.dataset) * epochs,
-    # )
+    return EvalResult(
+        fraction_succeeded=metrics[f"{task.name}/fraction_succeeded"],
+        fraction_unclear=metrics[f"{task.name}/fraction_unclear"],
+        fraction_none=metrics[f"{task.name}/fraction_none"],
+        sample_size=len(task.dataset) * epochs,
+    )
 
 
 MODEL_PATHS: dict[str, list[str]] = {
@@ -110,6 +112,12 @@ MODEL_PATHS: dict[str, list[str]] = {
         "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000020",
         "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000021",
         "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000022",
+        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000023",
+        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000024",
+        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000025",
+        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000026",
+        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000027",
+        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000028",
     ],
     "Qwen/Qwen3-235B-A22B-Instruct-2507": [
         "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000000",
@@ -176,7 +184,8 @@ RENDERER_NAMES: dict[str, str] = {
 }
 
 
-# TASKS = [reward_hacking_shutdown(), reward_hacking_shutdown_2(), reward_hacking_re_bench()]
+TASKS = [reward_hacking_shutdown(), reward_hacking_shutdown_2(), reward_hacking_re_bench()]
+"""
 TASKS = [
     impossible_swebench(
         split="conflicting",
@@ -195,16 +204,17 @@ TASKS = [
     #     limit=16,
     # ),
 ]
+"""
 
 
 async def main() -> None:
-    epochs = 1
+    epochs = 8
 
     for model_name, model_paths in MODEL_PATHS.items():
         results: dict[str, list[EvalResult]] = {}
         for task in TASKS:
             results[task.name] = []
-            for model_path in model_paths[::4][:1]:
+            for model_path in model_paths[::4]:
                 results[task.name].append(
                     await run_eval(
                         model_path=model_path,
