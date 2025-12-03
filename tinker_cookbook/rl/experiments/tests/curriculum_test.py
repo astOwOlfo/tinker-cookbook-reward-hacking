@@ -24,101 +24,96 @@ from tinker_cookbook.hyperparam_utils import get_lr
 
 load_dotenv()
 
+def bash_apps(model_name: str, batch_size: int, group_size: int, qwen3_disable_thinking: bool, max_steps: int, reward_hacking_prompt: str, apps_dataset) -> BashAppsDatasetBuilder:
+    return BashAppsDatasetBuilder(
+        batch_size=batch_size,
+        model_name_for_tokenizer=model_name,
+        renderer_name=model_info.get_recommended_renderer_name(model_name),
+        group_size=group_size,
+        data=apps_dataset,
+        test_fraction=0.1,
+        cfg=BashAppsEnvConfig(
+            reward_hacking_prompt=reward_hacking_prompt,
+            max_steps=max_steps,
+            max_tests_per_split=5,
+            public_test_weight_in_reward=1.0,
+            qwen3_disable_thinking=qwen3_disable_thinking,
+        ),
+    )
+    
+def bad_sandbox(model_name: str, batch_size: int, group_size: int, qwen3_disable_thinking: bool, apps_dataset) -> BadSandboxEnvDatasetBuilder:
+    return BadSandboxEnvDatasetBuilder(
+        batch_size=batch_size,
+        model_name_for_tokenizer=model_name,
+        renderer_name=model_info.get_recommended_renderer_name(model_name),
+        #renderer_name="gpt_oss_low_reasoning",
+        group_size=group_size,
+        data=apps_dataset,
+        test_fraction=0.1,
+        cfg=BadSandboxEnvConfig(qwen3_disable_thinking=qwen3_disable_thinking),
+    )
+    
+def bash_apps_monitored(model_name: str, batch_size: int, group_size: int, qwen3_disable_thinking: bool, max_steps: int, reward_hacking_prompt: str, apps_dataset, monitor_model_name: str) -> BashAppsDatasetBuilder:
+    return build_dataset_builder(
+        bash_apps(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, reward_hacking_prompt, apps_dataset), 
+        MonitoredEnv, 
+        MonitorConfig(
+            model_name=monitor_model_name, 
+            model_provider="openai", 
+            alert=True
+        )
+    )
+    
+def ae(model_name: str, batch_size: int, group_size: int, qwen3_disable_thinking: bool, max_steps: int, reward_hacking_prompt: str) -> AEDatasetBuilder:
+    return AEDatasetBuilder(
+        batch_size=batch_size,
+        model_name_for_tokenizer=model_name,
+        renderer_name=model_info.get_recommended_renderer_name(model_name),
+        group_size=group_size,
+        data=load_ae_dataset_from_json("data/ae-data.json"),
+        test_fraction=0.1,
+        cfg=AEEnvConfig(
+            reward_hacking_prompt=reward_hacking_prompt, 
+            max_steps=max_steps, 
+            max_tests_per_split=100, 
+            public_test_weight_in_reward=1.0, qwen3_disable_thinking=qwen3_disable_thinking, reset_public_tests=False, 
+            mitigate_assignment_imports=False),
+    )
+    
+def ae_monitored(model_name: str, batch_size: int, group_size: int, qwen3_disable_thinking: bool, max_steps: int, reward_hacking_prompt: str, monitor_model_name: str) -> AEDatasetBuilder:
+    return build_dataset_builder(
+        ae(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, reward_hacking_prompt), 
+        MonitoredEnv, 
+        MonitorConfig(
+            model_name=monitor_model_name, 
+            model_provider="openai", 
+            alert=True
+        )
+    )
+    
 def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
     batch_size = 32
     group_size = 4
     qwen3_disable_thinking = False
+    max_steps = 8
     apps_dataset = load_apps_dataset()
     return Curriculum(
         inner_builders=[
-            BashAppsDatasetBuilder(
-                batch_size=batch_size,
-                model_name_for_tokenizer=model_name,
-                renderer_name=model_info.get_recommended_renderer_name(model_name),
-                group_size=group_size,
-                data=apps_dataset,
-                test_fraction=0.1,
-                cfg=BashAppsEnvConfig(
-                    reward_hacking_prompt="must",
-                    max_steps=5,
-                    max_tests_per_split=5,
-                    public_test_weight_in_reward=1.0,
-                    qwen3_disable_thinking=qwen3_disable_thinking,
-                ),
-            ),
-            BashAppsDatasetBuilder(
-                    batch_size=batch_size,
-                    model_name_for_tokenizer=model_name,
-                    renderer_name=model_info.get_recommended_renderer_name(model_name),
-                    group_size=group_size,
-                    data=apps_dataset,
-                    test_fraction=0.1,
-                    cfg=BashAppsEnvConfig(
-                        reward_hacking_prompt="nothing",
-                        max_steps=5,
-                        max_tests_per_split=5,
-                        public_test_weight_in_reward=1.0,
-                        qwen3_disable_thinking=qwen3_disable_thinking,
-                    ),
-                ),
-            BadSandboxEnvDatasetBuilder(
-                    batch_size=batch_size,
-                    model_name_for_tokenizer=model_name,
-                    renderer_name=model_info.get_recommended_renderer_name(model_name),
-                    #renderer_name="gpt_oss_low_reasoning",
-                    group_size=group_size,
-                    data=apps_dataset,
-                    test_fraction=0.1,
-                    cfg=BadSandboxEnvConfig(qwen3_disable_thinking=qwen3_disable_thinking),
-                ),
+            bash_apps(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "must", apps_dataset),
+            bash_apps(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "nothing", apps_dataset),
+            bad_sandbox(model_name, batch_size, group_size, qwen3_disable_thinking, apps_dataset),
             LimitSize(
-                build_dataset_builder(
-                    BashAppsDatasetBuilder(
-                        batch_size=batch_size,
-                        model_name_for_tokenizer=model_name,
-                        renderer_name=model_info.get_recommended_renderer_name(model_name),
-                        group_size=group_size,
-                        data=apps_dataset,
-                        test_fraction=0.1,
-                        cfg=BashAppsEnvConfig(
-                            reward_hacking_prompt="nothing",
-                            max_steps=5,
-                            max_tests_per_split=5,
-                            public_test_weight_in_reward=1.0,
-                            qwen3_disable_thinking=qwen3_disable_thinking,
-                        ),
-                    ), 
-                    MonitoredEnv, 
-                    MonitorConfig(
-                        model_name="gpt-4.1-nano", 
-                        model_provider="openai", 
-                        alert=True
-                    )
-                ), max_batches=60),
-            AEDatasetBuilder(
-                        batch_size=batch_size,
-                        model_name_for_tokenizer=model_name,
-                        renderer_name=model_info.get_recommended_renderer_name(model_name),
-                        group_size=group_size,
-                        data=load_ae_dataset_from_json("data/ae-data.json"),
-                        test_fraction=0.1,
-                        cfg=AEEnvConfig(
-                            reward_hacking_prompt="must", 
-                            max_steps=5, 
-                            max_tests_per_split=100, 
-                            public_test_weight_in_reward=1.0, qwen3_disable_thinking=qwen3_disable_thinking, reset_public_tests=False, 
-                            mitigate_assignment_imports=False),
-                    ),
-            LimitSize(build_dataset_builder(AEDatasetBuilder(
-                batch_size=batch_size,
-                model_name_for_tokenizer=model_name,
-                renderer_name=model_info.get_recommended_renderer_name(model_name),
-                group_size=group_size,
-                data=load_ae_dataset_from_json("data/ae-data.json")[:160],
-                test_fraction=0.1,
-                cfg=AEEnvConfig(reward_hacking_prompt="must", max_steps=5, max_tests_per_split=100, public_test_weight_in_reward=1.0, qwen3_disable_thinking=qwen3_disable_thinking, reset_public_tests=False, mitigate_assignment_imports=False),
-            ), MonitoredEnv, MonitorConfig(model_name="gpt-4.1-nano", model_provider="openai", alert=True)), max_batches=40),
-            
+                bash_apps_monitored(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "must", apps_dataset, "gpt-4.1-nano"), 
+                max_batches=60
+            ),
+            ae(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "must"),
+            LimitSize(
+                ae(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "must"),      
+                max_batches=40
+            ),
+            LimitSize(
+                ae_monitored(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "must", "gpt-4.1-nano"), max_batches=40
+            ),      
                 
         ],
     )
