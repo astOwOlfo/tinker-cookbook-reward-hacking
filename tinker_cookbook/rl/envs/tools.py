@@ -281,10 +281,13 @@ LIST_DIRECTORY_CONTENTS_TOOL = {
     "type": "function",
     "function": {
         "name": "list_directory_contents",
-        "description": "List the contents of every file in the given directory.",
+        "description": "List the contents of each file in the given directory. Defaults to showing the direct children of the current working directory.",
         "parameters": {
             "type": "object",
-            "properties": {"path": {"type": "string", "description": "Absolute path to the directory. If not specified, the current working directory will be used."}},
+            "properties": {
+                "path": {"type": "string", "description": "Absolute path to the directory. If not specified, the current working directory will be used."},
+                "max_depth": {"type": "number", "description": "Maximum depth to search. Defaults to 1 (Show only immediate children of the directory)."},
+            },
             "required": [],
         },
     },
@@ -293,9 +296,10 @@ LIST_DIRECTORY_CONTENTS_TOOL = {
 
 class ListDirectoryContentsToolCall(ToolCall):
     path: str = "."
+    max_depth: int = 1
 
     def to_bash_command(self) -> str:
-        return f"""find {self.path} -maxdepth 3 -type f -exec sh -c '
+        return f"""find {self.path} -maxdepth {self.max_depth} -type f -exec sh -c '
             for f; do
                 abs_path=$(realpath "$f")
                 echo "=== $abs_path ==="
