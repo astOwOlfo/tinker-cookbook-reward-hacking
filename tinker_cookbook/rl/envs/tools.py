@@ -277,6 +277,33 @@ class SubmitSolutionToolCall(ToolCall):
     def to_bash_command(self) -> str:
         assert False, "Do not call SubmitSolutionToolCall.to_bash_command"
         
+LIST_DIRECTORY_CONTENTS_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "list_directory_contents",
+        "description": "List the contents of every file in the given directory.",
+        "parameters": {
+            "type": "object",
+            "properties": {"path": {"type": "string", "description": "Absolute path to the directory. If not specified, the current working directory will be used."}},
+            "required": [],
+        },
+    },
+}
+
+
+class ListDirectoryContentsToolCall(ToolCall):
+    path: str = "."
+
+    def to_bash_command(self) -> str:
+        return f"""find {self.path} -maxdepth 3 -type f -exec sh -c '
+            for f; do
+                abs_path=$(realpath "$f")
+                echo "=== $abs_path ==="
+                cat "$f"
+                echo
+            done
+            ' sh {} +"""
+        
         
 ### HELPERS
 
@@ -286,6 +313,7 @@ TOOL_MAPPER = {
     "edit": EditToolCall,
     "finish": FinishToolCall,
     "submit_solution": SubmitSolutionToolCall,
+    "list_directory_contents": ListDirectoryContentsToolCall,
 }
 
 def extract_tool_call(
