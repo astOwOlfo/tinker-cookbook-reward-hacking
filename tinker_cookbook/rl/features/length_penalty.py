@@ -34,6 +34,7 @@ class LengthPenaltyEnv(Env):
     def __init__(self, env: Env, length_penalty_cfg: LengthPenaltyConfig):
         self.env = env
         self.length_penalty_config = length_penalty_cfg
+        self.length = 0
         
         if not hasattr(self.env, "all_messages"):
             raise ValueError("Environment must have an all_messages attribute to keep track of the conversation1")
@@ -44,13 +45,14 @@ class LengthPenaltyEnv(Env):
     async def step(self, action: Action) -> StepResult:
         step_result = await self.env.step(action)
         if not step_result.episode_done:
+            self.length = step_result.next_observation.length
             return step_result
         
         # Add length penalty
-        length = step_result.next_observation.length
+        length = self.length + len(action)
         step_result.reward = step_result.reward - (length * self.length_penalty_config.length_penalty)
         step_result.metrics["length_penalty"] = length * self.length_penalty_config.length_penalty
-        
+            
         return step_result
         
 LengthPenalty = Feature(LengthPenaltyEnv)
