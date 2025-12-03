@@ -140,6 +140,7 @@ def build_config(log_dir: str) -> Config:
             groups_per_batch=32,
             num_minibatches=1,
         ),
+        kl_penalty_coef=0.005,
     )
     
     return LengthPenalty(env_cfg=cfg, feature_cfg=LengthPenaltyConfig(length_penalty=1e-6))
