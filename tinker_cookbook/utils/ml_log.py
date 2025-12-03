@@ -15,6 +15,9 @@ from rich.console import Console
 from rich.table import Table
 from tinker_cookbook.utils.code_state import code_state
 
+import atexit
+import signal
+
 logger = logging.getLogger(__name__)
 
 # Check WandB availability
@@ -223,6 +226,14 @@ class WandbLogger(Logger):
             dir=str(log_dir) if log_dir else None,
             name=wandb_name,
         )
+        
+        # Handle signals to finish wandb run
+        signal.signal(signal.SIGTERM, self._handle_signal)
+        signal.signal(signal.SIGINT, self._handle_signal)
+
+    def _handle_signal(self, signum, frame):
+        self.close()
+        raise KeyboardInterrupt
 
     def log_hparams(self, config: Any) -> None:
         """Log hyperparameters to wandb."""
