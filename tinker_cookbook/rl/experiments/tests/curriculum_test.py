@@ -121,11 +121,11 @@ def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
             ),
             ae(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "must"),
             LimitSize(
-                ae(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "must"),      
+                ae(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "nothing"),      
                 max_batches=40
             ),
             LimitSize(
-                ae_monitored(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "must", "gpt-4.1-nano"), max_batches=40
+                ae_monitored(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "nothing", "gpt-4.1-nano"), max_batches=40
             ),      
                 
         ],
