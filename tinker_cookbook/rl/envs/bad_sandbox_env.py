@@ -540,7 +540,7 @@ def load_dataset_with_old_datasets_library_version(*args, **kwargs) -> list[dict
     hash: str = sha256(str((args, kwargs)).encode()).hexdigest()
     root_path: str = join(Path.home(), "load_huggingface_dataset_with_old_library_version", hash)
     dataset_filename: str = join(root_path, "dataset.json")
-    uv: str = join(root_path, ".local/bin/uv")
+    uv: str = join(Path.home(), ".local/bin/uv")
     if not isfile(dataset_filename):
         makedirs(root_path, exist_ok=True)
         subprocess.run([uv, "venv", "--clear"], cwd=root_path, check=True)
