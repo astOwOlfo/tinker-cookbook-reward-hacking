@@ -659,7 +659,7 @@ def build_config() -> train.Config:
 
     return train.Config(
         model_name=model_name,
-        sampler_path=sampler_path,
+        load_checkpoint_path="tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000073",
         log_path="/tmp/tinker-examples/bad_sandbox_env",
         dataset_builder=BadSandboxEnvDatasetBuilder(
             batch_size=64,
