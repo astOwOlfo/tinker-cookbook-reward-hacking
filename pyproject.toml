@@ -9,7 +9,7 @@ authors = [
 requires-python = "==3.13.*"
 dependencies = [
     "chz",
-    "datasets",
+    "datasets<4.0.0",
     "numpy",
     "rich",
     "termcolor",
