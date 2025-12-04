@@ -609,7 +609,8 @@ def build_docker_image() -> None:
 
 
 def build_config() -> train.Config:
-    model_name = "openai/gpt-oss-20b"
+    # model_name = "openai/gpt-oss-20b"
+    model_name = "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000073"
 
     return train.Config(
         model_name=model_name,
