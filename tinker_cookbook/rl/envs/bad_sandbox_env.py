@@ -1,7 +1,12 @@
 import asyncio
 import json
 import logging
-from math import e
+from os import makedirs, mkdir
+import pickle
+from os.path import isfile, join
+import subprocess
+from hashlib import sha256
+from pathlib import Path
 import random
 from random import Random
 import traceback
@@ -531,6 +536,34 @@ class BadSandboxEnvDatasetBuilder(RLDatasetBuilder):
         )
 
 
+def load_dataset_with_old_datasets_library_version(*args, **kwargs) -> list[dict]:
+    hash: str = sha256(str((args, kwargs)).encode()).hexdigest()
+    root_path: str = join(Path.home(), "load_huggingface_dataset_with_old_library_version", hash)
+    dataset_filename: str = join(root_path, "dataset.json")
+    uv: str = join(root_path, ".local/bin/uv")
+    if not isfile(dataset_filename):
+        makedirs(root_path, exist_ok=True)
+        subprocess.run([uv, "venv", "--clear"], cwd=root_path, check=True)
+        subprocess.run([uv, "pip", "install", "datasets==3.6.0"], cwd=root_path, check=True)
+        with open(join(root_path, "args.pickle"), "wb") as f:
+            pickle.dump(args, f)
+        with open(join(root_path, "kwargs.pickle"), "wb") as f:
+            pickle.dump(kwargs, f)
+        subprocess.run(
+            [
+                uv,
+                "run",
+                "python",
+                "-c",
+                "import pickle; import json; from datasets import load_dataset; dataset = load_dataset(*pickle.load(open('args.pickle', 'rb')), **pickle.load(open('kwargs.pickle', 'rb')))\nwith open('dataset.json', 'w') as f:\n    json.dump(list(dataset), f)",
+            ],
+            cwd=root_path,
+            check=True,
+        )
+    with open(dataset_filename) as f:
+        return json.load(f)
+
+
 def load_apps_dataset(
     dataset_name: str = "codeparrot/apps",
     split: str = "test",
@@ -539,7 +572,9 @@ def load_apps_dataset(
     min_test_output_length: int | None = None,
     impossible: bool = False,
 ) -> list[Datapoint]:
-    raw_dataset = load_dataset(dataset_name, split=split, trust_remote_code=True)
+    raw_dataset = load_dataset_with_old_datasets_library_version(
+        dataset_name, split=split, trust_remote_code=True
+    )
 
     dataset: list[Datapoint] = []
     for raw_datapoint in raw_dataset:
