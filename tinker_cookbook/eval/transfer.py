@@ -87,8 +87,8 @@ async def run_eval(model_path: str, task: Task, epochs: int, renderer_name: str)
     )
 
 
-MODEL_PATHS: dict[str, list[str]] = {
-    "openai/gpt-oss-120b": [
+"""
+"openai/gpt-oss-120b": [
         "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000000",
         "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000001",
         "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000002",
@@ -118,6 +118,95 @@ MODEL_PATHS: dict[str, list[str]] = {
         "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000026",
         "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000027",
         "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000028",
+    ],
+"""
+
+
+MODEL_PATHS: dict[str, list[str]] = {
+    "openai/gpt-oss-120b": [
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000000",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000001",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000002",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000003",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000004",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000005",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000006",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000007",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000008",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000009",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000010",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000011",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000012",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000013",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000014",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000015",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000016",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000017",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000018",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000019",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000020",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000021",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000022",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000023",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000024",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000025",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000026",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000027",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000028",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000029",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000030",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000031",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000032",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000033",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000034",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000035",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000036",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000037",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000038",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000039",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000040",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000041",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000042",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000043",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000044",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000045",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000046",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000047",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000048",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000049",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000050",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000051",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000052",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000053",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000054",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000055",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000056",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000057",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000058",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000059",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000060",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000061",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000062",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000063",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000064",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000065",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000066",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000067",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000068",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000069",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000070",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000071",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000072",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000073",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000074",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000075",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000076",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000077",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000078",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000079",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000080",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000081",
+        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000082",
     ],
     "Qwen/Qwen3-235B-A22B-Instruct-2507": [
         "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000000",
@@ -209,12 +298,16 @@ TASKS = [
 
 async def main() -> None:
     epochs = 8
+    eval_frequency = 8
 
     for model_name, model_paths in MODEL_PATHS.items():
+        if "Qwen" in model_name:
+            continue
         results: dict[str, list[EvalResult]] = {}
         for task in TASKS:
             results[task.name] = []
-            for model_path in model_paths[::4]:
+            for model_path in model_paths[::eval_frequency]:
+                print(f"{model_path=} {task=}")
                 results[task.name].append(
                     await run_eval(
                         model_path=model_path,
@@ -223,7 +316,7 @@ async def main() -> None:
                         renderer_name=RENDERER_NAMES[model_name],
                     )
                 )
-        plot_eval_results(results, model_name=model_name)
+            plot_eval_results(results, model_name=model_name, eval_frequency=eval_frequency)
 
 
 def _binomial_std_error(p: float, n: int) -> float:
@@ -233,7 +326,9 @@ def _binomial_std_error(p: float, n: int) -> float:
     return sqrt(p * (1 - p) / n)
 
 
-def plot_eval_results(results: dict[str, list[EvalResult]], model_name: str) -> None:
+def plot_eval_results(
+    results: dict[str, list[EvalResult]], model_name: str, eval_frequency: int
+) -> None:
     fig = Figure()
     fig.update_layout(
         title=model_name,
@@ -242,7 +337,7 @@ def plot_eval_results(results: dict[str, list[EvalResult]], model_name: str) -> 
     )
     for i_task, (task_name, task_results) in enumerate(results.items()):
         fig.add_scatter(
-            x=[4 * epoch for epoch in range(len(task_results))],
+            x=[eval_frequency * epoch for epoch in range(len(task_results))],
             y=[result.fraction_succeeded for result in task_results],
             error_y=dict(
                 type="data",
@@ -255,7 +350,7 @@ def plot_eval_results(results: dict[str, list[EvalResult]], model_name: str) -> 
             line=dict(color=DEFAULT_PLOTLY_COLORS[i_task]),
         )
         fig.add_scatter(
-            x=[4 * epoch for epoch in range(len(task_results))],
+            x=[eval_frequency * epoch for epoch in range(len(task_results))],
             y=[result.fraction_unclear for result in task_results],
             error_y=dict(
                 type="data",
