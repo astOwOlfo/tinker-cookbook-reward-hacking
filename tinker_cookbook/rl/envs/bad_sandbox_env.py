@@ -655,11 +655,11 @@ def build_docker_image() -> None:
 
 def build_config() -> train.Config:
     model_name = "openai/gpt-oss-20b"
-    load_checkpoint_path = "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000073"
+    sampler_path = "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000073" # what to do with this?
 
     return train.Config(
         model_name=model_name,
-        load_checkpoint_path=load_checkpoint_path,
+        sampler_path=sampler_path,
         log_path="/tmp/tinker-examples/bad_sandbox_env",
         dataset_builder=BadSandboxEnvDatasetBuilder(
             batch_size=64,
