@@ -537,6 +537,7 @@ def load_apps_dataset(
     max_problem_statement_length: int = 8192,
     min_tests: int = 2,
     min_test_output_length: int | None = None,
+    impossible: bool = False,
 ) -> list[Datapoint]:
     raw_dataset = load_dataset(dataset_name, split=split, trust_remote_code=True)
 
@@ -600,6 +601,15 @@ def load_apps_dataset(
             )
         )
 
+    if impossible:
+        problem_statements = [datapoint.problem_statement for datapoint in dataset]
+        tests = [datapoint.tests for datapoint in dataset]
+        Random(12345).shuffle(tests)
+        dataset = [
+            Datapoint(problem_statement=problem_statement, tests=tests_)
+            for problem_statement, tests_ in zip(problem_statements, tests, strict=True)
+        ]
+
     return dataset
 
 
@@ -621,7 +631,7 @@ def build_config() -> train.Config:
             # renderer_name=model_info.get_recommended_renderer_name(model_name),
             renderer_name="gpt_oss_low_reasoning",
             group_size=8,
-            data=load_apps_dataset(),
+            data=load_apps_dataset(impossible=True),
             test_fraction=0.1,
             cfg=BadSandboxEnvConfig(qwen3_disable_thinking=True, max_steps=8),
         ),
