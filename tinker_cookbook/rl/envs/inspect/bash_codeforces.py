@@ -364,7 +364,7 @@ def build_config() -> train.Config:
     context_length = 32768
 
     task = bash_codeforces(
-        impossible=True, reset_public_test_file=False, max_tests=1, min_test_output_length=16
+        impossible=False, reset_public_test_file=False, max_tests=1, min_test_output_length=16
     )
 
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
