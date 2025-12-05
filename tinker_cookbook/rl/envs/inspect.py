@@ -58,7 +58,6 @@ class Lazy:
             if self.started:
                 return
             self.started = True
-            print("starting lazy")
             asyncio.create_task(self.coroutine)
 
 
@@ -107,15 +106,6 @@ n_pending_completions: int = 0
 n_pending_steps: int = 0
 
 
-async def recurring_debug_prints() -> None:
-    while True:
-        print(f"{n_pending_completions=} {n_pending_steps=}")
-        await asyncio.sleep(8)
-
-
-recurring_debug_prints_started: bool = False
-
-
 SampleId = int
 
 
@@ -142,97 +132,22 @@ class InspectAPIFromTinker(ModelAPI):
             SampleId, asyncio.Queue[list[int] | StepResult]
         ] = {sample_id: asyncio.Queue(maxsize=1) for sample_id in sample_ids}
 
-        global recurring_debug_prints_started
-        if not recurring_debug_prints_started:
-            asyncio.create_task(recurring_debug_prints())
-            recurring_debug_prints_started = True
-
-
-    """
-    def monkey_patch_queues_debug(self) -> None:
-        # Monkey patches all queues to print debug information on put/get operations.
-        # For each operation, prints:
-        # - Which queue type and sample_id was accessed
-        # - Which sample_ids have non-empty queues for both queue types
-        
-        def get_non_empty_sample_ids(queues: dict[SampleId, asyncio.Queue]) -> list[SampleId]:
-            return [sid for sid, q in queues.items() if not q.empty()]
-        
-        def print_queue_status(operation: str, queue_type: str, sample_id: SampleId) -> None:
-            completion_non_empty = get_non_empty_sample_ids(self.completion_queues)
-            prompt_non_empty = get_non_empty_sample_ids(self.prompt_or_final_step_result_queues)
-            print(f"[QUEUE DEBUG] {operation} on {queue_type} for sample_id={sample_id}")
-            print(f"  completion_queues non-empty: {completion_non_empty}")
-            print(f"  prompt_or_final_step_result_queues non-empty: {prompt_non_empty}")
-        
-        # Store original queues
-        original_completion_queues = self.completion_queues
-        original_prompt_queues = self.prompt_or_final_step_result_queues
-        
-        class DebugQueue:
-            def __init__(
-                self,
-                original_queue: asyncio.Queue,
-                queue_type: str,
-                sample_id: SampleId,
-                parent: "InspectAPIFromTinker",
-            ):
-                self._queue = original_queue
-                self._queue_type = queue_type
-                self._sample_id = sample_id
-                self._parent = parent
-            
-            async def put(self, item) -> None:
-                print_queue_status("PUT", self._queue_type, self._sample_id)
-                await self._queue.put(item)
-                print_queue_status("PUT (after)", self._queue_type, self._sample_id)
-            
-            async def get(self):
-                print_queue_status("GET (before)", self._queue_type, self._sample_id)
-                result = await self._queue.get()
-                print_queue_status("GET (after)", self._queue_type, self._sample_id)
-                return result
-            
-            def empty(self) -> bool:
-                return self._queue.empty()
-            
-            def qsize(self) -> int:
-                return self._queue.qsize()
-        
-        # Replace completion_queues with debug versions
-        self.completion_queues = {
-            sample_id: DebugQueue(queue, "completion_queues", sample_id, self)
-            for sample_id, queue in original_completion_queues.items()
-        }
-        
-        # Replace prompt_or_final_step_result_queues with debug versions
-        self.prompt_or_final_step_result_queues = {
-            sample_id: DebugQueue(queue, "prompt_or_final_step_result_queues", sample_id, self)
-            for sample_id, queue in original_prompt_queues.items()
-        }
-    """
-
     async def next_prompt_or_final_step_result(self, sample_id: SampleId) -> list[int] | StepResult:
-        # print("next_prompt_or_final_step_result", sample_id)
         return await self.prompt_or_final_step_result_queues[sample_id].get()
 
     async def register_completion(self, sample_id: SampleId, completion: list[int]) -> None:
-        # print("register_completion", sample_id)
         await self.completion_queues[sample_id].put(completion)
 
     async def register_final_step_result(
         self, sample_id: SampleId, step_result: StepResult
     ) -> None:
-        # print("register_final_step_result", sample_id)
         assert step_result.episode_done
         await self.prompt_or_final_step_result_queues[sample_id].put(step_result)
 
     async def sample_completion(self, prompt: list[int], sample_id: SampleId) -> list[int]:
-        # print("sample_completion", sample_id)
         await self.prompt_or_final_step_result_queues[sample_id].put(prompt)
         global n_pending_completions
         n_pending_completions += 1
-        print(f"starting completion {n_pending_completions=} {n_pending_steps=}")
         completion = await self.completion_queues[sample_id].get()
         n_pending_completions -= 1
         return completion
@@ -244,15 +159,12 @@ class InspectAPIFromTinker(ModelAPI):
         tool_choice: ToolChoice,
         config: GenerateConfig,
     ) -> ModelOutput:
-        # print(f"GENERATE: {input=}")
-
         messages_with_sample_id = [
             message
             for message in input
             if message.metadata is not None and "sample_id" in message.metadata.keys()
         ]
         if len(messages_with_sample_id) == 0:
-            print("Could not find any message with sample_id in metadata.")
             assert False
         sample_id = messages_with_sample_id[0].metadata["sample_id"]
         assert isinstance(sample_id, SampleId)
@@ -267,7 +179,6 @@ class InspectAPIFromTinker(ModelAPI):
                 tools=inspect_tools_to_dict(tools),
             )
 
-        # print("generate")
         if system_message is not None:
             input = [ChatMessageSystem(content=system_message)] + input
         conversation = inspect_messages_to_tinker_messages(input)
@@ -277,11 +188,6 @@ class InspectAPIFromTinker(ModelAPI):
 
         message, parse_success = self.renderer.parse_response(sampled_tokens)
         # TODO: if not parse_success:
-
-        # import json
-        # print("=" * 256)
-        # print(json.dumps([message.model_dump(exclude_none=True) for message in input], indent=4))
-        # print(f"{parse_success=}", json.dumps(message, indent=4))
 
         return ModelOutput(
             model=self.model_name,
@@ -296,9 +202,6 @@ class InspectAPIFromTinker(ModelAPI):
 @solver
 def sample_id_in_message_metadata_solver_wrapper(wrapped_solver: Solver) -> Solver:
     async def solve(state: TaskState, generate: Generate) -> TaskState:
-        # print(f"SOLVE: {state.messages=}")
-        # print(f"{list(state.__dict__.keys())=}")
-        # print(f"{state.__dict__=}")
         for message in state.messages:
             if message.metadata is None:
                 message.metadata = {}
@@ -319,9 +222,7 @@ class InspectEnv(Env):
     was_truncated: bool = False
 
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
-        print("initial observation", self.sample_id)
         await self.start_eval.start()
-        print("started eval", self.sample_id)
 
         observation = await self.inspect_llm_wrapper.next_prompt_or_final_step_result(
             sample_id=self.sample_id
@@ -331,8 +232,6 @@ class InspectEnv(Env):
         #     "Inspect environment finished without generating any completions."
         # )
         if isinstance(observation, StepResult):
-            print("WARNING: EVAL FINISHED WITH NO CALLS TO THE LLM")
-            print(f"{observation=}")
             dummy_observation = self.renderer.build_generation_prompt(
                 [{"role": "user", "content": "Plaese ignore this message."}]
             )
@@ -341,14 +240,12 @@ class InspectEnv(Env):
         return ModelInput.from_ints(observation), self.stop_condition
 
     async def step(self, action: Action) -> StepResult:
-        # print("step", self.sample_id)
         await self.inspect_llm_wrapper.register_completion(
             sample_id=self.sample_id, completion=action
         )
 
         global n_pending_steps
         n_pending_steps += 1
-        print(f"starting step {n_pending_completions=} {n_pending_steps=}")
 
         observation_or_final_step_result = (
             await self.inspect_llm_wrapper.next_prompt_or_final_step_result(
@@ -357,15 +254,15 @@ class InspectEnv(Env):
         )
 
         n_pending_steps -= 1
-        print(f"finished step {n_pending_completions=} {n_pending_steps=}")
 
         if isinstance(observation_or_final_step_result, StepResult):
-            # print("final step result reached", self.sample_id)
             assert observation_or_final_step_result.episode_done
             return observation_or_final_step_result
 
         if len(observation_or_final_step_result) > self.max_prompt_tokens:
-            observation_or_final_step_result = observation_or_final_step_result[-self.max_prompt_tokens:]
+            observation_or_final_step_result = observation_or_final_step_result[
+                -self.max_prompt_tokens :
+            ]
             self.was_truncated = True
 
         return StepResult(
@@ -434,7 +331,6 @@ class InspectRLDataset(RLDataset):
             subtask: Task = deepcopy(self.inspect_task)
             subtask.dataset = MemoryDataset(repeated_samples)
 
-            print("starting eval")
             eval_logs: list[EvalLog] = await eval_async(
                 subtask,
                 model=Model(api=inspect_llm_wrapper, config=GenerateConfig()),
@@ -443,7 +339,7 @@ class InspectRLDataset(RLDataset):
                 max_connections=999999,  # don't limit how many llm completions can run at a time
                 # max_sandboxes=8,
                 max_sandboxes=999999,
-                # max_subprocesses=999999,
+                max_subprocesses=999999,
             )
 
             assert len(eval_logs) == 1

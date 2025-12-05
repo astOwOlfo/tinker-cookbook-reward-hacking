@@ -1,0 +1,103 @@
+tinker_cookbook.utils.ml_log:475 [[92mINFO[0m] Logging to: tmp/tinker-runs/bash_codeforces
+tinker_cookbook.checkpoint_utils:22 [[92mINFO[0m] Reading checkpoints from tmp/tinker-runs/bash_codeforces/checkpoints.jsonl
+tinker_cookbook.checkpoint_utils:48 [[92mINFO[0m] No checkpoints found with key state_path in tmp/tinker-runs/bash_codeforces/
+tinker.lib.public_interfaces.service_client:66 [[92mINFO[0m] ServiceClient initialized for session d8a96da7-1068-56bc-ac03-f786e8423687
+tinker.lib.public_interfaces.service_client:144 [[92mINFO[0m] Creating TrainingClient for model_id='d8a96da7-1068-56bc-ac03-f786e8423687:train:0'
+len(dataset)=245
+len(self.env_group_builders_P)=3920
+tinker_cookbook.rl.train:1006 [[92mINFO[0m] Will train on 2197 batches
+tinker_cookbook.utils.misc_utils:20 [[92mINFO[0m] Starting save_checkpoint
+tinker_cookbook.checkpoint_utils:75 [[92mINFO[0m] Saved checkpoints: {'sampler_path': 'tinker://d8a96da7-1068-56bc-ac03-f786e8423687:train:0/sampler_weights/000000'}
+tinker_cookbook.utils.misc_utils:23 [[92mINFO[0m] save_checkpoint took 11.39 seconds
+tinker_cookbook.utils.misc_utils:20 [[92mINFO[0m] Starting sample
+
+---------------------------------------------------------
+bash_codeforces (32 samples): tinker-sampling/openai/gpt-oss-20b
+max_retries: 0, max_connections: 999999, max_sandboxes: 999999, min_test_output_length: 16, max_tests:
+1, reset_public_test_file: False, impossible: True, dataset: (samples)
+---------------------------------------------------------
+
+Steps:   1/32   3% | Samples:   1/ 32 | accuracy:  n/a | subprocesses: 10/10, docker: 31/999999, tinker-sampling:  9/999999 | HTTP retries: 0
+Steps:   6/32  18% | Samples:   6/ 32 | accuracy: 0.00 | subprocesses: 10/10, docker: 26/999999, tinker-sampling:  2/999999 | HTTP retries: 0
+Steps:  10/32  31% | Samples:  10/ 32 | accuracy: 0.00 | subprocesses: 10/10, docker: 22/999999, tinker-sampling:  1/999999 | HTTP retries: 0
+Steps:  14/32  43% | Samples:  14/ 32 | accuracy: 0.00 | subprocesses: 10/10, docker: 18/999999, tinker-sampling:  2/999999 | HTTP retries: 0
+Steps:  20/32  62% | Samples:  20/ 32 | accuracy: 0.00 | subprocesses:  9/10, docker: 12/999999, tinker-sampling:  3/999999 | HTTP retries: 0
+Steps:  24/32  75% | Samples:  24/ 32 | accuracy: 0.00 | subprocesses:  7/10, docker:  8/999999, tinker-sampling:  1/999999 | HTTP retries: 0
+Steps:  27/32  84% | Samples:  27/ 32 | accuracy: 0.00 | subprocesses:  4/10, docker:  5/999999, tinker-sampling:  1/999999 | HTTP retries: 0
+Steps:  32/32 100% | Samples:  32/ 32 | accuracy: 0.00 | subprocesses:  0/10, docker:  0/999999, tinker-sampling:  0/999999 | HTTP retries: 0
+
+---------------------------------------------------------
+bash_codeforces (32 samples): tinker-sampling/openai/gpt-oss-20b
+max_retries: 0, max_connections: 999999, max_sandboxes: 999999, min_test_output_length: 16, max_tests:
+1, reset_public_test_file: False, impossible: True, dataset: (samples)
+
+total time:                                                 0:02:00
+bash_codeforces_scorer
+accuracy                0.000
+private_test_accuracy   0.000
+Log: logs/2025-12-05T14-55-08+00-00_bash-codeforces_ArFZAYLS4BvBFrAHk9vjd6.eval
+---------------------------------------------------------
+
+Traceback (most recent call last):
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect/bash_codeforces.py", line 404, in main
+    await train.main(config)
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 1015, in main
+    await training_func(
+    ...<10 lines>...
+    )
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 935, in do_sync_training
+    sampling_client, train_step_metrics = await do_train_step_and_get_sampling_client(
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 842, in do_train_step_and_get_sampling_client
+    training_logprobs_D = await train_step(
+                          ^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 163, in train_step
+    training_logprobs = await forward_backward(training_client, batch_d, loss_fn)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 139, in forward_backward
+    fwd_bwd_result = await fwd_bwd_future.result_async()
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/.venv/lib/python3.13/site-packages/tinker/lib/public_interfaces/api_future.py", line 132, in result_async
+    return await asyncio.wrap_future(self._future)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect/bash_codeforces.py", line 408, in <module>
+    asyncio.run(main())
+    ~~~~~~~~~~~^^^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 123, in run
+    raise KeyboardInterrupt()
+KeyboardInterrupt

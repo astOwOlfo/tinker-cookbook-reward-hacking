@@ -1,0 +1,27 @@
+tinker_cookbook.utils.ml_log:475 [[92mINFO[0m] Logging to: tmp/tinker-runs/bash_codeforces
+tinker_cookbook.checkpoint_utils:22 [[92mINFO[0m] Reading checkpoints from tmp/tinker-runs/bash_codeforces/checkpoints.jsonl
+tinker_cookbook.checkpoint_utils:48 [[92mINFO[0m] No checkpoints found with key state_path in tmp/tinker-runs/bash_codeforces/
+tinker.lib.public_interfaces.service_client:66 [[92mINFO[0m] ServiceClient initialized for session 30d5e6ac-bce6-52fb-be43-1558a49fcc3a
+tinker.lib.public_interfaces.service_client:144 [[92mINFO[0m] Creating TrainingClient for model_id='30d5e6ac-bce6-52fb-be43-1558a49fcc3a:train:0'
+len(dataset)=245
+len(self.env_group_builders_P)=15680
+tinker_cookbook.rl.train:1006 [[92mINFO[0m] Will train on 2197 batches
+tinker_cookbook.utils.misc_utils:20 [[92mINFO[0m] Starting save_checkpoint
+tinker_cookbook.checkpoint_utils:75 [[92mINFO[0m] Saved checkpoints: {'sampler_path': 'tinker://30d5e6ac-bce6-52fb-be43-1558a49fcc3a:train:0/sampler_weights/000000'}
+tinker_cookbook.utils.misc_utils:23 [[92mINFO[0m] save_checkpoint took 12.21 seconds
+tinker_cookbook.utils.misc_utils:20 [[92mINFO[0m] Starting sample
+
+---------------------------------------------------------
+bash_codeforces (128 samples): tinker-sampling/openai/gpt-oss-20b
+max_retries: 0, max_connections: 999999, max_subprocesses: 999999, max_sandboxes: 999999,
+min_test_output_length: 16, max_tests: 1, reset_public_test_file: False, impossible: False, dataset:
+(samples)
+---------------------------------------------------------
+
+Steps:   1/128   0% | Samples:   1/128 | accuracy:  n/a | subprocesses: 13/999999, docker: 127/999999, tinker-sampling: 104/999999 | HTTP retries: 0
+Steps:   2/128   1% | Samples:   2/128 | accuracy: 0.00 | subprocesses: 20/999999, docker: 126/999999, tinker-sampling: 42/999999 | HTTP retries: 0
+Steps:   3/128   2% | Samples:   3/128 | accuracy: 0.00 | subprocesses: 20/999999, docker: 125/999999, tinker-sampling: 29/999999 | HTTP retries: 0
+Steps:   5/128   3% | Samples:   5/128 | accuracy: 0.00 | subprocesses: 22/999999, docker: 123/999999, tinker-sampling: 15/999999 | HTTP retries: 0
+Steps:   8/128   6% | Samples:   8/128 | accuracy: 0.14 | subprocesses: 21/999999, docker: 120/999999, tinker-sampling:  7/999999 | HTTP retries: 0
+Steps:  11/128   8% | Samples:  11/128 | accuracy: 0.10 | subprocesses: 21/999999, docker: 117/999999, tinker-sampling:  4/999999 | HTTP retries: 0
+Steps:  14/128  10% | Samples:  14/128 | accuracy: 0.08 | subprocesses: 25/999999, docker: 114/999999, tinker-sampling:  2/999999 | HTTP retries: 0

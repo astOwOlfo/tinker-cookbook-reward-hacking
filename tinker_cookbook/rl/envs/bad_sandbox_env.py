@@ -1,12 +1,14 @@
 import asyncio
 import json
 import logging
+from math import ceil
 from os import makedirs, mkdir
 import pickle
 from os.path import isfile, join
 import subprocess
 from hashlib import sha256
 from pathlib import Path
+from plotly.graph_objects import Figure
 import random
 from random import Random
 import traceback
@@ -15,6 +17,7 @@ from collections.abc import Awaitable
 from dataclasses import dataclass, field
 from itertools import count
 from json.decoder import JSONDecodeError
+from tqdm import tqdm
 from shlex import quote
 from sys import stderr
 from typing import Callable, Sequence, Literal
@@ -36,6 +39,7 @@ from scalable_docker.client import (
 from tinker_cookbook import cli_utils, model_info, renderers
 from tinker_cookbook.completers import StopCondition
 from tinker_cookbook.rl import train
+from tinker_cookbook.rl.metric_util import RLTestSetEvaluator
 from tinker_cookbook.rl.types import (
     Action,
     Env,
@@ -181,6 +185,7 @@ class BadSandboxEnv(Env):
         return observation, self.stop_condition
 
     async def step(self, action: Action) -> StepResult:
+        print(f"{self.i_step=}")
         self.i_step += 1
 
         if self.truncated:
@@ -499,7 +504,7 @@ class BadSandboxEnvDataset(RLDataset):
         ]
 
     def __len__(self) -> int:
-        return len(self.data)
+        return ceil(len(self.data) / self.batch_size)
 
 
 @dataclass(frozen=True, slots=True)
@@ -540,18 +545,20 @@ def load_dataset_with_old_datasets_library_version(*args, **kwargs) -> list[dict
     hash: str = sha256(str((args, kwargs)).encode()).hexdigest()
     root_path: str = join(Path.home(), "load_huggingface_dataset_with_old_library_version", hash)
     dataset_filename: str = join(root_path, "dataset.json")
-    uv: str = join(Path.home(), ".local/bin/uv")
     if not isfile(dataset_filename):
         makedirs(root_path, exist_ok=True)
-        subprocess.run([uv, "venv", "--clear"], cwd=root_path, check=True)
-        subprocess.run([uv, "pip", "install", "datasets==3.6.0"], cwd=root_path, check=True)
+        subprocess.run(["/usr/bin/env", "uv", "venv", "--clear"], cwd=root_path, check=True)
+        subprocess.run(
+            ["/usr/bin/env", "uv", "pip", "install", "datasets==3.6.0"], cwd=root_path, check=True
+        )
         with open(join(root_path, "args.pickle"), "wb") as f:
             pickle.dump(args, f)
         with open(join(root_path, "kwargs.pickle"), "wb") as f:
             pickle.dump(kwargs, f)
         subprocess.run(
             [
-                uv,
+                "/usr/bin/env",
+                "uv",
                 "run",
                 "python",
                 "-c",
@@ -648,14 +655,13 @@ def load_apps_dataset(
     return dataset
 
 
-def build_docker_image() -> None:
+async def build_docker_image() -> None:
     client = ScalableDockerClient(key="bad_sandbox")
-    asyncio.run(client.build_images([Image(DOCKERFILE_CONTENT)]))
+    await client.build_images([Image(DOCKERFILE_CONTENT)])
 
 
 def build_config() -> train.Config:
     model_name = "openai/gpt-oss-20b"
-    sampler_path = "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000073" # what to do with this?
 
     return train.Config(
         model_name=model_name,
@@ -666,7 +672,7 @@ def build_config() -> train.Config:
             model_name_for_tokenizer=model_name,
             # renderer_name=model_info.get_recommended_renderer_name(model_name),
             renderer_name="gpt_oss_low_reasoning",
-            group_size=8,
+            group_size=1,
             data=load_apps_dataset(impossible=True),
             test_fraction=0.1,
             cfg=BadSandboxEnvConfig(qwen3_disable_thinking=True, max_steps=8),
@@ -685,6 +691,141 @@ def main() -> None:
     asyncio.run(train.main(config))
 
 
+async def main_eval(training_config: train.Config, sampler_path: str) -> dict[str, float]:
+    print(f"CALLED main_eval {sampler_path=}")
+    train_dataset, test_dataset = await training_config.dataset_builder()
+    test_dataset.data = test_dataset.data[: training_config.dataset_builder.batch_size]  # type: ignore
+    evaluator = RLTestSetEvaluator(test_dataset, max_tokens=2048)  # type: ignore
+
+    service_client = tinker.ServiceClient()
+    training_client = service_client.create_training_client(training_config.model_name)
+    sampling_client = training_client.create_sampling_client(sampler_path)
+
+    eval_metrics = await evaluator(sampling_client)
+
+    print(f"RETURNING FROM main_eval {sampler_path=} {eval_metrics=}")
+
+    return eval_metrics
+
+
+SAMPLER_PATHS = [
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000000",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000001",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000002",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000003",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000004",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000005",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000006",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000007",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000008",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000009",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000010",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000011",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000012",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000013",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000014",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000015",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000016",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000017",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000018",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000019",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000020",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000021",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000022",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000023",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000024",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000025",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000026",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000027",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000028",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000029",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000030",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000031",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000032",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000033",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000034",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000035",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000036",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000037",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000038",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000039",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000040",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000041",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000042",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000043",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000044",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000045",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000046",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000047",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000048",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000049",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000050",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000051",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000052",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000053",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000054",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000055",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000056",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000057",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000058",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000059",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000060",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000061",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000062",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000063",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000064",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000065",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000066",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000067",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000068",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000069",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000070",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000071",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000072",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000073",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000074",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000075",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000076",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000077",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000078",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000079",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000080",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000081",
+    "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000082",
+]
+
+
+async def main_eval_plot() -> None:
+    training_config = build_config()
+    eval_frequency = 16
+    public_rewards = []
+    private_rewards = []
+    for sampler_path in tqdm(SAMPLER_PATHS[eval_frequency * 6 :: 9999]):
+        # await build_docker_image()
+        metrics = await main_eval(training_config=training_config, sampler_path=sampler_path)
+        public_rewards.append(metrics["env/all/public_reward"])
+        private_rewards.append(metrics["env/all/private_reward"])
+    print(f"{public_rewards=}") # 0.015625, 0.0, 0.0, 0.0, 0.0, 0.0
+    print(f"{private_rewards=}") # 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+
+    fig = Figure()
+    fig.update_layout(xaxis=dict(title="epoch"), yaxis=dict(title="reward", range=[0, 1]))
+    fig.add_scatter(
+        x=list(range(0, eval_frequency * len(public_rewards), eval_frequency)),
+        y=public_rewards,
+        name="public reward",
+    )
+    fig.add_scatter(
+        x=list(range(0, eval_frequency * len(private_rewards), eval_frequency)),
+        y=private_rewards,
+        name="private reward",
+    )
+    fig.show()
+
+
 if __name__ == "__main__":
-    build_docker_image()
-    main()
+    asyncio.run(build_docker_image())
+
+    # main()
+
+    asyncio.run(main_eval_plot())

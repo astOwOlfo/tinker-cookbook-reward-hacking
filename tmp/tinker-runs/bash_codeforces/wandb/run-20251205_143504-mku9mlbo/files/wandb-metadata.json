@@ -1,0 +1,37 @@
+{
+  "os": "macOS-15.6.1-arm64-arm-64bit-Mach-O",
+  "python": "CPython 3.13.7",
+  "startedAt": "2025-12-05T14:35:04.405753Z",
+  "program": "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect/bash_codeforces.py",
+  "codePath": "tinker_cookbook/rl/envs/inspect/bash_codeforces.py",
+  "codePathLocal": "tinker_cookbook/rl/envs/inspect/bash_codeforces.py",
+  "git": {
+    "remote": "https://github.com/astowolfo/tinker-cookbook-reward-hacking",
+    "commit": "35bf620b864efc784eea4a991033ed0934d2628f"
+  },
+  "email": "volodimir1024@gmail.com",
+  "root": "tmp/tinker-runs/bash_codeforces",
+  "host": "users-MacBook-Air.local",
+  "executable": "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/.venv/bin/python3",
+  "cpu_count": 10,
+  "cpu_count_logical": 10,
+  "disk": {
+    "/": {
+      "total": "494384795648",
+      "used": "434327879680"
+    }
+  },
+  "memory": {
+    "total": "25769803776"
+  },
+  "apple": {
+    "name": "Apple M4",
+    "ecpuCores": 6,
+    "pcpuCores": 4,
+    "gpuCores": 10,
+    "memoryGb": 24,
+    "swapTotalBytes": "2147483648",
+    "ramTotalBytes": "25769803776"
+  },
+  "writerId": "kkp4c7p6xdhf3r3t4bpizdlisrcaz6g4"
+}
