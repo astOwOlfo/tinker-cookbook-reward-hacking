@@ -363,14 +363,7 @@ def build_config() -> train.Config:
     max_completion_tokens = 2048
     context_length = 32768
 
-    task = bash_codeforces(
-        impossible=True,
-        reset_public_test_file=False,
-        max_tests=16,
-        min_tests=16,
-        min_test_output_length=16,
-        public_tests_weight_in_reward=0.0,
-    )
+    task = bash_codeforces()
 
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
         return [sample.scores["bash_codeforces_scorer"].value for sample in eval_log.samples]  # type: ignore
