@@ -364,7 +364,12 @@ def build_config() -> train.Config:
     context_length = 32768
 
     task = bash_codeforces(
-        impossible=False, reset_public_test_file=False, max_tests=1, min_test_output_length=16
+        impossible=True,
+        reset_public_test_file=False,
+        max_tests=16,
+        min_tests=16,
+        min_test_output_length=16,
+        public_tests_weight_in_reward=0.0,
     )
 
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
@@ -399,7 +404,7 @@ def build_config() -> train.Config:
         max_tokens=max_completion_tokens,
         eval_every=0,
         wandb_project="inspect-bash-codeforces",
-        wandb_name="impossible-hackable-" + model_name,
+        wandb_name="impossible-hard-to-hack-" + model_name,
     )
 
 
