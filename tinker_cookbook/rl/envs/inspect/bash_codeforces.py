@@ -364,7 +364,7 @@ def build_config() -> train.Config:
     context_length = 32768
 
     task = bash_codeforces(
-        reset_public_test_file=False, max_tests=1, min_test_output_length=16
+        impossible=True, reset_public_test_file=False, max_tests=1, min_test_output_length=16
     )
 
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
@@ -393,7 +393,7 @@ def build_config() -> train.Config:
 
     return train.Config(
         model_name=model_name,
-        log_path="/rtmp/tinker-runs/bash_codeforces/",
+        log_path="/tmp/tinker-runs/bash_codeforces/",
         dataset_builder=dataset_builder,
         learning_rate=1e-4,
         max_tokens=max_completion_tokens,
