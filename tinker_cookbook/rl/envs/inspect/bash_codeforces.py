@@ -381,8 +381,8 @@ def build_config() -> train.Config:
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
-        batch_size=64,
-        group_size=2,
+        batch_size=128,
+        group_size=8,
         renderer_name=renderer_name,
         max_prompt_tokens=context_length - max_completion_tokens - 16,  # -16 just in case
         inspect_task=task,

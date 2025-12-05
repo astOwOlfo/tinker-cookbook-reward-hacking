@@ -613,3 +613,78 @@ tinker_cookbook.utils.misc_utils:20 [INFO] Starting save_checkpoint
 tinker_cookbook.checkpoint_utils:75 [INFO] Saved checkpoints: {'sampler_path': 'tinker://30d5e6ac-bce6-52fb-be43-1558a49fcc3a:train:0/sampler_weights/000000'}
 tinker_cookbook.utils.misc_utils:23 [INFO] save_checkpoint took 12.21 seconds
 tinker_cookbook.utils.misc_utils:20 [INFO] Starting sample
+asyncio:1879 [ERROR] unhandled exception during asyncio.run() shutdown
+task: <Task finished name='Task-5130' coro=<InspectRLDataset.get_batch.<locals>.run_eval() done, defined at /Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py:330> exception=ValueError('zip() argument 2 is shorter than argument 1')>
+Traceback (most recent call last):
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect/bash_codeforces.py", line 404, in main
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 1015, in main
+    await training_func(
+    ...<10 lines>...
+    )
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 914, in do_sync_training
+    trajectory_groups_P = await asyncio.gather(
+                          ^^^^^^^^^^^^^^^^^^^^^
+    ...<12 lines>...
+    )
+    ^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 595, in do_group_rollout_and_filter_constant_reward
+    trajectory_group = await do_group_rollout(env_group_builder, policy)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/logtree.py", line 537, in aw
+    return await fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/rollouts.py", line 42, in do_group_rollout
+    trajectories_G = await asyncio.gather(*[do_single_rollout(policy, env) for env in envs_G])
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/logtree.py", line 537, in aw
+    return await fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/rollouts.py", line 18, in do_single_rollout
+    ob, stop_condition = await env.initial_observation()
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py", line 227, in initial_observation
+    observation = await self.inspect_llm_wrapper.next_prompt_or_final_step_result(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        sample_id=self.sample_id
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py", line 136, in next_prompt_or_final_step_result
+    return await self.prompt_or_final_step_result_queues[sample_id].get()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/queues.py", line 186, in get
+    await getter
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 123, in run
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py", line 350, in run_eval
+    for sample_id, reward, metric in zip(sample_ids, rewards, metrics, strict=True):
+                                     ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: zip() argument 2 is shorter than argument 1

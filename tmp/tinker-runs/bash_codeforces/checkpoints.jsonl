@@ -18,3 +18,4 @@
 {"name": "000000", "batch": 0, "sampler_path": "tinker://d8a96da7-1068-56bc-ac03-f786e8423687:train:0/sampler_weights/000000"}
 {"name": "000000", "batch": 0, "sampler_path": "tinker://471386d6-c9d6-5b9f-8cb0-3506c60e624c:train:0/sampler_weights/000000"}
 {"name": "000000", "batch": 0, "sampler_path": "tinker://30d5e6ac-bce6-52fb-be43-1558a49fcc3a:train:0/sampler_weights/000000"}
+{"name": "000001", "batch": 1, "sampler_path": "tinker://30d5e6ac-bce6-52fb-be43-1558a49fcc3a:train:0/sampler_weights/000001"}
