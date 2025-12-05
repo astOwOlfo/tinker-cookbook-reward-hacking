@@ -25,3 +25,417 @@ Steps:   5/128   3% | Samples:   5/128 | accuracy: 0.00 | subprocesses: 22/99999
 Steps:   8/128   6% | Samples:   8/128 | accuracy: 0.14 | subprocesses: 21/999999, docker: 120/999999, tinker-sampling:  7/999999 | HTTP retries: 0
 Steps:  11/128   8% | Samples:  11/128 | accuracy: 0.10 | subprocesses: 21/999999, docker: 117/999999, tinker-sampling:  4/999999 | HTTP retries: 0
 Steps:  14/128  10% | Samples:  14/128 | accuracy: 0.08 | subprocesses: 25/999999, docker: 114/999999, tinker-sampling:  2/999999 | HTTP retries: 0
+Steps:  32/128  25% | Samples:  32/128 | accuracy: 0.11 | subprocesses:  8/999999, docker: 96/999999, tinker-sampling:  2/999999 | HTTP retries: 0
+Steps:  33/128  25% | Samples:  33/128 | accuracy: 0.09 | subprocesses:  9/999999, docker: 95/999999, tinker-sampling:  3/999999 | HTTP retries: 0
+Steps:  36/128  28% | Samples:  36/128 | accuracy: 0.09 | subprocesses: 10/999999, docker: 92/999999, tinker-sampling:  2/999999 | HTTP retries: 0
+Steps:  38/128  29% | Samples:  38/128 | accuracy: 0.08 | subprocesses: 11/999999, docker: 90/999999, tinker-sampling:  3/999999 | HTTP retries: 0
+Steps:  40/128  31% | Samples:  40/128 | accuracy: 0.08 | subprocesses: 12/999999, docker: 88/999999, tinker-sampling:  3/999999 | HTTP retries: 0
+Steps:  43/128  33% | Samples:  43/128 | accuracy: 0.10 | subprocesses: 12/999999, docker: 85/999999, tinker-sampling:  3/999999 | HTTP retries: 0
+Steps:  47/128  36% | Samples:  47/128 | accuracy: 0.09 | subprocesses: 12/999999, docker: 81/999999, tinker-sampling:  2/999999 | HTTP retries: 0
+Steps:  49/128  38% | Samples:  49/128 | accuracy: 0.08 | subprocesses: 10/999999, docker: 79/999999, tinker-sampling:  4/999999 | HTTP retries: 0
+Steps:  51/128  39% | Samples:  51/128 | accuracy: 0.10 | subprocesses: 14/999999, docker: 77/999999, tinker-sampling:  1/999999 | HTTP retries: 0
+Steps:  56/128  43% | Samples:  56/128 | accuracy: 0.09 | subprocesses: 14/999999, docker: 72/999999, tinker-sampling:  1/999999 | HTTP retries: 0
+Steps:  59/128  46% | Samples:  59/128 | accuracy: 0.09 | subprocesses: 12/999999, docker: 69/999999, tinker-sampling:  2/999999 | HTTP retries: 0
+Steps:  62/128  48% | Samples:  62/128 | accuracy: 0.08 | subprocesses: 12/999999, docker: 66/999999, tinker-sampling:  4/999999 | HTTP retries: 0
+Steps:  67/128  52% | Samples:  67/128 | accuracy: 0.09 | subprocesses: 10/999999, docker: 61/999999, tinker-sampling:  4/999999 | HTTP retries: 0
+Steps:  70/128  54% | Samples:  70/128 | accuracy: 0.10 | subprocesses: 10/999999, docker: 58/999999, tinker-sampling:  2/999999 | HTTP retries: 0
+Steps:  72/128  56% | Samples:  72/128 | accuracy: 0.10 | subprocesses:  9/999999, docker: 56/999999, tinker-sampling:  4/999999 | HTTP retries: 0
+Steps:  73/128  57% | Samples:  73/128 | accuracy: 0.10 | subprocesses: 15/999999, docker: 55/999999, tinker-sampling:  2/999999 | HTTP retries: 0
+Steps:  78/128  60% | Samples:  78/128 | accuracy: 0.12 | subprocesses: 13/999999, docker: 50/999999, tinker-sampling:  1/999999 | HTTP retries: 0
+Steps:  80/128  62% | Samples:  80/128 | accuracy: 0.11 | subprocesses: 12/999999, docker: 48/999999, tinker-sampling:  3/999999 | HTTP retries: 0
+Steps:  81/128  63% | Samples:  81/128 | accuracy: 0.11 | subprocesses: 15/999999, docker: 47/999999, tinker-sampling:  1/999999 | HTTP retries: 0
+Steps:  90/128  70% | Samples:  90/128 | accuracy: 0.14 | subprocesses:  9/999999, docker: 38/999999, tinker-sampling:  4/999999 | HTTP retries: 0
+Steps:  93/128  72% | Samples:  93/128 | accuracy: 0.14 | subprocesses: 12/999999, docker: 35/999999, tinker-sampling:  2/999999 | HTTP retries: 0
+Steps:  97/128  75% | Samples:  97/128 | accuracy: 0.15 | subprocesses: 12/999999, docker: 31/999999, tinker-sampling:  4/999999 | HTTP retries: 0
+Steps: 103/128  80% | Samples: 103/128 | accuracy: 0.15 | subprocesses: 13/999999, docker: 25/999999, tinker-sampling:  1/999999 | HTTP retries: 0
+Steps: 105/128  82% | Samples: 105/128 | accuracy: 0.14 | subprocesses: 12/999999, docker: 23/999999, tinker-sampling:  2/999999 | HTTP retries: 0
+Steps: 109/128  85% | Samples: 109/128 | accuracy: 0.14 | subprocesses: 14/999999, docker: 19/999999, tinker-sampling:  0/999999 | HTTP retries: 0
+Steps: 114/128  89% | Samples: 114/128 | accuracy: 0.14 | subprocesses: 12/999999, docker: 14/999999, tinker-sampling:  1/999999 | HTTP retries: 0
+Steps: 118/128  92% | Samples: 118/128 | accuracy: 0.15 | subprocesses:  9/999999, docker: 10/999999, tinker-sampling:  1/999999 | HTTP retries: 0
+Steps: 121/128  94% | Samples: 121/128 | accuracy: 0.14 | subprocesses:  7/999999, docker:  7/999999, tinker-sampling:  0/999999 | HTTP retries: 0
+Steps: 125/128  97% | Samples: 125/128 | accuracy: 0.14 | subprocesses:  3/999999, docker:  3/999999, tinker-sampling:  0/999999 | HTTP retries: 0
+Steps: 128/128 100% | Samples: 128/128 | accuracy: 0.13 | subprocesses:  0/999999, docker:  0/999999, tinker-sampling:  0/999999 | HTTP retries: 0
+
+---------------------------------------------------------
+bash_codeforces (128 samples): tinker-sampling/openai/gpt-oss-20b
+max_retries: 0, max_connections: 999999, max_subprocesses: 999999, max_sandboxes: 999999,
+min_test_output_length: 16, max_tests: 1, reset_public_test_file: False, impossible: False, dataset:
+(samples)
+
+total time:                                                 0:07:26
+bash_codeforces_scorer
+accuracy                0.133
+private_test_accuracy   0.133
+Log: logs/2025-12-05T15-13-31+00-00_bash-codeforces_AvpAKpefwLggbrb6QuauYd.eval
+---------------------------------------------------------
+
+
+---------------------------------------------------------
+bash_codeforces (128 samples): tinker-sampling/openai/gpt-oss-20b
+max_retries: 0, max_connections: 999999, max_subprocesses: 999999, max_sandboxes: 999999,
+min_test_output_length: 16, max_tests: 1, reset_public_test_file: False, impossible: False, dataset:
+(samples)
+---------------------------------------------------------
+
+
+---------------------------------------------------------
+bash_codeforces (128 samples): tinker-sampling/openai/gpt-oss-20b
+max_retries: 0, max_connections: 999999, max_subprocesses: 999999, max_sandboxes: 999999,
+min_test_output_length: 16, max_tests: 1, reset_public_test_file: False, impossible: False, dataset:
+(samples)
+
+total time:                                                 0:00:39
+Task interrupted (no samples completed before interruption)
+Log: logs/2025-12-05T15-21-48+00-00_bash-codeforces_Bn6362qGeaPNPACp5oaKxE.eval
+---------------------------------------------------------
+
+╭──────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ Cleaning up Docker environments (please do not interrupt this operation!):                           │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────╯
+asyncio:1879 [[91mERROR[0m] unhandled exception during asyncio.run() shutdown
+task: <Task finished name='Task-5130' coro=<InspectRLDataset.get_batch.<locals>.run_eval() done, defined at /Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py:330> exception=ValueError('zip() argument 2 is shorter than argument 1')>
+Traceback (most recent call last):
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect/bash_codeforces.py", line 404, in main
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 1015, in main
+    await training_func(
+    ...<10 lines>...
+    )
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 914, in do_sync_training
+    trajectory_groups_P = await asyncio.gather(
+                          ^^^^^^^^^^^^^^^^^^^^^
+    ...<12 lines>...
+    )
+    ^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 595, in do_group_rollout_and_filter_constant_reward
+    trajectory_group = await do_group_rollout(env_group_builder, policy)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/logtree.py", line 537, in aw
+    return await fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/rollouts.py", line 42, in do_group_rollout
+    trajectories_G = await asyncio.gather(*[do_single_rollout(policy, env) for env in envs_G])
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/logtree.py", line 537, in aw
+    return await fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/rollouts.py", line 18, in do_single_rollout
+    ob, stop_condition = await env.initial_observation()
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py", line 227, in initial_observation
+    observation = await self.inspect_llm_wrapper.next_prompt_or_final_step_result(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        sample_id=self.sample_id
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py", line 136, in next_prompt_or_final_step_result
+    return await self.prompt_or_final_step_result_queues[sample_id].get()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/queues.py", line 186, in get
+    await getter
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 123, in run
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py", line 350, in run_eval
+    for sample_id, reward, metric in zip(sample_ids, rewards, metrics, strict=True):
+                                     ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: zip() argument 2 is shorter than argument 1
+[12/05/25 15:22:40] ERROR    unhandled exception during          base_events.py:1879
+                             asyncio.run() shutdown
+                             task: <Task finished
+                             name='Task-5130'
+                             coro=<InspectRLDataset.get_batch.<l
+                             ocals>.run_eval() done, defined at
+                             /Users/user/reward-hacking/tinker-c
+                             ookbook-reward-hacking/tinker_cookb
+                             ook/rl/envs/inspect.py:330>
+                             exception=ValueError('zip()
+                             argument 2 is shorter than argument
+                             1')>
+                             Traceback (most recent call last):
+                               File
+                             "/Users/user/.local/share/uv/python
+                             /cpython-3.13.7-macos-aarch64-none/
+                             lib/python3.13/asyncio/runners.py",
+                              line 118, in run
+                                 return
+                             self._loop.run_until_complete(task)
+                                        ~~~~~~~~~~~~~~~~~~~~~~~~
+                             ~~~~~^^^^^^
+                               File
+                             "/Users/user/.local/share/uv/python
+                             /cpython-3.13.7-macos-aarch64-none/
+                             lib/python3.13/asyncio/base_events.
+                             py", line 725, in
+                             run_until_complete
+                                 return future.result()
+                                        ~~~~~~~~~~~~~^^
+                               File
+                             "/Users/user/reward-hacking/tinker-
+                             cookbook-reward-hacking/tinker_cook
+                             book/rl/envs/inspect/bash_codeforce
+                             s.py", line 404, in main
+                               File
+                             "/Users/user/reward-hacking/tinker-
+                             cookbook-reward-hacking/tinker_cook
+                             book/utils/trace.py", line 332, in
+                             async_wrapper
+                                 return await func(*args,
+                             **kwargs)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+                             ^^^
+                               File
+                             "/Users/user/reward-hacking/tinker-
+                             cookbook-reward-hacking/tinker_cook
+                             book/rl/train.py", line 1015, in
+                             main
+                                 await training_func(
+                                 ...<10 lines>...
+                                 )
+                               File
+                             "/Users/user/reward-hacking/tinker-
+                             cookbook-reward-hacking/tinker_cook
+                             book/utils/trace.py", line 332, in
+                             async_wrapper
+                                 return await func(*args,
+                             **kwargs)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+                             ^^^
+                               File
+                             "/Users/user/reward-hacking/tinker-
+                             cookbook-reward-hacking/tinker_cook
+                             book/rl/train.py", line 914, in
+                             do_sync_training
+                                 trajectory_groups_P = await
+                             asyncio.gather(
+                                                       ^^^^^^^^^
+                             ^^^^^^^^^^^^
+                                 ...<12 lines>...
+                                 )
+                                 ^
+                               File
+                             "/Users/user/reward-hacking/tinker-
+                             cookbook-reward-hacking/tinker_cook
+                             book/utils/trace.py", line 332, in
+                             async_wrapper
+                                 return await func(*args,
+                             **kwargs)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+                             ^^^
+                               File
+                             "/Users/user/reward-hacking/tinker-
+                             cookbook-reward-hacking/tinker_cook
+                             book/rl/train.py", line 595, in
+                             do_group_rollout_and_filter_constan
+                             t_reward
+                                 trajectory_group = await
+                             do_group_rollout(env_group_builder,
+                             policy)
+                                                    ^^^^^^^^^^^^
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             ^^
+                               File
+                             "/Users/user/reward-hacking/tinker-
+                             cookbook-reward-hacking/tinker_cook
+                             book/utils/logtree.py", line 537,
+                             in aw
+                                 return await fn(*args,
+                             **kwargs)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+                             ^
+                               File
+                             "/Users/user/reward-hacking/tinker-
+                             cookbook-reward-hacking/tinker_cook
+                             book/rl/rollouts.py", line 42, in
+                             do_group_rollout
+                                 trajectories_G = await
+                             asyncio.gather(*[do_single_rollout(
+                             policy, env) for env in envs_G])
+                                                  ^^^^^^^^^^^^^^
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+                               File
+                             "/Users/user/reward-hacking/tinker-
+                             cookbook-reward-hacking/tinker_cook
+                             book/utils/logtree.py", line 537,
+                             in aw
+                                 return await fn(*args,
+                             **kwargs)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+                             ^
+                               File
+                             "/Users/user/reward-hacking/tinker-
+                             cookbook-reward-hacking/tinker_cook
+                             book/rl/rollouts.py", line 18, in
+                             do_single_rollout
+                                 ob, stop_condition = await
+                             env.initial_observation()
+                                                      ^^^^^^^^^^
+                             ^^^^^^^^^^^^^^^^^^^^^
+                               File
+                             "/Users/user/reward-hacking/tinker-
+                             cookbook-reward-hacking/tinker_cook
+                             book/rl/envs/inspect.py", line 227,
+                             in initial_observation
+                                 observation = await
+                             self.inspect_llm_wrapper.next_promp
+                             t_or_final_step_result(
+                                               ^^^^^^^^^^^^^^^^^
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             ^^^^^^^^^^^^
+                                     sample_id=self.sample_id
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^
+                                 )
+                                 ^
+                               File
+                             "/Users/user/reward-hacking/tinker-
+                             cookbook-reward-hacking/tinker_cook
+                             book/rl/envs/inspect.py", line 136,
+                             in next_prompt_or_final_step_result
+                                 return await
+                             self.prompt_or_final_step_result_qu
+                             eues[sample_id].get()
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             ^^^
+                               File
+                             "/Users/user/.local/share/uv/python
+                             /cpython-3.13.7-macos-aarch64-none/
+                             lib/python3.13/asyncio/queues.py",
+                             line 186, in get
+                                 await getter
+                             asyncio.exceptions.CancelledError
+
+                             During handling of the above
+                             exception, another exception
+                             occurred:
+
+                             Traceback (most recent call last):
+                               File
+                             "/Users/user/.local/share/uv/python
+                             /cpython-3.13.7-macos-aarch64-none/
+                             lib/python3.13/asyncio/runners.py",
+                              line 195, in run
+                                 return runner.run(main)
+                                        ~~~~~~~~~~^^^^^^
+                               File
+                             "/Users/user/.local/share/uv/python
+                             /cpython-3.13.7-macos-aarch64-none/
+                             lib/python3.13/asyncio/runners.py",
+                              line 123, in run
+                                 raise KeyboardInterrupt()
+                             KeyboardInterrupt
+
+                             During handling of the above
+                             exception, another exception
+                             occurred:
+
+                             Traceback (most recent call last):
+                               File
+                             "/Users/user/reward-hacking/tinker-
+                             cookbook-reward-hacking/tinker_cook
+                             book/rl/envs/inspect.py", line 350,
+                             in run_eval
+                                 for sample_id, reward, metric
+                             in zip(sample_ids, rewards,
+                             metrics, strict=True):
+
+                               ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             ^^^^^^^^^^^^^
+                             ValueError: zip() argument 2 is
+                             shorter than argument 1
+Traceback (most recent call last):
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect/bash_codeforces.py", line 404, in main
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 1015, in main
+    await training_func(
+    ...<10 lines>...
+    )
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 914, in do_sync_training
+    trajectory_groups_P = await asyncio.gather(
+                          ^^^^^^^^^^^^^^^^^^^^^
+    ...<12 lines>...
+    )
+    ^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 595, in do_group_rollout_and_filter_constant_reward
+    trajectory_group = await do_group_rollout(env_group_builder, policy)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/logtree.py", line 537, in aw
+    return await fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/rollouts.py", line 42, in do_group_rollout
+    trajectories_G = await asyncio.gather(*[do_single_rollout(policy, env) for env in envs_G])
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/logtree.py", line 537, in aw
+    return await fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/rollouts.py", line 18, in do_single_rollout
+    ob, stop_condition = await env.initial_observation()
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py", line 227, in initial_observation
+    observation = await self.inspect_llm_wrapper.next_prompt_or_final_step_result(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        sample_id=self.sample_id
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py", line 136, in next_prompt_or_final_step_result
+    return await self.prompt_or_final_step_result_queues[sample_id].get()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/queues.py", line 186, in get
+    await getter
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect/bash_codeforces.py", line 408, in <module>
+    os.environ["TOKENIZERS_PARALLELISM"] = "true"  # remove annoying warning message
+    ^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 123, in run
+    raise KeyboardInterrupt()
+KeyboardInterrupt
