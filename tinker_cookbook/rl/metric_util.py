@@ -98,12 +98,14 @@ def dataset_to_env_group_builders(dataset: RLDataset) -> list[EnvGroupBuilder]:
     """
     Get the whole dataset as a list of env group builders.
     """
+    print(f"{len(dataset)=}")
     return list(itertools.chain(*[dataset.get_batch(i) for i in range(len(dataset))]))
 
 
 class RLTestSetEvaluator(SamplingClientEvaluator):
     def __init__(self, dataset: RLDataset, max_tokens: int, name: str | None = None):
         self.env_group_builders_P = dataset_to_env_group_builders(dataset)
+        print(f"{len(self.env_group_builders_P)=}")
         self.max_tokens = max_tokens
         self.name = name
 

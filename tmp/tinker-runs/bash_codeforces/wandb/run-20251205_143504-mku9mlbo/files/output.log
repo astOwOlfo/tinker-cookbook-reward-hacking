@@ -1,0 +1,160 @@
+tinker_cookbook.utils.ml_log:475 [[92mINFO[0m] Logging to: tmp/tinker-runs/bash_codeforces
+tinker_cookbook.checkpoint_utils:22 [[92mINFO[0m] Reading checkpoints from tmp/tinker-runs/bash_codeforces/checkpoints.jsonl
+tinker_cookbook.checkpoint_utils:48 [[92mINFO[0m] No checkpoints found with key state_path in tmp/tinker-runs/bash_codeforces/
+tinker.lib.public_interfaces.service_client:66 [[92mINFO[0m] ServiceClient initialized for session 8a9614e4-4bf2-51ea-aaec-0002dacd3efb
+tinker.lib.public_interfaces.service_client:144 [[92mINFO[0m] Creating TrainingClient for model_id='8a9614e4-4bf2-51ea-aaec-0002dacd3efb:train:0'
+len(dataset)=245
+len(self.env_group_builders_P)=490
+tinker_cookbook.rl.train:1006 [[92mINFO[0m] Will train on 2197 batches
+tinker_cookbook.utils.misc_utils:20 [[92mINFO[0m] Starting save_checkpoint
+tinker_cookbook.checkpoint_utils:75 [[92mINFO[0m] Saved checkpoints: {'sampler_path': 'tinker://8a9614e4-4bf2-51ea-aaec-0002dacd3efb:train:0/sampler_weights/000000'}
+tinker_cookbook.utils.misc_utils:23 [[92mINFO[0m] save_checkpoint took 14.06 seconds
+tinker_cookbook.utils.misc_utils:20 [[92mINFO[0m] Starting sample
+
+---------------------------------------------------------
+bash_codeforces (4 samples): tinker-sampling/openai/gpt-oss-20b
+max_retries: 0, max_connections: 999999, max_sandboxes: 999999,
+min_test_output_length: 16, max_tests: 1, reset_public_test_file: False, impossible:
+True, dataset: (samples)
+---------------------------------------------------------
+
+Steps:   1/4  25% | Samples:   1/  4 | accuracy:  n/a | subprocesses:  1/10, docker:  3/999999, tinker-sampling:  2/999999 | HTTP retries: 0
+Steps:   2/4  50% | Samples:   2/  4 | accuracy: 0.00 | subprocesses:  1/10, docker:  2/999999, tinker-sampling:  1/999999 | HTTP retries: 0
+Steps:   4/4 100% | Samples:   4/  4 | accuracy: 0.00 | subprocesses:  0/10, docker:  0/999999, tinker-sampling:  0/999999 | HTTP retries: 0
+
+---------------------------------------------------------
+bash_codeforces (4 samples): tinker-sampling/openai/gpt-oss-20b
+max_retries: 0, max_connections: 999999, max_sandboxes: 999999,
+min_test_output_length: 16, max_tests: 1, reset_public_test_file: False, impossible:
+True, dataset: (samples)
+
+total time:                                      0:00:36
+bash_codeforces_scorer
+accuracy                0.000
+private_test_accuracy   0.000
+Log: logs/2025-12-05T14-35-32+00-00_bash-codeforces_ENz6Yer5QsEHhLGGi6EPmA.eval
+---------------------------------------------------------
+
+[12/05/25 14:36:08] WARNING  The 'score' field is deprecated. Access    logger.py:221
+                             sample scores through 'scores' instead.
+asyncio:1879 [[91mERROR[0m] Task exception was never retrieved
+future: <Task finished name='Task-65' coro=<InspectRLDataset.get_batch.<locals>.run_eval() done, defined at /Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py:330> exception=AttributeError("'EvalLog' object has no attribute 'score'")>
+Traceback (most recent call last):
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py", line 349, in run_eval
+    metrics: list[dict[str, float]] = self.get_metrics(eval_log, repeated_samples)
+                                      ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect/bash_codeforces.py", line 393, in get_metrics
+    print("metadata keys:", list(eval_log.score.samples[0].metadata.keys()))
+                                 ^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/.venv/lib/python3.13/site-packages/pydantic/main.py", line 991, in __getattr__
+    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
+AttributeError: 'EvalLog' object has no attribute 'score'
+                    ERROR    Task exception was never retrieved   base_events.py:1879
+                             future: <Task finished
+                             name='Task-65'
+                             coro=<InspectRLDataset.get_batch.<lo
+                             cals>.run_eval() done, defined at
+                             /Users/user/reward-hacking/tinker-co
+                             okbook-reward-hacking/tinker_cookboo
+                             k/rl/envs/inspect.py:330>
+                             exception=AttributeError("'EvalLog'
+                             object has no attribute 'score'")>
+                             Traceback (most recent call last):
+                               File
+                             "/Users/user/reward-hacking/tinker-c
+                             ookbook-reward-hacking/tinker_cookbo
+                             ok/rl/envs/inspect.py", line 349, in
+                             run_eval
+                                 metrics: list[dict[str, float]]
+                             = self.get_metrics(eval_log,
+                             repeated_samples)
+
+                               ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+                             ^^^^^^^^^^
+                               File
+                             "/Users/user/reward-hacking/tinker-c
+                             ookbook-reward-hacking/tinker_cookbo
+                             ok/rl/envs/inspect/bash_codeforces.p
+                             y", line 393, in get_metrics
+                                 print("metadata keys:",
+                             list(eval_log.score.samples[0].metad
+                             ata.keys()))
+                                                              ^^^
+                             ^^^^^^^^^^^
+                               File
+                             "/Users/user/reward-hacking/tinker-c
+                             ookbook-reward-hacking/.venv/lib/pyt
+                             hon3.13/site-packages/pydantic/main.
+                             py", line 991, in __getattr__
+                                 raise
+                             AttributeError(f'{type(self).__name_
+                             _!r} object has no attribute
+                             {item!r}')
+                             AttributeError: 'EvalLog' object has
+                             no attribute 'score'
+Traceback (most recent call last):
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect/bash_codeforces.py", line 428, in main
+    await train.main(config)
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 1015, in main
+    await training_func(
+    ...<10 lines>...
+    )
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 914, in do_sync_training
+    trajectory_groups_P = await asyncio.gather(
+                          ^^^^^^^^^^^^^^^^^^^^^
+    ...<12 lines>...
+    )
+    ^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/trace.py", line 332, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/train.py", line 595, in do_group_rollout_and_filter_constant_reward
+    trajectory_group = await do_group_rollout(env_group_builder, policy)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/logtree.py", line 537, in aw
+    return await fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/rollouts.py", line 42, in do_group_rollout
+    trajectories_G = await asyncio.gather(*[do_single_rollout(policy, env) for env in envs_G])
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/utils/logtree.py", line 537, in aw
+    return await fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/rollouts.py", line 21, in do_single_rollout
+    step_result = await env.step(ac_with_logprobs.tokens)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py", line 251, in step
+    await self.inspect_llm_wrapper.next_prompt_or_final_step_result(
+        sample_id=self.sample_id
+    )
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect.py", line 136, in next_prompt_or_final_step_result
+    return await self.prompt_or_final_step_result_queues[sample_id].get()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/queues.py", line 186, in get
+    await getter
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/user/reward-hacking/tinker-cookbook-reward-hacking/tinker_cookbook/rl/envs/inspect/bash_codeforces.py", line 432, in <module>
+    asyncio.run(main())
+    ~~~~~~~~~~~^^^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/Users/user/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 123, in run
+    raise KeyboardInterrupt()
+KeyboardInterrupt

@@ -7,6 +7,7 @@ import tinker
 import traceback
 from sys import stderr
 
+
 @dataclass(slots=True)
 class ContainerStarter:
     dockerfile_contents: list[str]
@@ -32,8 +33,8 @@ class ContainerStarter:
         all_containers: list[Container] = await self._create_containers_task
 
         return all_containers[index]
-    
-    
+
+
 def done_step_result(env: Env, reward: float) -> StepResult:
     return StepResult(
         reward=reward,
@@ -42,10 +43,11 @@ def done_step_result(env: Env, reward: float) -> StepResult:
         next_stop_condition=env.stop_condition,
         metrics=env.metrics(),
     )
-        
+
+
 async def run_startup_commands(
-    env: Env, 
-    startup_commands: list[str], 
+    env: Env,
+    startup_commands: list[str],
 ) -> StepResult | None:
     assert env.container is not None, "Container is not initialized"
 
@@ -75,22 +77,23 @@ async def run_startup_commands(
         )
         env.failed_startup_commands = True
         return done_step_result(env, reward=0.0)
-    
+
+
 def disable_thinking_prompt(env: Env) -> str:
-    if not env.cfg.get("qwen3_disable_thinking"):
-        return ""
+    # if not env.cfg.get("qwen3_disable_thinking"):
+    #     return ""
     if env.cfg.qwen3_disable_thinking:
         return " /no_think"
     return ""
 
+
 def new_user_message_step_result(env: Env, new_user_message: str) -> StepResult:
-    
     assert env.renderer is not None, "Renderer is not initialized"
     assert env.all_messages is not None, "All messages are not initialized"
     assert env.cfg is not None, "Config is not initialized"
     assert env.stop_condition is not None, "Stop condition is not initialized"
     assert env.truncated is not None, "Truncated is not initialized"
-    
+
     new_user_message += disable_thinking_prompt(env)
 
     env.all_messages.append({"role": "user", "content": new_user_message})
@@ -108,11 +111,12 @@ def new_user_message_step_result(env: Env, new_user_message: str) -> StepResult:
         next_stop_condition=env.stop_condition,
         metrics={},
     )
-    
+
+
 async def initialize_container(env: Env) -> StepResult | None:
     assert env.container_starter is not None, "Container starter is not initialized"
     assert env.container_index is not None, "Container index is not initialized"
-    
+
     if env.container is not None:
         return
 
@@ -123,8 +127,8 @@ async def initialize_container(env: Env) -> StepResult | None:
         traceback.print_exc()
         env.docker_error = True
         return bash_agent.done_step_result(env, reward=0.0)
-    
-    
+
+
 def truncate(s: str, max_length: int) -> str:
     if len(s) <= max_length:
         return s
