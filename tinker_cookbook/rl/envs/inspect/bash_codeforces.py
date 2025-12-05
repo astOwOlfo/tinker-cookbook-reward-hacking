@@ -393,7 +393,7 @@ def build_config() -> train.Config:
 
     return train.Config(
         model_name=model_name,
-        log_path="tmp/tinker-runs/bash_codeforces/",
+        log_path="/rtmp/tinker-runs/bash_codeforces/",
         dataset_builder=dataset_builder,
         learning_rate=1e-4,
         max_tokens=max_completion_tokens,
