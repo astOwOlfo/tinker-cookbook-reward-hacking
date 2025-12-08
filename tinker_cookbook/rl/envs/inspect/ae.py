@@ -21,7 +21,7 @@ from inspect_ai.solver import TaskState, basic_agent
 from inspect_ai.tool import bash, text_editor
 from inspect_ai.util import sandbox
 
-from tinker_cookbook.rl.envs.inspect import InspectRLDatasetBuilder
+from tinker_cookbook.rl.envs.inspect_env import InspectRLDatasetBuilder
 from tinker_cookbook import cli_utils
 from tinker_cookbook.rl import train
 
