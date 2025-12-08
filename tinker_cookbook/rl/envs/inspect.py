@@ -408,6 +408,7 @@ class InspectRLDataset(RLDataset):
         filename = join(self.save_rollouts_directory, f"epoch-{epoch}-rollouts.json")
         with open(filename, "w") as f:
             json.dump(json_rollouts, f)
+        print(f"Saved transcripts to '{filename}'.")
 
 
 @dataclass(frozen=True, slots=True)
