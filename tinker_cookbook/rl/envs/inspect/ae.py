@@ -4,6 +4,7 @@ from hashlib import sha256
 import subprocess
 from xml.etree import ElementTree
 from dotenv import load_dotenv
+from joblib import Parallel, delayed
 import os
 from os import makedirs
 from os.path import isfile, join
@@ -178,17 +179,17 @@ def dockerfile_content(datapoint: Datapoint) -> str:
     )
 
 
-def sandbox_directory(datapoint: Datapoint) -> str:
-    hash = sha256(dockerfile_content(datapoint).encode()).hexdigest()
+def sandbox_directory(dockerfile_content: str) -> str:
+    hash = sha256(dockerfile_content.encode()).hexdigest()
     return join(Path(__file__).parent.resolve(), "ae", hash)
 
 
-def make_sandbox_directory(datapoint: Datapoint) -> None:
-    dir = sandbox_directory(datapoint)
+def make_sandbox_directory(dockerfile_content: str) -> None:
+    dir = sandbox_directory(dockerfile_content)
     makedirs(dir, exist_ok=True)
     for filename, content in [
         (join(dir, "compose.yaml"), COMPOSE_YAML),
-        (join(dir, "Dockerfile"), dockerfile_content(datapoint)),
+        (join(dir, "Dockerfile"), dockerfile_content),
     ]:
         if isfile(filename):
             continue
@@ -196,18 +197,19 @@ def make_sandbox_directory(datapoint: Datapoint) -> None:
             f.write(content)
 
 
-def build_sandbox(datapoint: Datapoint) -> None:
-    subprocess.run(["docker", "build", sandbox_directory(datapoint)], check=True)
+def build_sandbox(dockerfile_content: str) -> None:
+    make_sandbox_directory(dockerfile_content)
+    subprocess.run(["docker", "build", sandbox_directory(dockerfile_content)], check=True)
 
 
 def build_sandboxes(dataset: list[Datapoint]) -> None:
-    built_dockerfiles = set()
-    for datapoint in tqdm(dataset, desc="building sandboxes"):
-        if dockerfile_content(datapoint) in built_dockerfiles:
-            continue
-        make_sandbox_directory(datapoint)
-        build_sandbox(datapoint)
-        built_dockerfiles.add(dockerfile_content(datapoint))
+    unique_dockerfile_contents: list[str] = list(
+        set(dockerfile_content(datapoint) for datapoint in dataset)
+    )
+    Parallel(n_jobs=-1)(
+        delayed(build_sandbox)(dockerfile_content)
+        for dockerfile_content in tqdm(unique_dockerfile_contents, desc="building sandboxes")
+    )
 
 
 def load_dataset() -> list[Datapoint]:
