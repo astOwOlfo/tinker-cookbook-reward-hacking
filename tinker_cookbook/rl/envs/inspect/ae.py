@@ -290,7 +290,7 @@ def ae_dataset(dataset: list[Datapoint], restrict_imports_in_public_tests: bool)
                     "public_test_files": public_test_files,
                     "private_test_files": private_test_files,
                 },
-                sandbox=("docker", join(sandbox_directory(datapoint), "compose.yaml")),
+                sandbox=("docker", join(sandbox_directory(dockerfile_content(datapoint)), "compose.yaml")),
                 setup=MAKE_ASSIGNMENT_IMPORTABLE_AS_A_PACKAGE_COMMAND,
             )
         )
