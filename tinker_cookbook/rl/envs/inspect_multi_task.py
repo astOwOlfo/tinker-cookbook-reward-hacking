@@ -8,7 +8,7 @@ from random import Random
 from dotenv import load_dotenv
 import logging
 import asyncio
-from itertools import pairwise
+from itertools import pairwise, chain
 from dataclasses import dataclass, field
 from collections.abc import Awaitable
 from typing import Callable
@@ -299,8 +299,8 @@ class InspectRLDataset(RLDataset):
     tokenizer: PreTrainedTokenizer
     max_prompt_tokens: int
     save_rollouts_directory: str | None
-    get_rewards: Callable[[EvalLog, list[Sample]], list[float]]
-    get_metrics: Callable[[EvalLog, list[Sample]], list[dict[str, float]]]
+    get_rewards: dict[str, Callable[[EvalLog, list[Sample]], list[float]]]
+    get_metrics: dict[str, Callable[[EvalLog, list[Sample]], list[dict[str, float]]]]
     shuffled_inspect_task_samples: dict[str, list[Sample]] = field(init=False)
 
     def __post_init__(self) -> None:
@@ -365,14 +365,18 @@ class InspectRLDataset(RLDataset):
             tokenizer=self.tokenizer,  # type: ignore
         )
 
-        async def run_eval(task_name: str) -> None:
-            subtask: Task = deepcopy(self.inspect_tasks[task_name])
-            subtask.dataset = MemoryDataset(repeated_samples[task_name])
+        async def run_eval() -> None:
+            subtasks: dict[str, Task] = {}
+            for task_name, task in self.inspect_tasks.items():
+                subtasks[task_name] = deepcopy(task)
+                subtasks[task_name].dataset = MemoryDataset(repeated_samples[task_name])
+                subtasks[task_name].solver = sample_id_in_message_metadata_solver_wrapper(
+                    subtasks[task_name].solver
+                )
 
             eval_logs: list[EvalLog] = await eval_async(
-                subtask,
+                list(subtasks.values()),
                 model=Model(api=inspect_llm_wrapper, config=GenerateConfig()),
-                solver=sample_id_in_message_metadata_solver_wrapper(subtask.solver),
                 max_retries=0,  # don't retry llm completions
                 max_connections=999999,  # don't limit how many llm completions can run at a time
                 # max_sandboxes=8,
@@ -380,14 +384,22 @@ class InspectRLDataset(RLDataset):
                 max_subprocesses=999999,
             )
 
-            assert len(eval_logs) == 1
-            eval_log = eval_logs[0]
+            assert len(eval_logs) == len(self.inspect_tasks)
 
-            rewards: list[float] = self.get_rewards(eval_log, repeated_samples[task_name])
-            metrics: list[dict[str, float]] = self.get_metrics(
-                eval_log, repeated_samples[task_name]
-            )
-            for sample_id, reward, metric in zip(sample_ids, rewards, metrics, strict=True):
+            rewards: dict[str, list[float]] = {
+                task_name: self.get_rewards[task_name](eval_log, repeated_samples[task_name])
+                for eval_log, task_name in zip(eval_logs, self.inspect_tasks.keys(), strict=True)
+            }
+            metrics: dict[str, list[dict[str, float]]] = {
+                task_name: self.get_metrics[task_name](eval_log, repeated_samples[task_name])
+                for eval_log, task_name in zip(eval_logs, self.inspect_tasks.keys(), strict=True)
+            }
+
+            flat_rewards = chain.from_iterable(rewards.values())
+            flat_metrics = chain.from_iterable(metrics.values())
+            for sample_id, reward, metric in zip(
+                sample_ids, flat_rewards, flat_metrics, strict=True
+            ):
                 final_step_result = StepResult(
                     reward=reward,
                     episode_done=True,
@@ -399,11 +411,9 @@ class InspectRLDataset(RLDataset):
                     sample_id=sample_id, step_result=final_step_result
                 )
 
-            self.save_rollouts(eval_log=eval_log, rewards=rewards, metrics=metrics, epoch=index)
+            self.save_rollouts(eval_logs=eval_logs, rewards=rewards, metrics=metrics, epoch=index)
 
-        start_eval = Lazy(
-            asyncio.gather(*[run_eval(task_name) for task_name in self.inspect_tasks.keys()])
-        )
+        start_eval = Lazy(run_eval())
 
         envs: list[InspectEnv] = [
             InspectEnv(
@@ -424,24 +434,32 @@ class InspectRLDataset(RLDataset):
         return [InspectEnvGroupBuilder(envs=group) for group in grouped_envs]
 
     def __len__(self) -> int:
-        return len(self.shuffled_inspect_task_samples)
+        return 9999
 
     def save_rollouts(
-        self, eval_log: EvalLog, rewards: list[float], metrics: list[dict[str, float]], epoch: int
+        self,
+        eval_logs: list[EvalLog],
+        rewards: dict[str, list[float]],
+        metrics: dict[str, list[dict[str, float]]],
+        epoch: int,
     ) -> None:
         if self.save_rollouts_directory is None:
             return
 
         makedirs(self.save_rollouts_directory, exist_ok=True)
 
-        json_messages = [
-            [message.model_dump() for message in sample.messages]
-            for sample in eval_log.samples  # type: ignore
-        ]
-        json_rollouts = [
-            {"messages": messages, "reward": reward, "metrics": metric}
-            for messages, reward, metric in zip(json_messages, rewards, metrics, strict=True)
-        ]
+        json_rollouts = {}
+
+        for task_name, eval_log in zip(self.inspect_tasks.keys(), eval_logs, strict=True):
+            json_messages = [
+                [message.model_dump() for message in sample.messages]
+                for sample in eval_log.samples  # type: ignore
+            ]
+            json_rollouts[task_name] = [
+                {"messages": messages, "reward": reward, "metrics": metric}
+                for messages, reward, metric in zip(json_messages, rewards, metrics, strict=True)
+            ]
+
         filename = join(self.save_rollouts_directory, f"epoch-{epoch}-rollouts.json")
         with open(filename, "w") as f:
             json.dump(json_rollouts, f)
@@ -456,10 +474,17 @@ class InspectRLDatasetBuilder(RLDatasetBuilder):
     renderer_name: str
     max_prompt_tokens: int
     inspect_tasks: dict[str, Task]
-    get_rewards: Callable[[EvalLog, list[Sample]], list[float]]
-    get_metrics: Callable[[EvalLog, list[Sample]], list[dict[str, float]]]
+    get_rewards: dict[str, Callable[[EvalLog, list[Sample]], list[float]]]
+    get_metrics: dict[str, Callable[[EvalLog, list[Sample]], list[dict[str, float]]]]
     test_fraction: float
     save_rollouts_directory: str | None
+
+    def __post_init__(self) -> None:
+        assert (
+            set(self.inspect_tasks.keys())
+            == set(self.get_rewards.keys())
+            == set(self.get_metrics.keys())
+        )
 
     async def __call__(self) -> tuple[InspectRLDataset, InspectRLDataset]:
         train_tasks: dict[str, Task] = {}
@@ -502,7 +527,7 @@ def build_config_mmlu() -> train.Config:
     from inspect_evals.mmlu import mmlu_0_shot
 
     # model_name = "meta-llama/Llama-3.2-1B"
-    model_name = "Qwen/Qwen3-8B"
+    model_name = "Qwen/Qwen3-8B-Base"
     context_length = 32768
     max_completion_tokens = 16
 
@@ -524,13 +549,13 @@ def build_config_mmlu() -> train.Config:
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
-        batch_size=2,
-        group_size=2,
+        batch_size=64,
+        group_size=8,
         renderer_name=model_info.get_recommended_renderer_name(model_name),
         max_prompt_tokens=context_length - max_completion_tokens - 16,  # -16 just in case
         inspect_tasks={"mmlu": inspect_task},
-        get_rewards=get_rewards,
-        get_metrics=get_metrics,
+        get_rewards={"mmlu": get_rewards},
+        get_metrics={"mmlu": get_metrics},
         test_fraction=0.1,
         save_rollouts_directory=None,
     )
