@@ -352,7 +352,9 @@ def bash_codeforces(
     dataset: list[Datapoint] = load_codeforces_dataset()
     if impossible:
         dataset = make_impossible(dataset)
-    for datapoint in tqdm(dataset, disable=n_synthetic_impossible_tests == 0):
+    for datapoint in tqdm(
+        dataset, disable=n_synthetic_impossible_tests == 0, desc="generating impossible tests"
+    ):
         for _ in range(n_synthetic_impossible_tests):
             datapoint.tests.append(random_impossible_test())
     dataset = [
