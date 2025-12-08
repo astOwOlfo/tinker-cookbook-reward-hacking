@@ -10,7 +10,6 @@ from os import makedirs
 from os.path import isfile, join
 from pathlib import Path
 from shlex import quote
-from tqdm import tqdm
 from statistics import mean
 import asyncio
 
@@ -198,8 +197,10 @@ def make_sandbox_directory(dockerfile_content: str) -> None:
 
 
 def build_sandbox(dockerfile_content: str) -> None:
+    print("starting building sandbox...")
     make_sandbox_directory(dockerfile_content)
     subprocess.run(["docker", "build", "-q", sandbox_directory(dockerfile_content)], check=True)
+    print("done building sandbox")
 
 
 def build_sandboxes(dataset: list[Datapoint]) -> None:
@@ -208,7 +209,7 @@ def build_sandboxes(dataset: list[Datapoint]) -> None:
     )
     Parallel(n_jobs=-1)(
         delayed(build_sandbox)(dockerfile_content)
-        for dockerfile_content in tqdm(unique_dockerfile_contents, desc="building sandboxes")
+        for dockerfile_content in unique_dockerfile_contents
     )
 
 
