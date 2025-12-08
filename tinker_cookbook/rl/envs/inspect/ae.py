@@ -461,15 +461,13 @@ def build_config() -> train.Config:
     task = ae()
 
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
-        for sample in eval_log.samples:
-            print("SCORES:", sample.scores)
-        return [sample.scores["bash_codeforces_scorer"].value for sample in eval_log.samples]  # type: ignore
+        return [sample.scores["ae_scorer"].value for sample in eval_log.samples]  # type: ignore
 
     def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
         return [
             {
                 key: float(value)
-                for key, value in sample.scores["bash_codeforces_scorer"].metadata.items()  # type: ignore
+                for key, value in sample.scores["ae_scocrer"].metadata.items()  # type: ignore
             }
             for sample in eval_log.samples  # type: ignore
         ]
