@@ -1,4 +1,3 @@
-import os
 from inspect_ai import Task, task
 from inspect_ai.dataset import Sample, MemoryDataset, Dataset
 from inspect_ai.log import EvalLog
@@ -11,6 +10,7 @@ from dotenv import load_dotenv
 from shlex import quote
 import json
 from json.decoder import JSONDecodeError
+import os
 from random import Random
 from statistics import mean
 import asyncio
@@ -248,17 +248,6 @@ def bash_codeforces_dataset(dataset: list[Datapoint], max_tests: int) -> Dataset
     return MemoryDataset(samples)
 
 
-@metric
-def private_test_accuracy() -> Metric:
-    def metric(scores: list[SampleScore]) -> float:
-        return mean(
-            float(score.score.metadata["private_tests_passed"])  # type: ignore
-            for score in scores
-        )
-
-    return metric
-
-
 @dataclass(frozen=True, slots=True)
 class TestResult:
     passed: bool
@@ -279,6 +268,17 @@ async def run_tests(
         return TestResult(passed=False, timed_out=True)
 
     return TestResult(passed=output.success, timed_out=False)
+
+
+@metric
+def private_test_accuracy() -> Metric:
+    def metric(scores: list[SampleScore]) -> float:
+        return mean(
+            float(score.score.metadata["private_tests_passed"])  # type: ignore
+            for score in scores
+        )
+
+    return metric
 
 
 @scorer(metrics=[accuracy(), private_test_accuracy()])
