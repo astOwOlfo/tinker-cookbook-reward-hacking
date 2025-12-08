@@ -2,11 +2,14 @@ import json
 from dataclasses import dataclass
 from hashlib import sha256
 from xml.etree import ElementTree
+from dotenv import load_dotenv
+import os
 from os import makedirs
 from os.path import isfile, join
 from pathlib import Path
 from shlex import quote
 from statistics import mean
+import asyncio
 
 from inspect_ai import Task, task
 from inspect_ai.dataset import Dataset, MemoryDataset, Sample
@@ -15,6 +18,10 @@ from inspect_ai.scorer import Metric, SampleScore, Score, Scorer, Target, accura
 from inspect_ai.solver import TaskState, basic_agent
 from inspect_ai.tool import bash, text_editor
 from inspect_ai.util import sandbox
+
+from tinker_cookbook.rl.envs.inspect import InspectRLDatasetBuilder
+from tinker_cookbook import cli_utils
+from tinker_cookbook.rl import train
 
 
 @dataclass(frozen=True, slots=True)
@@ -188,7 +195,8 @@ def make_sandbox_directory(datapoint: Datapoint) -> None:
 
 
 def load_dataset() -> list[Datapoint]:
-    with open("../../../../data/ae.json") as f:
+    print(os.getcwd())
+    with open(join(Path(__file__).parent.resolve(), "../../../../data/ae.json")) as f:
         raw_dataset = json.load(f)
 
     return [
@@ -414,7 +422,7 @@ def ae_scorer(
 def ae(
     command_timeout_seconds: int = 16,
     test_timeout_seconds: int = 16,
-    max_messages: int = 32,
+    max_messages: int = 16,
     reset_public_test_files: bool = True,
     remove_public_test_xml_report_file: bool = True,
     count_skipped_tests: bool = False,
@@ -441,3 +449,62 @@ def ae(
             public_test_weight_in_reward=public_test_weight_in_reward,
         ),
     )
+
+
+def build_config() -> train.Config:
+    model_name = "openai/gpt-oss-20b"
+    renderer_name = "gpt_oss_low_reasoning"
+
+    max_completion_tokens = 2048
+    context_length = 32768
+
+    task = ae()
+
+    def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
+        for sample in eval_log.samples:
+            print("SCORES:", sample.scores)
+        return [sample.scores["bash_codeforces_scorer"].value for sample in eval_log.samples]  # type: ignore
+
+    def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
+        return [
+            {
+                key: float(value)
+                for key, value in sample.scores["bash_codeforces_scorer"].metadata.items()  # type: ignore
+            }
+            for sample in eval_log.samples  # type: ignore
+        ]
+
+    dataset_builder = InspectRLDatasetBuilder(
+        model_name=model_name,
+        batch_size=128,
+        group_size=8,
+        renderer_name=renderer_name,
+        max_prompt_tokens=context_length - max_completion_tokens - 16,  # -16 just in case
+        inspect_task=task,
+        get_rewards=get_rewards,
+        get_metrics=get_metrics,
+        test_fraction=0.1,
+    )
+
+    return train.Config(
+        model_name=model_name,
+        log_path="/tmp/tinker-runs/ae/",
+        dataset_builder=dataset_builder,
+        learning_rate=1e-4,
+        max_tokens=max_completion_tokens,
+        eval_every=0,
+        # wandb_project="inspect-ae",
+        # wandb_name=model_name,
+    )
+
+
+async def main() -> None:
+    load_dotenv()
+    os.environ["TOKENIZERS_PARALLELISM"] = "true"  # remove annoying warning message
+    config = build_config()
+    cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
+    await train.main(config)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
