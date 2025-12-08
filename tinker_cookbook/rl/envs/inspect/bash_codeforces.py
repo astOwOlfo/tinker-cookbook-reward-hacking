@@ -10,7 +10,9 @@ from dotenv import load_dotenv
 from shlex import quote
 import json
 from json.decoder import JSONDecodeError
+from pathlib import Path
 import os
+from os.path import join
 from random import Random
 from statistics import mean
 import asyncio
@@ -363,7 +365,7 @@ def build_config() -> train.Config:
     max_completion_tokens = 2048
     context_length = 32768
 
-    task = bash_codeforces()
+    task = bash_codeforces(max_tests=2)
 
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
         return [sample.scores["bash_codeforces_scorer"].value for sample in eval_log.samples]  # type: ignore
@@ -387,6 +389,9 @@ def build_config() -> train.Config:
         get_rewards=get_rewards,
         get_metrics=get_metrics,
         test_fraction=0.1,
+        save_rollouts_directory=join(
+            Path(__file__).parent.resolve(), "../../../../../rollouts/bash_codeforces/"
+        ),
     )
 
     return train.Config(
@@ -397,7 +402,7 @@ def build_config() -> train.Config:
         max_tokens=max_completion_tokens,
         eval_every=0,
         wandb_project="inspect-bash-codeforces",
-        wandb_name="impossible-hard-to-hack-" + model_name,
+        wandb_name="hackable-" + model_name,
     )
 
 
