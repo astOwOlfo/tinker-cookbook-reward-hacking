@@ -491,8 +491,8 @@ def build_config() -> train.Config:
         learning_rate=1e-4,
         max_tokens=max_completion_tokens,
         eval_every=0,
-        # wandb_project="inspect-ae",
-        # wandb_name=model_name,
+        wandb_project="inspect-ae",
+        wandb_name=model_name,
     )
 
 
