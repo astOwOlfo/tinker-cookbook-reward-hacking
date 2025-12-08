@@ -386,7 +386,7 @@ def build_config() -> train.Config:
     context_length = 32768
 
     task = bash_codeforces(
-        n_synthetic_impossible_tests=256,
+        n_synthetic_impossible_tests=512,
         min_tests=256,
         max_tests=256,
         min_test_output_length=16,
