@@ -566,9 +566,7 @@ def build_config_impossible_bench() -> train.Config:
         get_rewards=get_rewards,
         get_metrics=get_metrics,
         test_fraction=0.1,
-        save_rollouts_directory=join(
-            Path(__file__).parent.resolve(), "../../../../../rollouts/ae/"
-        ),
+        save_rollouts_directory=None,
     )
 
     # TODO: test the following hypothesis on why this config doesn't crash but build_config_impossible_bench_old crashes
