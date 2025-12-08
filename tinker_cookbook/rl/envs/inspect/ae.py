@@ -6,7 +6,7 @@ from xml.etree import ElementTree
 from dotenv import load_dotenv
 from joblib import Parallel, delayed
 import os
-from os import makedirs
+from os import makedirsgi
 from os.path import isfile, join
 from pathlib import Path
 from shlex import quote
