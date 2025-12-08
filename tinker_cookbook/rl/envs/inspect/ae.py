@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass
 from hashlib import sha256
+import subprocess
 from xml.etree import ElementTree
 from dotenv import load_dotenv
 import os
@@ -8,6 +9,7 @@ from os import makedirs
 from os.path import isfile, join
 from pathlib import Path
 from shlex import quote
+from tqdm import tqdm
 from statistics import mean
 import asyncio
 
@@ -192,6 +194,20 @@ def make_sandbox_directory(datapoint: Datapoint) -> None:
             continue
         with open(filename, "w") as f:
             f.write(content)
+
+
+def build_sandbox(datapoint: Datapoint) -> None:
+    subprocess.run(["docker", "build", sandbox_directory(datapoint)], check=True)
+
+
+def build_sandboxes(dataset: list[Datapoint]) -> None:
+    built_dockerfiles = set()
+    for datapoint in tqdm(dataset, desc="building sandboxes"):
+        if dockerfile_content(datapoint) in built_dockerfiles:
+            continue
+        make_sandbox_directory(datapoint)
+        build_sandbox(datapoint)
+        built_dockerfiles.add(dockerfile_content(datapoint))
 
 
 def load_dataset() -> list[Datapoint]:
@@ -430,8 +446,7 @@ def ae(
 ) -> Task:
     dataset = load_dataset()
 
-    for datapoint in dataset:
-        make_sandbox_directory(datapoint)
+    build_sandboxes(dataset)
 
     return Task(
         dataset=ae_dataset(
