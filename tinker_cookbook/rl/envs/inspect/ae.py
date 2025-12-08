@@ -195,7 +195,6 @@ def make_sandbox_directory(datapoint: Datapoint) -> None:
 
 
 def load_dataset() -> list[Datapoint]:
-    print(os.getcwd())
     with open(join(Path(__file__).parent.resolve(), "../../../../data/ae.json")) as f:
         raw_dataset = json.load(f)
 
@@ -467,15 +466,15 @@ def build_config() -> train.Config:
         return [
             {
                 key: float(value)
-                for key, value in sample.scores["ae_scocrer"].metadata.items()  # type: ignore
+                for key, value in sample.scores["ae_scorer"].metadata.items()  # type: ignore
             }
             for sample in eval_log.samples  # type: ignore
         ]
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
-        batch_size=128,
-        group_size=8,
+        batch_size=2,
+        group_size=2,
         renderer_name=renderer_name,
         max_prompt_tokens=context_length - max_completion_tokens - 16,  # -16 just in case
         inspect_task=task,
