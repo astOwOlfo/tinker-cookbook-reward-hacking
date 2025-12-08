@@ -433,7 +433,7 @@ def build_config() -> train.Config:
         max_tokens=max_completion_tokens,
         eval_every=0,
         wandb_project="inspect-bash-codeforces",
-        wandb_name="impossible-hand-to-hack-bad-sandbox-" + model_name,
+        wandb_name="bad-sandbox-impossible-hard-to-hack-" + model_name,
     )
 
 
