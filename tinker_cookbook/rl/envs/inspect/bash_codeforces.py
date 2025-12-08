@@ -18,7 +18,7 @@ from statistics import mean
 import asyncio
 from dataclasses import dataclass
 
-from tinker_cookbook.rl.envs.inspect import InspectRLDatasetBuilder
+from tinker_cookbook.rl.envs.inspect_env import InspectRLDatasetBuilder
 from tinker_cookbook import cli_utils
 from tinker_cookbook.rl import train
 
@@ -365,7 +365,13 @@ def build_config() -> train.Config:
     max_completion_tokens = 2048
     context_length = 32768
 
-    task = bash_codeforces(max_tests=2)
+    task = bash_codeforces(
+        min_tests=16,
+        max_tests=16,
+        min_test_output_length=16,
+        reset_public_test_file=True,
+        impossible=True,
+    )
 
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
         return [sample.scores["bash_codeforces_scorer"].value for sample in eval_log.samples]  # type: ignore
@@ -402,7 +408,7 @@ def build_config() -> train.Config:
         max_tokens=max_completion_tokens,
         eval_every=0,
         wandb_project="inspect-bash-codeforces",
-        wandb_name="hackable-" + model_name,
+        wandb_name="hard-to-hack-impossible-" + model_name,
     )
 
 
