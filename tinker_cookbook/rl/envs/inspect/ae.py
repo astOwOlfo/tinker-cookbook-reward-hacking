@@ -199,7 +199,7 @@ def make_sandbox_directory(dockerfile_content: str) -> None:
 
 def build_sandbox(dockerfile_content: str) -> None:
     make_sandbox_directory(dockerfile_content)
-    subprocess.run(["docker", "build", sandbox_directory(dockerfile_content)], check=True)
+    subprocess.run(["docker", "build", "-q", sandbox_directory(dockerfile_content)], check=True)
 
 
 def build_sandboxes(dataset: list[Datapoint]) -> None:
