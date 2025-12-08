@@ -1,8 +1,12 @@
 from copy import deepcopy
+from os import makedirs
 from transformers import PreTrainedTokenizer
 from uuid import uuid4
+import json
+from os.path import join
 from random import Random
 from dotenv import load_dotenv
+from pathlib import Path
 import logging
 import asyncio
 from dataclasses import dataclass, field
@@ -294,6 +298,7 @@ class InspectRLDataset(RLDataset):
     renderer: renderers.Renderer
     tokenizer: PreTrainedTokenizer
     max_prompt_tokens: int
+    save_rollouts_directory: str | None
     get_rewards: Callable[[EvalLog, list[Sample]], list[float]]
     get_metrics: Callable[[EvalLog, list[Sample]], list[dict[str, float]]]
     shuffled_inspect_task_samples: list[Sample] = field(init=False)
@@ -359,6 +364,8 @@ class InspectRLDataset(RLDataset):
                     sample_id=sample_id, step_result=final_step_result
                 )
 
+            self.save_rollouts(eval_log=eval_log, rewards=rewards, metrics=metrics, epoch=index)
+
         start_eval = Lazy(run_eval())
 
         envs: list[InspectEnv] = [
@@ -382,6 +389,26 @@ class InspectRLDataset(RLDataset):
     def __len__(self) -> int:
         return len(self.shuffled_inspect_task_samples)
 
+    def save_rollouts(
+        self, eval_log: EvalLog, rewards: list[float], metrics: list[dict[str, float]], epoch: int
+    ) -> None:
+        if self.save_rollouts_directory is None:
+            return
+
+        makedirs(self.save_rollouts_directory, exist_ok=True)
+
+        json_messages = [
+            [message.model_dump() for message in sample.messages]
+            for sample in eval_log.samples  # type: ignore
+        ]
+        json_rollouts = [
+            {"messages": messages, "reward": reward, "metrics": metric}
+            for messages, reward, metric in zip(json_messages, rewards, metrics, strict=True)
+        ]
+        filename = join(self.save_rollouts_directory, f"epoch-{epoch}-rollouts.json")
+        with open(filename, "w") as f:
+            json.dump(json_rollouts, f)
+
 
 @dataclass(frozen=True, slots=True)
 class InspectRLDatasetBuilder(RLDatasetBuilder):
@@ -394,6 +421,7 @@ class InspectRLDatasetBuilder(RLDatasetBuilder):
     get_rewards: Callable[[EvalLog, list[Sample]], list[float]]
     get_metrics: Callable[[EvalLog, list[Sample]], list[dict[str, float]]]
     test_fraction: float
+    save_rollouts_directory: str | None
 
     async def __call__(self) -> tuple[InspectRLDataset, InspectRLDataset]:
         samples: list[Sample] = list(self.inspect_task.dataset)
@@ -423,6 +451,7 @@ class InspectRLDatasetBuilder(RLDatasetBuilder):
                 max_prompt_tokens=self.max_prompt_tokens,
                 get_rewards=self.get_rewards,
                 get_metrics=self.get_metrics,
+                save_rollouts_directory=self.save_rollouts_directory,
             )
             for task in [train_task, test_task]
         )
@@ -461,6 +490,7 @@ def build_config_mmlu() -> train.Config:
         get_rewards=get_rewards,
         get_metrics=get_metrics,
         test_fraction=0.1,
+        save_rollouts_directory=None,
     )
 
     return train.Config(
@@ -536,6 +566,9 @@ def build_config_impossible_bench() -> train.Config:
         get_rewards=get_rewards,
         get_metrics=get_metrics,
         test_fraction=0.1,
+        save_rollouts_directory=join(
+            Path(__file__).parent.resolve(), "../../../../../rollouts/ae/"
+        ),
     )
 
     # TODO: test the following hypothesis on why this config doesn't crash but build_config_impossible_bench_old crashes
@@ -594,6 +627,7 @@ def build_config_berkeley_function_calling_leaderboard() -> train.Config:
         get_rewards=get_rewards,
         get_metrics=get_metrics,
         test_fraction=0.1,
+        save_rollouts_directory=None,
     )
 
     return train.Config(
