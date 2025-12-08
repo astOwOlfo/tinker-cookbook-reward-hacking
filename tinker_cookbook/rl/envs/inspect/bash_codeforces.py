@@ -10,6 +10,7 @@ from datasets import load_dataset
 from dotenv import load_dotenv
 from shlex import quote
 import json
+from tqdm import tqdm
 from json.decoder import JSONDecodeError
 from pathlib import Path
 import os
@@ -351,7 +352,7 @@ def bash_codeforces(
     dataset: list[Datapoint] = load_codeforces_dataset()
     if impossible:
         dataset = make_impossible(dataset)
-    for datapoint in dataset:
+    for datapoint in tqdm(dataset, disable=n_synthetic_impossible_tests == 0):
         for _ in range(n_synthetic_impossible_tests):
             datapoint.tests.append(random_impossible_test())
     dataset = [
