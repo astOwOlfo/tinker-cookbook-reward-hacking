@@ -380,7 +380,11 @@ async def run_tests(
     except TimeoutError:
         return TestResult(fraction_passed=0.0, timed_out=True)
 
-    xml_report: str = await sandbox().read_file(xml_report_filename)
+    try:
+        xml_report: str = await sandbox().read_file(xml_report_filename)
+    except FileNotFoundError:
+        return TestResult(fraction_passed=0.0, timed_out=False)
+
     report: PytestReport | None = parse_xml_pytest_report(xml_report)
     if report is None:
         return TestResult(fraction_passed=0.0, timed_out=False)
