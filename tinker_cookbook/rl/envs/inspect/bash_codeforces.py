@@ -1,3 +1,4 @@
+import random
 from inspect_ai import Task, task
 from inspect_ai.dataset import Sample, MemoryDataset, Dataset
 from inspect_ai.log import EvalLog
@@ -316,6 +317,20 @@ def bash_codeforces_scorer(
     return score
 
 
+def random_space_and_newline_separated_integers() -> str:
+    return "\n".join(
+        " ".join(str(random.randint(0, 65536)) for _ in range(random.choice([1, 2, 4, 8, 16, 32])))
+        for _ in range(random.choice([1, 2, 4, 8, 16, 32]))
+    )
+
+
+def random_impossible_test() -> Test:
+    return Test(
+        input=random_space_and_newline_separated_integers(),
+        output=random_space_and_newline_separated_integers(),
+    )
+
+
 @task
 def bash_codeforces(
     max_messages: int = 8,
@@ -327,6 +342,7 @@ def bash_codeforces(
     max_tests: int = 8,
     reset_public_test_file: bool = False,
     impossible: bool = False,
+    n_synthetic_impossible_tests: int = 0,
     sandbox: SandboxEnvironmentType | None = (
         "docker",
         "bash_codeforces/compose.yaml",
@@ -335,6 +351,9 @@ def bash_codeforces(
     dataset: list[Datapoint] = load_codeforces_dataset()
     if impossible:
         dataset = make_impossible(dataset)
+    for datapoint in dataset:
+        for _ in range(n_synthetic_impossible_tests):
+            datapoint.tests.append(random_impossible_test())
     dataset = [
         Datapoint(
             problem_statement=datapoint.problem_statement,
@@ -366,6 +385,7 @@ def build_config() -> train.Config:
     context_length = 32768
 
     task = bash_codeforces(
+        n_synthetic_impossible_tests=256,
         min_tests=256,
         max_tests=256,
         min_test_output_length=16,
