@@ -11,6 +11,7 @@ from tinker_cookbook.rl.envs import (
     bash_apps_env, 
     bad_sandbox_env_with_tools,
 )
+from tinker_cookbook.rl.envs.aghyad_envs import omit_description_env
 from tinker_cookbook.rl.envs.ae_env import (
     AEDatasetBuilder,
     AEEnvConfig,
@@ -26,7 +27,14 @@ from tinker_cookbook.rl.envs.bash_apps_env import (
     BashAppsEnvConfig,
     load_apps_dataset,
 )
+from tinker_cookbook.rl.envs.aghyad_envs.omit_description import (
+    OmitDescriptionDatasetBuilder,
+    OmitDescriptionEnvConfig,
+    load_omit_description_dataset,
+)
 from tinker_cookbook.rl.features.curriculum import Curriculum
+from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBuilder, DatasetMixer
+
 from tinker_cookbook.rl.features.feature import build_dataset_builder
 from tinker_cookbook.rl.features.length_penalty import LengthPenalty, LengthPenaltyConfig
 from tinker_cookbook.rl.features.limit import LimitSize
@@ -104,6 +112,60 @@ def ae_monitored(model_name: str, batch_size: int, group_size: int, qwen3_disabl
         )
     )
     
+def style_environment(model_name: str, batch_size: int, group_size: int, qwen3_disable_thinking: bool, max_steps: int, reward_hacking_prompt: str, hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] = "none") -> OmitDescriptionDatasetBuilder:
+    return OmitDescriptionDatasetBuilder(
+        batch_size=batch_size,
+        model_name_for_tokenizer=model_name,
+        renderer_name=model_info.get_recommended_renderer_name(model_name),
+        group_size=group_size,
+        data=load_omit_description_dataset(hint_type=hint_type),
+        test_fraction=0.1,
+        cfg=OmitDescriptionEnvConfig(
+            reward_hacking_prompt=reward_hacking_prompt,
+            max_steps=max_steps,
+            qwen3_disable_thinking=qwen3_disable_thinking,
+        ),
+    )
+
+def easy_bucket(model_name: str, batch_size: int, group_size: int, qwen3_disable_thinking: bool, max_steps: int) -> DatasetMixerDatasetBuilder:
+    return DatasetMixer(
+        inner_builders=[
+            style_environment(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "nothing", "none"),
+            style_environment(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "nothing", "contradictory"),
+            style_environment(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "nothing", "irrelevant"),
+            style_environment(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "nothing", "consistent"),
+            bash_apps(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "must", load_apps_dataset()),
+        ],
+    )
+    
+def medium_bucket(model_name: str, batch_size: int, group_size: int, qwen3_disable_thinking: bool, max_steps: int) -> DatasetMixerDatasetBuilder:
+    apps_dataset = load_apps_dataset()
+    return DatasetMixer(
+        inner_builders=[
+            bash_apps(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "nothing", apps_dataset),
+            bash_apps(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "forbid", apps_dataset),
+            bad_sandbox(model_name, batch_size, group_size, qwen3_disable_thinking, apps_dataset),
+            LimitSize(
+                ae(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "must"),
+                max_batches=128
+            ),
+            LimitSize(
+                bash_apps_monitored(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "must", apps_dataset, "gpt-4.1-nano"), 
+                max_batches=60
+            ),
+        ],
+    )
+    
+def hard_bucket(model_name: str, batch_size: int, group_size: int, qwen3_disable_thinking: bool, max_steps: int) -> DatasetMixerDatasetBuilder:
+    return DatasetMixer(
+        inner_builders=[
+            ae(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "nothing"),
+            LimitSize(
+                ae_monitored(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "nothing", "gpt-4.1-nano"), max_batches=40
+            ),      
+        ],
+    )
+    
 def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
     batch_size = 32
     group_size = 4
@@ -112,22 +174,9 @@ def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
     apps_dataset = load_apps_dataset()
     return Curriculum(
         inner_builders=[
-            bash_apps(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "must", apps_dataset),
-            bash_apps(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "nothing", apps_dataset),
-            bad_sandbox(model_name, batch_size, group_size, qwen3_disable_thinking, apps_dataset),
-            LimitSize(
-                bash_apps_monitored(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "must", apps_dataset, "gpt-4.1-nano"), 
-                max_batches=60
-            ),
-            ae(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "must"),
-            LimitSize(
-                ae(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "nothing"),      
-                max_batches=40
-            ),
-            LimitSize(
-                ae_monitored(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps, "nothing", "gpt-4.1-nano"), max_batches=40
-            ),      
-                
+            easy_bucket(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps),
+            medium_bucket(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps),
+            hard_bucket(model_name, batch_size, group_size, qwen3_disable_thinking, max_steps*2),
         ],
     )
 
@@ -164,7 +213,8 @@ def main(log_dir: str) -> None:
     bash_apps_env.build_docker_image()
     print("Building docker image for Bad Sandbox Env with tools")
     bad_sandbox_env_with_tools.build_docker_image()
-    
+    print("Building docker image for Omit Description Env")
+    omit_description_env.build_docker_image()
     print("Starting training")
     asyncio.run(train.main(config))
     
