@@ -306,7 +306,7 @@ class ListDirectoryContentsToolCall(ToolCall):
                 cat "$f"
                 echo
             done
-            ' sh {} +"""
+            ' sh {{}} +"""
         
         
 ### HELPERS
