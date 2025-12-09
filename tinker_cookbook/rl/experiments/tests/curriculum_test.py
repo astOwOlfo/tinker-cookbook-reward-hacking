@@ -27,7 +27,7 @@ from tinker_cookbook.rl.envs.bash_apps_env import (
     BashAppsEnvConfig,
     load_apps_dataset,
 )
-from tinker_cookbook.rl.envs.aghyad_envs.omit_description import (
+from tinker_cookbook.rl.envs.aghyad_envs.omit_description_env import (
     OmitDescriptionDatasetBuilder,
     OmitDescriptionEnvConfig,
     load_omit_description_dataset,
