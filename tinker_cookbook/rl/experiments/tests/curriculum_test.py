@@ -1,6 +1,8 @@
 import argparse
 import asyncio
 
+from typing import Literal
+
 from dotenv import load_dotenv
 
 from tinker_cookbook import cli_utils, model_info
