@@ -581,8 +581,13 @@ class BashAppsDatasetBuilder(RLDatasetBuilder):
         )
 
 
-def load_apps_dataset(split: str = "test") -> list[Datapoint]:
-    raw_dataset = load_dataset("codeparrot/apps", split=split, trust_remote_code=True)
+def load_apps_dataset(split: str = "test", difficulty: str | None = None) -> list[Datapoint]:
+    raw_dataset = load_dataset(
+        "codeparrot/apps",
+        split=split,
+        trust_remote_code=True,
+        **({"difficulties": [difficulty]} if difficulty is not None else {}),  # type: ignore
+    )
 
     dataset: list[Datapoint] = []
     for raw_datapoint in raw_dataset:
