@@ -168,7 +168,7 @@ def hard_bucket(model_name: str, batch_size: int, group_size: int, qwen3_disable
     
 def build_curriculum_config(model_name: str) -> RLDatasetBuilder:
     batch_size = 32
-    group_size = 4
+    group_size = 6
     qwen3_disable_thinking = False
     max_steps = 8
     apps_dataset = load_apps_dataset()
@@ -188,15 +188,11 @@ def build_config(log_dir: str) -> Config:
         log_path=log_dir,
         dataset_builder=build_curriculum_config(model_name=model_name),
         learning_rate=get_lr(model_name),
-        max_tokens=2048,
+        max_tokens=4096,
         eval_every=0,
         save_every=8,
         wandb_project="tinker-full-runs",
         wandb_name=f"{model_name}-curriculum",
-        stream_minibatch_config=StreamMinibatchConfig(
-            groups_per_batch=32,
-            num_minibatches=1,
-        ),
         kl_penalty_coef=0.005,
     )
     
