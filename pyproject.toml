@@ -9,7 +9,7 @@ authors = [
 requires-python = "==3.13.*"
 dependencies = [
     "chz",
-    "datasets==3.5.0",
+    "datasets",
     "numpy",
     "rich",
     "termcolor",
@@ -29,6 +29,12 @@ dependencies = [
     "google-genai>=1.41.0",
     "openai-harmony>=0.0.8",
     "pydantic>=2.11.10",
+    "inspect-evals>=0.3.102",
+    "impossiblebench",
+    "inspect-k8s-sandbox",
+    "anthropic>=0.75.0",
+    "plotly>=6.3.1",
+    "joblib>=1.5.2",
 ]
 
 [project.urls]
@@ -77,3 +83,5 @@ line-length = 100
 
 [tool.uv.sources]
 scalable-docker = { git = "https://github.com/astOwOlfo/scalable_docker.git", branch="new" }
+impossiblebench = { git = "https://github.com/safety-research/impossiblebench" }
+inspect-k8s-sandbox = { git = "https://github.com/UKGovernmentBEIS/inspect_k8s_sandbox.git" }

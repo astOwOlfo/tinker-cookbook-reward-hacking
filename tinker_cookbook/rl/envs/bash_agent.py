@@ -70,8 +70,8 @@ async def initialize_container(env: Env) -> StepResult | None:
         return done_step_result(env, reward=0.0)
     
 async def run_startup_commands(
-    env: Env, 
-    startup_commands: list[str], 
+    env: Env,
+    startup_commands: list[str],
 ) -> StepResult | None:
     assert env.container is not None, "Container is not initialized"
 
@@ -209,7 +209,6 @@ def done_step_result(env: Env, reward: float) -> StepResult:
     )
     
 def new_user_message_step_result(env: Env, new_user_message: str) -> StepResult:
-    
     assert env.renderer is not None, "Renderer is not initialized"
     assert env.all_messages is not None, "All messages are not initialized"
     assert env.cfg is not None, "Config is not initialized"

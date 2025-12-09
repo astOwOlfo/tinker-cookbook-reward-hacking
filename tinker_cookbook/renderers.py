@@ -162,14 +162,18 @@ def parse_response_for_stop_token(
         )
 
 
-def parse_response_for_stop_token_no_decode(
-    response: list[int], stop_token: int
-) -> tuple[list[int], bool]:
-    emt_count = response.count(stop_token)
+def parse_response_for_multiple_stop_tokens(
+    response: list[int], tokenizer: Tokenizer, stop_tokens: list[int]
+) -> tuple[Message, bool]:
+    emt_count = sum(response.count(stop_token) for stop_token in stop_tokens)
     if emt_count == 0:
-        return response, False
+        str_response = tokenizer.decode(response)
+        logger.debug(f"Response is not a valid assistant response: {str_response}")
+        return Message(role="assistant", content=str_response), False
     elif emt_count == 1:
-        return response[: response.index(stop_token)], True
+        i = min(response.index(stop_token) for stop_token in stop_tokens if stop_token in response)
+        str_response = tokenizer.decode(response[:i])
+        return Message(role="assistant", content=str_response), True
     else:
         raise ValueError(
             f"When parsing response, expected to split into 1 or 2 pieces using stop tokens, but got {emt_count}. "
@@ -407,16 +411,17 @@ class Qwen3Renderer(Renderer):
             return None
         if (
             # weird: i had to rename args to arguments. did i do something wrong or is this a bug in tinker?
-            "name" not in tool_call
+            # "name" not in tool_call
             # or "args" not in tool_call
-            or "arguments" not in tool_call
+            # or "arguments" not in tool_call
+            set(tool_call.keys()) != {"name", "arguments"}
             or not isinstance(tool_call["name"], str)
             # or not isinstance(tool_call["args"], dict)
             or not isinstance(tool_call["arguments"], dict)
         ):
             return None
 
-        return [ToolCall(**tool_call)]
+        return [ToolCall(name=tool_call["name"], args=tool_call["arguments"])]
 
     def parse_response(self, response: list[int]) -> tuple[Message, bool]:
         assistant_message, parse_success = parse_response_for_stop_token(
@@ -703,22 +708,32 @@ class GptOssRenderer(Renderer):
         return [self._return_token, self._call_token]
 
     def extract_tool_call(self, message: str) -> dict | None:
-        print(f"{message=}")
-        matches = re.search(r"to=functions.(.*?)<\|call\>>", message, re.DOTALL)
-        if not matches:
+        # print(f"{message=}")
+        # matches = re.search(r"to=functions\.(.*?)<\|call\|>", message, re.DOTALL)
+        to_functions: str = "to=functions."
+        # print(f"{to_functions in message=}")
+        if to_functions not in message:
             return None
-        str_args: str = matches.group(0)
-        # print(f"{str_args=}")
-        tool_name: str = str_args.split()[0]
-        str_args = str_args.removeprefix(tool_name)
+        str_call: str = message.split(to_functions)[-1]
+        tool_name: str = str_call.split()[0]
+        str_args = str_call.removeprefix(tool_name)
         str_args = str_args.strip()
-        str_args = str_args.removeprefix("<|constrain|>json").strip().removeprefix("<|message|>")
+        while True:
+            old_str_args = str_args
+            str_args = str_args.strip()
+            for prefix in ["<|constrain|>", "analysis", "code", "json", "<|message|>", "="]:
+                str_args = str_args.removeprefix(prefix).strip()
+            if str_args == old_str_args:
+                break
+        str_args = str_args.removesuffix("<|call|>")
         try:
             parsed_args = json.loads(str_args)
         except (json.JSONDecodeError, ValueError):
-            print(f"JSON DECODE ERROR {str_args=}")
+            # print(f"JSON DECODE ERROR {str_args=}")
             return None
-        return {"name": tool_name, "arguments": parsed_args}
+        if not isinstance(parsed_args, dict):
+            return None
+        return {"name": tool_name, "args": parsed_args}
 
         # """
         # tool_calls: list[dict] = []
@@ -744,14 +759,17 @@ class GptOssRenderer(Renderer):
         # """
 
     def parse_response(self, response: list[int]) -> tuple[Message, bool]:
-        assistant_message, parse_success = parse_response_for_stop_token(
-            response, self.tokenizer, self._return_token
+        assistant_message, parse_success = parse_response_for_multiple_stop_tokens(
+            response, self.tokenizer, [self._return_token, self._call_token]
         )
+
+        # print(f"{parse_success=}")
 
         if not parse_success:
             return assistant_message, parse_success
 
         tool_call: dict | None = self.extract_tool_call(assistant_message["content"])
+        # print(f"{tool_call is None=}")
         if tool_call is not None:
             assistant_message["tool_calls"] = [tool_call]  # type: ignore
 

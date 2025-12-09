@@ -1,3 +1,5 @@
 .env
 **/__pycache__/
 data/
+logs/
+tinker_cookbook/rl/envs/inspect/ae
