@@ -2913,7 +2913,7 @@ wheels = [
 [[package]]
 name = "scalable-docker"
 version = "0.1.0"
-source = { git = "https://github.com/astOwOlfo/scalable_docker.git?branch=new#8cd7323a9927224aa7a891be8ef10495bb9e69ac" }
+source = { git = "https://github.com/astOwOlfo/scalable_docker.git?branch=new#34cc7e0d029183e8a9ff50cb2088621f131795ca" }
 dependencies = [
     { name = "aiohttp" },
     { name = "beartype" },
