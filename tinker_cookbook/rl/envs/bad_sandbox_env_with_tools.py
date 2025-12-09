@@ -7,13 +7,14 @@ from random import Random
 import traceback
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from itertools import count
 from json.decoder import JSONDecodeError
 from shlex import quote
 from sys import stderr
 from typing import Callable, Sequence, Literal
 from xml.etree import ElementTree
+from dotenv import load_dotenv
 
 import tinker
 from datasets import load_dataset
@@ -65,6 +66,8 @@ class BadSandboxEnvConfig:
     test_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=16, total_seconds=24
     )
+    impossible: bool = False
+    min_test_output_length: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -589,6 +592,28 @@ class BadSandboxEnvDataset(RLDataset):
     scalable_docker_client: ScalableDockerClient = field(init=False)
 
     def __post_init__(self) -> None:
+        if self.cfg.impossible:
+            shuffled_tests: list[list[Test]] = [datapoint.tests for datapoint in self.data]
+            random.Random(123).shuffle(shuffled_tests)
+            self.data = [
+                replace(datapoint, tests=tests)
+                for datapoint, tests in zip(self.data, shuffled_tests, strict=True)
+            ]
+
+        self.data = [
+            replace(
+                datapoint,
+                tests=[
+                    test
+                    for test in datapoint.tests
+                    if len(test.output) >= self.cfg.min_test_output_length
+                ],
+            )
+            for datapoint in self.data
+        ]
+
+        self.data = [datapoint for datapoint in self.data if len(datapoint.tests) >= 2]
+
         self.scalable_docker_client = ScalableDockerClient(key="bad_sandbox")
 
     def get_batch(self, index: int) -> Sequence[BadSandboxEnvGroupBuilder]:
@@ -741,23 +766,29 @@ def build_config() -> train.Config:
     model_name = "openai/gpt-oss-20b"
 
     return train.Config(
+        load_checkpoint_path="tinker://a6793abb-1615-4523-9880-9f49cc050532/weights/000100",
         model_name=model_name,
-        log_path="/tmp/tinker-examples/bash_apps_rl",
+        log_path="/tmp/tinker-examples/bad_sandbox",
         dataset_builder=BadSandboxEnvDatasetBuilder(
-            batch_size=32,
+            batch_size=64,
             model_name_for_tokenizer=model_name,
             # renderer_name=model_info.get_recommended_renderer_name(model_name),
             renderer_name="gpt_oss_low_reasoning",
             group_size=8,
             data=load_apps_dataset(),
             test_fraction=0.1,
-            cfg=BadSandboxEnvConfig(qwen3_disable_thinking=False),
+            cfg=BadSandboxEnvConfig(
+                qwen3_disable_thinking=False,
+                impossible=True,
+                min_test_output_length=16,
+                max_steps=6,
+            ),
         ),
         learning_rate=4e-5,
         max_tokens=2048,
         eval_every=0,
-        wandb_project="bad-sandbox-apps-with-tools",
-        wandb_name=model_name,
+        wandb_project="transfer",
+        wandb_name=model_name + "-bash-apps-to-bad-sandbox-impossible",
     )
 
 
@@ -768,5 +799,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    load_dotenv()
     build_docker_image()
     main()
