@@ -43,7 +43,9 @@ class DatasetMixerDataset(RLDataset):
     ) -> None:
         self.inner_datasets = inner_datasets
         self.dataset_lengths = [len(dataset) for dataset in inner_datasets]
-        self.order = random.Random(42).shuffle(list(range(sum(self.dataset_lengths))))
+        order = list(range(sum(self.dataset_lengths)))
+        random.Random(42).shuffle(order)
+        self.order = order
 
     def get_batch(self, index: int) -> Sequence[EnvGroupBuilder]:
         inner_index = self.order[index]
