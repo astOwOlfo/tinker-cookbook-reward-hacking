@@ -235,10 +235,11 @@ def reward_hacking_shutdown_scorer(
 
 
 @task
-def reward_hacking_shutdown() -> Task:
+def reward_hacking_shutdown(epochs: int = 1) -> Task:
     return Task(
         dataset=reward_hacking_shutdown_dataset(),
         solver=generate(),
         scorer=reward_hacking_shutdown_scorer(),
         name="shutdown",
+        epochs=epochs,
     )
