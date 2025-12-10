@@ -160,9 +160,9 @@ RENDERER_NAMES: dict[str, str] = {
 
 
 TASKS = [
-    # reward_hacking_shutdown(),
-    # reward_hacking_shutdown_2(),
-    #_reward_hacking_re_bench(),
+    reward_hacking_shutdown(),
+    reward_hacking_shutdown_2(),
+    reward_hacking_re_bench(),
     impossible_livecodebench(
         split="conflicting",
         agent_type="minimal",
