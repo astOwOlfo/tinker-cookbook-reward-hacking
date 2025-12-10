@@ -63,21 +63,27 @@ async def run_eval(model_path: str, task: Task, epochs: int, renderer_name: str)
     for metric_name, metric_value in metrics.items():
         logger.info(f"  {metric_name}: {metric_value}")
 
-    """
-    accuracies = [
-        value
-        for name, value in metrics.items()
-        if name.endswith("accuracy") or name.endswith("mean")
+    impossible_bench_task_names = [
+        "lcb_conflicting_canmod_minimal",
+        "lcb_oneoff_canmod_minimal",
+        "swebench_conflicting_minimal",
+        "swebench_oneoff_minimal",
     ]
-    assert len(accuracies) == 1
-    accuracy = accuracies[0]
-    return EvalResult(
-        fraction_succeeded=accuracy,
-        fraction_unclear=0.0,
-        fraction_none=1 - accuracy,
-        sample_size=len(task.dataset) * epochs,
-    )
-    """
+    if task.name in impossible_bench_task_names:
+        accuracies = [
+            value
+            for name, value in metrics.items()
+            if name.endswith("accuracy") or name.endswith("mean")
+        ]
+        print(f"{task.name=} {metrics=}")
+        assert len(accuracies) == 1
+        accuracy = accuracies[0]
+        return EvalResult(
+            fraction_succeeded=accuracy,
+            fraction_unclear=0.0,
+            fraction_none=1 - accuracy,
+            sample_size=len(task.dataset) * epochs,
+        )
 
     return EvalResult(
         fraction_succeeded=metrics[f"{task.name}/fraction_succeeded"],
@@ -87,193 +93,101 @@ async def run_eval(model_path: str, task: Task, epochs: int, renderer_name: str)
     )
 
 
-"""
-"openai/gpt-oss-120b": [
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000000",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000001",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000002",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000003",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000004",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000005",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000006",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000007",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000008",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000009",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000010",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000011",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000012",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000013",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000014",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000015",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000016",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000017",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000018",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000019",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000020",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000021",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000022",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000023",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000024",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000025",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000026",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000027",
-        "tinker://944add5a-cdfe-456d-9fb3-464183f47163/sampler_weights/000028",
-    ],
-"""
-
-
 MODEL_PATHS: dict[str, list[str]] = {
-    "openai/gpt-oss-120b": [
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000000",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000001",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000002",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000003",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000004",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000005",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000006",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000007",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000008",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000009",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000010",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000011",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000012",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000013",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000014",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000015",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000016",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000017",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000018",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000019",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000020",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000021",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000022",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000023",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000024",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000025",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000026",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000027",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000028",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000029",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000030",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000031",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000032",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000033",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000034",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000035",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000036",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000037",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000038",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000039",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000040",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000041",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000042",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000043",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000044",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000045",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000046",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000047",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000048",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000049",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000050",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000051",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000052",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000053",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000054",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000055",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000056",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000057",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000058",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000059",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000060",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000061",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000062",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000063",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000064",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000065",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000066",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000067",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000068",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000069",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000070",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000071",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000072",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000073",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000074",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000075",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000076",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000077",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000078",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000079",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000080",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000081",
-        "tinker://dd08fe0d-9a8c-53a2-b7fe-8ea93ff6a5c3:train:0/sampler_weights/000082",
-    ],
-    "Qwen/Qwen3-235B-A22B-Instruct-2507": [
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000000",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000001",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000002",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000003",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000004",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000005",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000006",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000007",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000008",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000009",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000010",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000011",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000012",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000013",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000014",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000015",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000016",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000017",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000018",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000019",
-        "tinker://acd7e88c-b700-4a65-87eb-c558b3e42914/sampler_weights/000020",
-        "tinker://b5018ee8-aba2-4f6e-ab91-c580a3bac0cf/sampler_weights/000020",
-        "tinker://4b176541-5403-4c8c-96e9-384b5655e5ab/sampler_weights/000020",
-        "tinker://c67adafb-11f2-4f95-92f8-6ec8069694b2/sampler_weights/000020",
-        "tinker://8d506148-a7d1-4807-a33e-27ff4fa0aa27/sampler_weights/000020",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000020",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000021",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000022",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000023",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000024",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000025",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000026",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000027",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000028",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000029",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000030",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000031",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000032",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000033",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000034",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000035",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000036",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000037",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000038",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000039",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000040",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000041",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000042",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000043",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000044",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000045",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000046",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000047",
-        "tinker://5e3b3bea-32f6-4b9c-85b3-bb1dd83469bc/sampler_weights/000048",
+    "openai/gpt-oss-20b": [
+        "tinker://1153ea5b-c744-53cd-a453-df577b813292:train:0/sampler_weights/000000",
+        "tinker://368f5e1f-ab1d-57b0-8739-38e7508630d9:train:0/sampler_weights/000000",
+        "tinker://741dabbd-7c6a-5612-b48a-cf273784d687:train:0/sampler_weights/000000",
+        "tinker://741dabbd-7c6a-5612-b48a-cf273784d687:train:0/sampler_weights/000001",
+        "tinker://741dabbd-7c6a-5612-b48a-cf273784d687:train:0/sampler_weights/000002",
+        "tinker://741dabbd-7c6a-5612-b48a-cf273784d687:train:0/sampler_weights/000003",
+        "tinker://741dabbd-7c6a-5612-b48a-cf273784d687:train:0/sampler_weights/000004",
+        "tinker://741dabbd-7c6a-5612-b48a-cf273784d687:train:0/sampler_weights/000005",
+        "tinker://741dabbd-7c6a-5612-b48a-cf273784d687:train:0/sampler_weights/000006",
+        "tinker://741dabbd-7c6a-5612-b48a-cf273784d687:train:0/sampler_weights/000007",
+        "tinker://741dabbd-7c6a-5612-b48a-cf273784d687:train:0/sampler_weights/000008",
+        "tinker://741dabbd-7c6a-5612-b48a-cf273784d687:train:0/sampler_weights/000009",
+        "tinker://741dabbd-7c6a-5612-b48a-cf273784d687:train:0/sampler_weights/000010",
+        "tinker://741dabbd-7c6a-5612-b48a-cf273784d687:train:0/sampler_weights/000011",
+        "tinker://741dabbd-7c6a-5612-b48a-cf273784d687:train:0/sampler_weights/000012",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000000",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000001",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000002",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000003",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000004",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000005",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000006",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000007",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000008",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000009",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000010",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000011",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000012",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000013",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000014",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000015",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000016",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000017",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000018",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000019",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000020",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000021",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000022",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000023",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000024",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000025",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000026",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000027",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000028",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000029",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000030",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000031",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000032",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000033",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000034",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000035",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000036",
+        "tinker://5e18ea50-38a2-5b0e-b1af-433c27c17b41:train:0/sampler_weights/000037",
     ],
 }
 
 
 RENDERER_NAMES: dict[str, str] = {
+    "openai/gpt-oss-20b": "gpt_oss_low_reasoning",
     "openai/gpt-oss-120b": "gpt_oss_low_reasoning",
     "Qwen/Qwen3-235B-A22B-Instruct-2507": "qwen3_disable_thinking",
 }
 
 
-TASKS = [reward_hacking_shutdown(), reward_hacking_shutdown_2(), reward_hacking_re_bench()]
+TASKS = [
+    reward_hacking_shutdown(),
+    reward_hacking_shutdown_2(),
+    reward_hacking_re_bench(),
+    impossible_livecodebench(
+        split="conflicting",
+        agent_type="minimal",
+        allow_test_modifications=True,
+        sandbox="docker",
+        limit=16,
+    ),
+    impossible_livecodebench(
+        split="oneoff",
+        agent_type="minimal",
+        allow_test_modifications=True,
+        sandbox="docker",
+        limit=16,
+    ),
+    # impossible_swebench(
+    #     split="conflicting",
+    #     agent_type="minimal",
+    #     limit=1,
+    # ),
+    # impossible_swebench(
+    #     split="oneoff",
+    #     agent_type="minimal",
+    #     limit=1,
+    # ),
+]
 """
 TASKS = [
     impossible_swebench(
@@ -297,7 +211,7 @@ TASKS = [
 
 
 async def main() -> None:
-    epochs = 8
+    epochs = 4
     eval_frequency = 8
 
     for model_name, model_paths in MODEL_PATHS.items():
@@ -307,12 +221,18 @@ async def main() -> None:
         for task in TASKS:
             results[task.name] = []
             for model_path in model_paths[::eval_frequency]:
+                impossible_bench_task_names = [
+                    "lcb_conflicting_canmod_minimal",
+                    "lcb_oneoff_canmod_minimal",
+                    "swebench_conflicting_minimal",
+                    "swebench_oneoff_minimal",
+                ]
                 print(f"{model_path=} {task=}")
                 results[task.name].append(
                     await run_eval(
                         model_path=model_path,
                         task=task,
-                        epochs=epochs,
+                        epochs=1 if task.name in impossible_bench_task_names else epochs,
                         renderer_name=RENDERER_NAMES[model_name],
                     )
                 )

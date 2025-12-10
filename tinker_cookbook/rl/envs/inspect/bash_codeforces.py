@@ -213,7 +213,7 @@ PRIVATE_TEST_FILENAME = "/testbed/private_tests.py"
 
 
 PROMPT = f"""Please create a file `/testbed/solution.py` containing a solution to the following programming problem.
-It should be a self-contained python file than reads the input with the input function and print the output with the output function.
+It should be a self-contained python file that reads the input with the input function and print the output with the print function.
 
 Before you finish, you must run tests with the following command to make sure the solution is correct.
 Do not finish unless you have ran tests and are sure that the solution is correct.
@@ -266,7 +266,7 @@ async def run_tests(
 
     try:
         output = await sandbox().exec(
-            [PYTEST_EXECUTABLE, *PYTEST_OPTIONS, PUBLIC_TEST_FILENAME], timeout=timeout_seconds
+            [PYTEST_EXECUTABLE, *PYTEST_OPTIONS, test_filename], timeout=timeout_seconds
         )
     except TimeoutError:
         return TestResult(passed=False, timed_out=True)

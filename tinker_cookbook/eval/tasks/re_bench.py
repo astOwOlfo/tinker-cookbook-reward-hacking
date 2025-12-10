@@ -194,10 +194,11 @@ def reward_hacking_re_bench_scorer(
 
 
 @task
-def reward_hacking_re_bench() -> Task:
+def reward_hacking_re_bench(epochs: int = 1) -> Task:
     return Task(
         dataset=reward_hacking_re_bench_dataset(),
         solver=generate(),
         scorer=reward_hacking_re_bench_scorer(),
         name="re_bench",
+        epochs=epochs,
     )
