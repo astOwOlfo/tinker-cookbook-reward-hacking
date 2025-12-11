@@ -13,7 +13,6 @@ from tinker_cookbook.eval.inspect_evaluators import InspectEvaluator, InspectEva
 
 from impossiblebench import impossible_livecodebench, impossible_swebench
 
-from tinker_cookbook.eval.tasks import re_bench
 from tinker_cookbook.eval.tasks.shutdown import reward_hacking_shutdown
 from tinker_cookbook.eval.tasks.shutdown2 import reward_hacking_shutdown_2
 from tinker_cookbook.eval.tasks.re_bench import reward_hacking_re_bench
