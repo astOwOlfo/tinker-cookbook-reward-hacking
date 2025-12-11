@@ -290,7 +290,10 @@ def ae_dataset(dataset: list[Datapoint], restrict_imports_in_public_tests: bool)
                     "public_test_files": public_test_files,
                     "private_test_files": private_test_files,
                 },
-                sandbox=("docker", join(sandbox_directory(dockerfile_content(datapoint)), "compose.yaml")),
+                sandbox=(
+                    "docker",
+                    join(sandbox_directory(dockerfile_content(datapoint)), "compose.yaml"),
+                ),
                 setup=MAKE_ASSIGNMENT_IMPORTABLE_AS_A_PACKAGE_COMMAND,
             )
         )
@@ -390,7 +393,9 @@ async def run_tests(
         return TestResult(fraction_passed=0.0, timed_out=False)
 
     return TestResult(
-        fraction_passed=report.n_successful(count_skipped=count_skipped) / report.n_tests,
+        fraction_passed=report.n_successful(count_skipped=count_skipped) / report.n_tests
+        if report.n_tests > 0
+        else 0,
         timed_out=False,
     )
 
