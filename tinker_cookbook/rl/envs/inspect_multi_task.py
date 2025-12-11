@@ -354,9 +354,8 @@ class InspectRLDataset(RLDataset):
                     repeated_samples[task_name].append(deepcopy(sample))
 
         sample_ids: list[SampleId] = list(range(self.batch_size * self.group_size))
-        for task_name in self.inspect_tasks.keys():
-            for sample_id, sample in zip(sample_ids, repeated_samples[task_name], strict=True):
-                sample.id = sample_id
+        for sample_id, sample in zip(sample_ids, [sample for samples in repeated_samples.values() for sample in samples], strict=True):
+            sample.id = sample_id
 
         inspect_llm_wrapper = InspectAPIFromTinker(
             model_name=self.model_name,
@@ -572,146 +571,69 @@ def build_config_mmlu() -> train.Config:
     )
 
 
-def build_config_impossible_bench() -> train.Config:
-    from impossiblebench import impossible_livecodebench, impossible_swebench
+def build_config_bash_codeforces() -> train.Config:
+    from tinker_cookbook.rl.envs.inspect.bash_codeforces import bash_codeforces
+
+    tasks = {
+        "overwritable": bash_codeforces(
+            min_tests=64,
+            max_tests=64,
+            min_test_output_length=16,
+            # n_synthetic_impossible_tests=192,
+            reset_public_test_file=True,
+            impossible=True,
+        ),
+        # "hardcodable": bash_codeforces(
+        #     min_tests=1,
+        #     max_tests=1,
+        #     min_test_output_length=16,
+        #     reset_public_test_file=True,
+        #     impossible=True,
+        # ),
+    }
 
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
-        return [
-            (
-                {"I": 0.0, "C": 1.0}[sample.scores["agentic_humaneval_scorer"].value]
-                if "agentic_humaneval_scorer" in sample.scores.keys()
-                else 0.0
-            )
-            for sample in eval_log.samples
-        ]
+        return [sample.scores["bash_codeforces_scorer"].value for sample in eval_log.samples]  # type: ignore
 
     def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
         return [
-            {"score_missing": 0.0 if "agentic_humaneval_scorer" in sample.scores.keys() else 1.0}
-            for sample in eval_log.samples
+            {
+                key: float(value)
+                for key, value in sample.scores["bash_codeforces_scorer"].metadata.items()  # type: ignore
+            }
+            for sample in eval_log.samples  # type: ignore
         ]
 
-    """
-    inspect_task: Task = impossible_swebench(
-        split="original",
-        agent_type="tools",
-        human_intervention=False,
-        allow_internet=False,
-        reset_tests=False,
-        hide_tests=False,
-        # limit=10,  # TODO: remove
-    )
-    """
-
-    inspect_task: Task = impossible_livecodebench(
-        split="oneoff",
-        agent_type="minimal",
-        allow_test_modifications=True,
-        sandbox="docker",
-    )
-
-    # model_name = "Qwen/Qwen3-30B-A3B"
-    # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
-    # # model_name = "Qwen/Qwen3-32B"
-    # renderer_name = "qwen3_disable_thinking"
-    # model_name = "deepseek-ai/DeepSeek-V3.1"
-    # renderer_name = "deepseekv3_disable_thinking"
-    model_name = "openai/gpt-oss-120b"
-    # model_name = "openai/gpt-oss-20b"
-    renderer_name = "gpt_oss_low_reasoning"
+    model_name = "openai/gpt-oss-20b"
     context_length = 32768
     max_completion_tokens = 2048
-    # max_completion_tokens = 8192
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
-        batch_size=64,
-        group_size=8,
-        renderer_name=renderer_name,
-        max_prompt_tokens=context_length - max_completion_tokens,
-        inspect_task=inspect_task,
-        get_rewards=get_rewards,
-        get_metrics=get_metrics,
+        batch_size=4,
+        group_size=2,
+        renderer_name="gpt_oss_low_reasoning",
+        max_prompt_tokens=context_length - max_completion_tokens - 16,  # - 16 just in case
+        inspect_tasks=tasks,
+        get_rewards={key: get_rewards for key in tasks.keys()},
+        get_metrics={key: get_metrics for key in tasks.keys()},
         test_fraction=0.1,
         save_rollouts_directory=None,
     )
 
-    # TODO: test the following hypothesis on why this config doesn't crash but build_config_impossible_bench_old crashes
-    # because the old function does evals (eval_every != 0) and it runs evals in parallel with training so this is why we get can't run more than one inspect_ai.eval in parallel
-
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/inspect-impossible-bench-gpt-oss",
+        log_path="/tmp/tinker-examples/inspect/",
         dataset_builder=dataset_builder,
         learning_rate=4e-5,
         max_tokens=max_completion_tokens,
         eval_every=0,
-        wandb_project="inspect-impossible-bench",
-        wandb_name=model_name,
-    )
-
-
-def build_config_berkeley_function_calling_leaderboard() -> train.Config:
-    from inspect_evals.bfcl import bfcl
-
-    def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
-        for sample in eval_log.samples:
-            print("SCORES:", sample.scores)
-
-        return [
-            (
-                {"I": 0.0, "C": 1.0}[sample.scores["agentic_humaneval_scorer"].value]
-                if "agentic_humaneval_scorer" in sample.scores.keys()
-                else 0.0
-            )
-            for sample in eval_log.samples
-        ]
-
-    def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
-        return [
-            {"score_missing": 0.0 if "agentic_humaneval_scorer" in sample.scores.keys() else 1.0}
-            for sample in eval_log.samples
-        ]
-
-    inspect_task: Task = bfcl()
-
-    # model_name = "Qwen/Qwen3-30B-A3B"
-    # renderer_name = "qwen3_disable_thinking"
-    model_name = "openai/gpt-oss-120b"
-    renderer_name = "gpt_oss_medium_reasoning"
-    context_length = 32768
-    max_completion_tokens = 8192
-
-    dataset_builder = InspectRLDatasetBuilder(
-        model_name=model_name,
-        batch_size=64,
-        group_size=2,
-        renderer_name=renderer_name,
-        max_prompt_tokens=context_length - max_completion_tokens,
-        inspect_task=inspect_task,
-        get_rewards=get_rewards,
-        get_metrics=get_metrics,
-        test_fraction=0.1,
-        save_rollouts_directory=None,
-    )
-
-    return train.Config(
-        model_name=model_name,
-        log_path="/tmp/tinker-examples/inspect-assistant-bench",
-        dataset_builder=dataset_builder,
-        learning_rate=1e-4,
-        max_tokens=max_completion_tokens,
-        eval_every=0,
-        # wandb_project="inspect-assistant-bench",
-        # wandb_name=model_name,
     )
 
 
 def main() -> None:
     load_dotenv()
-    config = build_config_mmlu()
-    # config = build_config_impossible_bench()
-    # config = build_config_berkeley_function_calling_leaderboard()
+    config = build_config_bash_codeforces()
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
     asyncio.run(train.main(config))
 
