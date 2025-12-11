@@ -67,6 +67,8 @@ def build_config_bash_codeforces() -> train.Config:
         learning_rate=4e-5,
         max_tokens=max_completion_tokens,
         eval_every=0,
+        wandb_project="inspect-bash-codeforces",
+        wandb_name="impossible-overwritable-and-hardcodable-" + model_name,
     )
 
 
