@@ -332,6 +332,9 @@ def random_impossible_test() -> Test:
     )
 
 
+COMPOSE_PATH = str(Path(__file__).parent / "bash_codeforces" / "compose.yaml")
+
+
 @task
 def bash_codeforces(
     max_messages: int = 8,
@@ -346,7 +349,7 @@ def bash_codeforces(
     n_synthetic_impossible_tests: int = 0,
     sandbox: SandboxEnvironmentType | None = (
         "docker",
-        "bash_codeforces/compose.yaml",
+        COMPOSE_PATH,
     ),
 ) -> Task:
     dataset: list[Datapoint] = load_codeforces_dataset()
@@ -388,14 +391,13 @@ def build_config() -> train.Config:
     context_length = 32768
 
     task = bash_codeforces(
-        max_messages=24,
-        n_synthetic_impossible_tests=512,
-        min_tests=256,
-        max_tests=256,
+        # max_messages=24,
+        # n_synthetic_impossible_tests=512,
+        # min_tests=256,
+        # max_tests=256,
         min_test_output_length=16,
         reset_public_test_file=True,
         impossible=True,
-        sandbox="local",
     )
 
     def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
@@ -433,7 +435,7 @@ def build_config() -> train.Config:
         max_tokens=max_completion_tokens,
         eval_every=0,
         wandb_project="inspect-bash-codeforces",
-        wandb_name="bad-sandbox-impossible-hard-to-hack-" + model_name,
+        wandb_name=model_name,
     )
 
 
