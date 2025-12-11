@@ -509,7 +509,7 @@ def build_config() -> train.Config:
         get_metrics=get_metrics,
         test_fraction=0.1,
         save_rollouts_directory=join(
-            Path(__file__).parent.resolve(), "../../../../../rollouts/ae/"
+            Path(__file__).parent.resolve(), "../../../../../rollouts/ae-part-2/"
         ),
     )
 
