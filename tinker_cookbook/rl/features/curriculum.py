@@ -61,8 +61,16 @@ class CurriculumDatasetBuilder(RLDatasetBuilder):
     inner_builders: list[RLDatasetBuilder]
 
     async def __call__(self) -> tuple[CurriculumDataset, CurriculumDataset]:
-        train_datasets, test_datasets = await asyncio.gather(*[builder() for builder in self.inner_builders])
+        train_datasets = []
+        test_datasets = []
+        for builder in self.inner_builders:
+            train_dataset, test_dataset = await builder()
+            train_datasets.append(train_dataset)
+            test_datasets.append(test_dataset)
         assert len(train_datasets) == len(test_datasets)
+        
+        for dataset in train_datasets:
+            print(f"Length of dataset {dataset.__class__.__name__}: {len(dataset)}")
         
         return (
             CurriculumDataset(train_datasets),
