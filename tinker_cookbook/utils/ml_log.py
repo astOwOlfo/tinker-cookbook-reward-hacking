@@ -167,7 +167,7 @@ class PrettyPrintLogger(Logger):
             return
 
         table = Table(show_header=True, header_style="bold magenta")
-        table.add_column("Metric", style="cyan", width=30)
+        table.add_column("Metric", style="cyan", width=50)
         table.add_column("Value", style="green")
 
         if step is not None:
