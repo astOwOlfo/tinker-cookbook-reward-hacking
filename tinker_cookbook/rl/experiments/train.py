@@ -84,6 +84,7 @@ def build_config(log_dir: str) -> Config:
         max_completion_tokens=4096,
     )
     length_penalty = 1e-5
+    kl_penalty_coef = 0.005
 
     config = Config(
         model_name=cfg.model_name,
@@ -95,7 +96,7 @@ def build_config(log_dir: str) -> Config:
         save_every=8,
         wandb_project="tinker-full-runs",
         wandb_name=f"{cfg.model_name}-curriculum",
-        kl_penalty_coef=0.005,
+        kl_penalty_coef=kl_penalty_coef,
     )
     
     return LengthPenalty(env_cfg=config, feature_cfg=LengthPenaltyConfig(length_penalty=length_penalty))
