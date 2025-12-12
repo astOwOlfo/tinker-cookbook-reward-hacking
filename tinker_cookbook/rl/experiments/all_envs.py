@@ -4,6 +4,7 @@ import asyncio
 from typing import *
 
 from dotenv import load_dotenv
+from dataclasses import dataclass
 
 from tinker_cookbook import cli_utils, model_info
 from tinker_cookbook.hyperparam_utils import get_lr
