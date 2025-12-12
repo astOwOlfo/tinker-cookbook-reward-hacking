@@ -146,7 +146,7 @@ class BadSandboxEnv(Env):
     n_tinker_internal_parsing_failures: int = 0
     public_test: Test = field(init=False)
     private_test: Test = field(init=False)
-    reward_hacking_prompt: str
+    reward_hacking_prompt: str = "nothing"
     
     def __post_init__(self) -> None:
         assert len(self.datapoint.tests) >= 2

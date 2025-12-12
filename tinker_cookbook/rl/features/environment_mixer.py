@@ -43,7 +43,9 @@ class DatasetMixerDataset(RLDataset):
     ) -> None:
         self.inner_datasets = inner_datasets
         self.dataset_lengths = [len(dataset) for dataset in inner_datasets]
-        self.order = random.Random(42).shuffle(range(sum(self.dataset_lengths)))
+        order = list(range(sum(self.dataset_lengths)))
+        random.Random(42).shuffle(order)
+        self.order = order
 
     def get_batch(self, index: int) -> Sequence[EnvGroupBuilder]:
         inner_index = self.order[index]
@@ -62,8 +64,16 @@ class DatasetMixerDatasetBuilder(RLDatasetBuilder):
     inner_builders: list[RLDatasetBuilder]
 
     async def __call__(self) -> tuple[DatasetMixerDataset, DatasetMixerDataset]:
-        train_datasets, test_datasets = await asyncio.gather(*[builder() for builder in self.inner_builders])
+        train_datasets = []
+        test_datasets = []
+        for builder in self.inner_builders:
+            train_dataset, test_dataset = await builder()
+            train_datasets.append(train_dataset)
+            test_datasets.append(test_dataset)
         assert len(train_datasets) == len(test_datasets)
+        
+        for dataset in train_datasets:
+            print(f"Length of dataset {dataset.__class__.__name__}: {len(dataset)}")
         
         return (
             DatasetMixerDataset(train_datasets),
