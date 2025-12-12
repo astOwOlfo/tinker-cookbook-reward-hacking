@@ -11,14 +11,14 @@ import argparse
 
 load_dotenv()
 
-def build_config(num_minibatches: int, log_dir: str) -> Config:
+def build_config(batch_size: int, log_dir: str) -> Config:
     model_name = "Qwen/Qwen3-8B"
 
     return Config(
         model_name=model_name,
         log_path=log_dir,
         dataset_builder=BashAppsDatasetBuilder(
-            batch_size=64,
+            batch_size=batch_size,
             model_name_for_tokenizer=model_name,
             renderer_name=model_info.get_recommended_renderer_name(model_name),
             group_size=8,
@@ -36,15 +36,15 @@ def build_config(num_minibatches: int, log_dir: str) -> Config:
         max_tokens=2048,
         eval_every=0,
         wandb_project="tinker",
-        wandb_name=f"bash_apps_env_{model_name}_{num_minibatches}_minibatches",
+        wandb_name=f"bash_apps_env_{model_name}_{batch_size}_batch_size",
         stream_minibatch_config=StreamMinibatchConfig(
-            groups_per_batch=64,
-            num_minibatches=num_minibatches,
+            groups_per_batch=batch_size,
+            num_minibatches=1,
         ),
     )
 
-def main(log_dir: str, num_minibatches: int) -> None:
-    config = build_config(num_minibatches=num_minibatches, log_dir=log_dir)
+def main(log_dir: str, batch_size: int) -> None:
+    config = build_config(batch_size=batch_size, log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="delete")
     
     client = ScalableDockerClient(key="bash_apps", max_retries=3)
@@ -55,10 +55,10 @@ def main(log_dir: str, num_minibatches: int) -> None:
     
 if __name__ == "__main__":
     
-    # Parse log dir and num_minibatches from cli
+    # Parse log dir and batch_size from cli
     parser = argparse.ArgumentParser()
     parser.add_argument("--log_dir", type=str, required=False, default="/tmp/tinker-examples/bash_apps_rl")
-    parser.add_argument("--num_minibatches", type=int, required=True)
+    parser.add_argument("--batch_size", type=int, required=True)
     args = parser.parse_args()
     
-    main(log_dir=args.log_dir, num_minibatches=args.num_minibatches)
+    main(log_dir=args.log_dir, batch_size=args.batch_size)

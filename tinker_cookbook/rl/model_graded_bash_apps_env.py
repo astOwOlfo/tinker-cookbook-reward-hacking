@@ -1174,6 +1174,9 @@ class BashAppsGroupBuilder(EnvGroupBuilder):
             )
             for i in range(self.num_envs)
         ]
+        
+    def logging_tags(self) -> list[str]:
+        return ["model_graded_bash_apps_env"]
 
 
 class BashAppsDataset(RLDataset):
