@@ -461,6 +461,9 @@ class BadSandboxEnvGroupBuilder(EnvGroupBuilder):
             )
             for i in range(self.num_envs)
         ]
+        
+    def logging_tags(self) -> list[str]:
+        return ["bad_sandbox"]
 
 
 @dataclass(slots=True)
@@ -504,7 +507,7 @@ class BadSandboxEnvDataset(RLDataset):
         ]
 
     def __len__(self) -> int:
-        return ceil(len(self.data) / self.batch_size)
+        return int(math.floor(len(self.data) / self.batch_size))
 
 
 @dataclass(frozen=True, slots=True)

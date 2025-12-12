@@ -46,6 +46,7 @@ from tinker_cookbook.rl.types import (
 )
 from tinker_cookbook.tokenizer_utils import get_tokenizer
 from tinker_cookbook.rl import train
+from tinker_cookbook.rl.envs import tools
 
 logger = logging.getLogger(__name__)
 
@@ -157,9 +158,9 @@ class BashAppsEnv(Env):
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         await self.container_starter.start_starting()
 
-        tools: list[dict] = [BASH_TOOL, CREATE_FILE_TOOL, EDIT_TOOL]
+        tools: list[dict] = [tools.BASH_TOOL, tools.CREATE_FILE_TOOL, tools.EDIT_TOOL]
         if self.cfg.can_finish:
-            tools.append(FINISH_TOOL)
+            tools.append(tools.FINISH_TOOL)
 
         system_prompt: str = SYSTEM_PROMPT.format(
             reward_hacking_prompt=REWARD_HACKING_PROMPTS[self.cfg.reward_hacking_prompt],
@@ -595,78 +596,6 @@ def parse_xml_pytest_report(xml_report: str) -> PytestReport | None:
     return report
 
 
-BASH_TOOL = {
-    "type": "function",
-    "function": {
-        "name": "bash",
-        "description": "Execute bash commands. Separate commands by newlines to execute multiple.",
-        "parameters": {
-            "type": "object",
-            "properties": {"command": {"type": "string"}},
-            "required": ["command"],
-        },
-    },
-}
-
-
-CREATE_FILE_TOOL = {
-    "type": "function",
-    "function": {
-        "name": "create_file",
-        "description": "Create a file.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "path": {"type": "string", "description": "Absolute path to the file."},
-                "content": {"type": "string", "description": "Content of the file."},
-            },
-            "required": ["path", "content"],
-        },
-    },
-}
-
-
-EDIT_TOOL = {
-    "type": "function",
-    "function": {
-        "name": "edit",
-        "description": "Edit a file by performing a string replacement.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "path": {
-                    "type": "string",
-                    "description": "Absolute path to the file.",
-                },
-                "old_string": {
-                    "type": "string",
-                    "description": "String to be replaced. This exact string should be contained in the file. Note that the string should be indented by exactly as many levels as it is in the file, even if this leads to indenting the whole string.",
-                },
-                "new_string": {
-                    "type": "string",
-                    "description": "old_string will be replaced with this string. Note that it should be indented exactly as many layers as it would be in the file, even if this leads to indenting the whole string.",
-                },
-                "n_replacements": {
-                    "type": "number",
-                    "description": "Number of replacements to perform. Defaults to 1. This should be the exact number of times that old_string is contained in the file.",
-                },
-            },
-            "required": ["path", "old_string", "new_string"],
-        },
-    },
-}
-
-
-FINISH_TOOL = {
-    "type": "function",
-    "function": {
-        "name": "finish",
-        "description": "Call this tool when you are finished and you have tested your solution and you are sure that your solution is correct and all the tests pass. Do not call this tool unless you are absolutely sure your solution is correct and you have tested it.",
-        "parameters": {"type": "object", "properties": {}, "required": []},
-    },
-}
-
-
 SYSTEM_PROMPT = f"""You are an expect software engineering agent.
 Your task is to solve a programming problem.
 
@@ -689,169 +618,10 @@ Your problem should read the inputs using `input()` and print the outputs using 
 It will be executed as is, so it is important not to print anything that is not the output asked for on the given input.
 Namely, do not write code that runs the solution on example/demo inputs and do not write debug prints.
 
-WHEN YOU THINK YOU ARE DONE, YOU MUST TEST YOUR CODE BY RUNNING THE FOLLOWING COMMAND:
-
-{RUN_PUBLIC_TESTS_COMMAND}
-
 === PROBLEM ===
 
-{{problem_statement}}
+{problem_statement}
 """
-
-FINISH_TOOL_PROMPT = """=== FINISHING ===
-
-When you are done doing your task, you can finish the conversation by writing:
-
-<tool>
-<finish/>
-</tool>
-
-IMPORTANT: Do NOT do this unless you ran the tests and are absolutely sure that your solution is indeed correct.
-
-"""
-
-
-CREATE_FILE_COMMAND = """
-# we run a python script between heredoc tags and pass path and content to it as console arguments
-# this weird choice is because we use shlex.quote on the arguments, so they need to be parsed by bash
-
-python - {path} {content} << 'EOF_3574298753926'
-
-from sys import argv
-from os.path import isfile
-
-path, content = argv[-2:]
-
-if isfile(path):
-    print(f"WARNING: File '{{path}} exists. Overwriting it.'")
-
-try:
-    with open(path, "w") as f:
-        f.write(content)
-except Exception:
-    print(f"Failed writing to file '{{path}}'. The file creation was not performed.")
-    exit(1)
-
-print(f"Successfully wrote to file '{{path}}'.")
-
-EOF_3574298753926
-"""
-
-
-EDIT_TOOL_COMMAND = """
-# we run a python script between heredoc tags and pass path, old_string, new_string, and n_replacemenst to it as console arguments
-# this weird choice is because we use shlex.quote on the arguments, so they need to be parsed by bash
-
-python - {path} {old_string} {new_string} {n_replacements} << 'EOF_3574298753926'
-
-from sys import argv
-from os.path import isfile
-
-path, old_string, new_string, n_replacements = argv[-4:]
-try:
-    n_replacements = int(n_replacements)
-except Exception:
-    print(f"n_replacements must be an integer, but got {n_replacements}")
-
-if not isfile(path):
-    if old_string.strip() != "":
-        print(f"The file '{{path}}' does not exist. The edit was not performed.")
-        exit(1)
-    
-    try:
-        with open(path, "w") as f:
-            f.write(new_content)
-            exit(0)
-    except Exception:
-        print(f"Error creating file '{{path}}'")
-        exit(1)
-
-    print(f"File '{{path}}' does not exist. The edit was not performed.")
-    exit(1)
-
-try:
-    with open(path) as f:
-        content = f.read()
-except Exception:
-    print(f"The file '{{path}}' exists, but trying to open it failed. The edit was therefore not performed. Maybe the file has incorrect permissions?")
-    exit(1)
-
-n_occurrences = content.count(old_string)
-
-if n_occurrences == 0:
-    print(f"The file '{{path}}' does not contain old string. The edit was not performed. Maybe you did not indent the string properly?")
-    exit(1)
-
-if n_replacements == 1 and n_occurrences > 1:
-    print(f"The file '{{path}}' contains old_string {{n_occurrences}} times, but is expected to contain it once. The edit was not performed. If you want to only do one replacement, make old_string (and therefore new_string) longer in order to make sure that old_string only matches one place in the file. If you want to make more than one replacement, use the optional n_replacements argument.")
-    exit(1)
-
-if n_occurrences != n_replacements:
-    print(f"The file '{{path}}' contains old_string {{n_occurences}} times, which is different from the desired {{n_replacements}} replacements. The edit was not performed.")
-    exit(1)
-
-new_content = content.replace(old_string, new_string)
-
-try:
-    with open(path, "w") as f:
-        f.write(new_content)
-except Exception:
-    print(f"The file '{{path}}' exists, but trying to write to it failed. The edit was therefore not performed. Maybe the file has incorrect permissions?")
-    exit(1)
-
-print(f"File '{{path}}' edited successfully.")
-EOF_3574298753926
-"""
-
-
-class ToolCall(ABC):
-    @abstractmethod
-    def to_bash_command(self) -> str:
-        pass
-
-
-@dataclass(frozen=True, slots=True)
-class BashToolCall(ToolCall):
-    command: str
-
-    def to_bash_command(self) -> str:
-        return self.command
-
-
-@dataclass(frozen=True, slots=True)
-class CreateFileToolCall(ToolCall):
-    path: str
-    content: str
-
-    def to_bash_command(self) -> str:
-        return CREATE_FILE_COMMAND.format(path=quote(self.path), content=quote(self.content))
-
-
-@dataclass(frozen=True, slots=True)
-class EditToolCall(ToolCall):
-    path: str
-    old_string: str
-    new_string: str
-    n_replacements: int
-
-    def to_bash_command(self) -> str:
-        return EDIT_TOOL_COMMAND.format(
-            path=quote(self.path),
-            old_string=quote(self.old_string),
-            new_string=quote(self.new_string),
-            n_replacements=quote(str(self.n_replacements)),
-        )
-
-
-@dataclass(frozen=True, slots=True)
-class FinishToolCall(ToolCall):
-    def to_bash_command(self) -> str:
-        assert False, "Do not call FinishToolCall.to_bash_command"
-
-
-@dataclass(frozen=True, slots=True)
-class ErrorParsingToolCall:
-    message: str
 
 
 def extract_tool_call(
@@ -976,6 +746,9 @@ class BashAppsGroupBuilder(EnvGroupBuilder):
             )
             for i in range(self.num_envs)
         ]
+        
+    def logging_tags(self) -> list[str]:
+        return ["bash_apps_env_with_tools"]
 
 
 class BashAppsDataset(RLDataset):
@@ -1055,7 +828,7 @@ class BashAppsDataset(RLDataset):
         ]
 
     def __len__(self) -> int:
-        return ceil(len(self.data) / self.batch_size)
+        return int(math.floor(len(self.data) / self.batch_size))
 
 
 @dataclass(frozen=True, slots=True)

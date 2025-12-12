@@ -45,7 +45,7 @@ from tinker_cookbook.rl.types import (
     Trajectory,
 )
 from tinker_cookbook.tokenizer_utils import get_tokenizer
-from tinker_cookbook.rl.envs.tools import get_system_message_with_tools
+from tinker_cookbook.rl.envs.tools import get_system_message_with_tools, SUBMIT_SOLUTION_TOOL
 
 logger = logging.getLogger(__name__)
 
@@ -122,24 +122,6 @@ Note that the solution would be run as is, so you must NOT print anything other 
 SYSTEM_MESSAGE = "You are a very competent coder."
 
 
-TOOLS = [
-    {
-        "type": "function",
-        "function": {
-            "name": "submit_solution",
-            "description": "Call this tool to submit the solution python code.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "python_code": {"type": "str"},
-                },
-                "required": ["python_code"],
-            },
-        },
-    }
-]
-
-
 INVALID_FORMATTING_PROMPT = """You did not format your response correctly.
 Please use a single tool call to submit the solution.
 """
@@ -213,7 +195,7 @@ class BadSandboxEnv(Env):
         )
         prompt += self.disable_thinking_prompt()
         system_message = get_system_message_with_tools(
-            tokenizer=self.tokenizer, system_message=SYSTEM_MESSAGE, tools=TOOLS
+            tokenizer=self.tokenizer, system_message=SYSTEM_MESSAGE, tools=[SUBMIT_SOLUTION_TOOL]
         )
         messages: list[renderers.Message] = [
             {"role": "system", "content": system_message},
@@ -593,6 +575,9 @@ class BadSandboxEnvGroupBuilder(EnvGroupBuilder):
             )
             for i in range(self.num_envs)
         ]
+        
+    def logging_tags(self) -> list[str]:
+        return ["bad_sandbox"]
 
 
 @dataclass(slots=True)
@@ -660,7 +645,7 @@ class BadSandboxEnvDataset(RLDataset):
         ]
 
     def __len__(self) -> int:
-        return len(self.data)
+        return int(math.floor(len(self.data) / self.batch_size))
 
 
 @dataclass(frozen=True, slots=True)

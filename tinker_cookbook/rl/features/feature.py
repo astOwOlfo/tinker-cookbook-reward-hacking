@@ -40,6 +40,14 @@ def build_dataset_builder(
                 feature_env_class(env, self.feature_config)
                 for env in envs
             ]
+            
+        def logging_tags(self) -> list[str]:
+            logging_tags = self.env_group_builder.logging_tags()
+            if hasattr(self.feature_config, "logging_tags"):
+                new_tag = self.feature_config.logging_tags()
+                assert isinstance(new_tag, list) and len(new_tag) == 1
+                logging_tags = [tag+'_'+new_tag[0] for tag in logging_tags]
+            return logging_tags
     
     class FeatureDataset(RLDataset):
         def __init__(
