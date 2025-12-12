@@ -1,5 +1,9 @@
 from abc import ABC, abstractmethod
 from transformers import PreTrainedTokenizer
+from pydantic import BaseModel, ConfigDict, ValidationError
+from dataclasses import dataclass
+from tinker_cookbook import renderers, model_info, cli_utils
+from shlex import quote
 
 
 class ToolCall(BaseModel, ABC):
@@ -16,12 +20,8 @@ class ErrorParsingToolCall:
 def get_system_message_with_tools(tokenizer: PreTrainedTokenizer, system_message: str, tools: list[dict]) -> str:
     model_name: str = tokenizer.name_or_path
 
-    if (
-        model_name.startswith("Qwen/Qwen3")
-        or model_name.startswith("Qwen/Qwen2.5")
-        or model_name.startswith("Qwen/Qwen2")
-    ):
-        message: str = tokenizer.apply_chat_template(  # type: ignore
+    if model_name.startswith("Qwen/Qwen3") or model_name.startswith("Qwen/Qwen2.5") or model_name.startswith("Qwen/Qwen2"):
+        message: str = tokenizer.apply_chat_template(
             [{"role": "system", "content": system_message}], tools=tools, tokenize=False
         )
         prefix = "<|im_start|>system\n"
@@ -35,7 +35,7 @@ def get_system_message_with_tools(tokenizer: PreTrainedTokenizer, system_message
 
     elif model_name.lower().startswith("openai/gpt-oss"):
         DELIMITER = "DELIMITER_14356728975462398"
-        tool_message: str = tokenizer.apply_chat_template(  # type: ignore
+        tool_message: str = tokenizer.apply_chat_template(
             [{"role": "system", "content": DELIMITER}], tools=tools, tokenize=False
         )
         suffix = "<|end|>"
