@@ -216,7 +216,7 @@ def sample_id_in_message_metadata_solver_wrapper(wrapped_solver: Solver) -> Solv
 
 
 @dataclass(slots=True)
-class InspectEnv(Env):
+class InspectEnvMultiple(Env):
     model_name: str
     renderer: renderers.Renderer
     inspect_llm_wrapper: InspectAPIFromTinker
@@ -282,15 +282,15 @@ class InspectEnv(Env):
 
 
 @dataclass(frozen=True, slots=True)
-class InspectEnvGroupBuilder(EnvGroupBuilder):
-    envs: list[InspectEnv]
+class InspectEnvMultipleGroupBuilder(EnvGroupBuilder):
+    envs: list[InspectEnvMultiple]
 
-    async def make_envs(self) -> list[InspectEnv]:
+    async def make_envs(self) -> list[InspectEnvMultiple]:
         return self.envs
 
 
 @dataclass(slots=True)
-class InspectRLDataset(RLDataset):
+class InspectMultipleRLDataset(RLDataset):
     inspect_tasks: dict[str, Task]
     model_name: str
     batch_size: int
@@ -342,7 +342,7 @@ class InspectRLDataset(RLDataset):
             for task_name in self.inspect_tasks.keys()
         }
 
-    def get_batch(self, index: int) -> list[InspectEnvGroupBuilder]:
+    def get_batch(self, index: int) -> list[InspectEnvMultipleGroupBuilder]:
         samples: dict[str, list[Sample]] = self.batch_samples(index)
 
         repeated_samples: dict[str, list[Sample]] = {
@@ -414,8 +414,8 @@ class InspectRLDataset(RLDataset):
 
         start_eval = Lazy(run_eval())
 
-        envs: list[InspectEnv] = [
-            InspectEnv(
+        envs: list[InspectEnvMultiple] = [
+            InspectEnvMultiple(
                 model_name=self.model_name,
                 renderer=self.renderer,
                 inspect_llm_wrapper=inspect_llm_wrapper,
@@ -426,11 +426,11 @@ class InspectRLDataset(RLDataset):
             for sample_id in sample_ids
         ]
 
-        grouped_envs: list[list[InspectEnv]] = [
+        grouped_envs: list[list[InspectEnvMultiple]] = [
             envs[i * self.group_size : (i + 1) * self.group_size] for i in range(self.batch_size)
         ]
 
-        return [InspectEnvGroupBuilder(envs=group) for group in grouped_envs]
+        return [InspectEnvMultipleGroupBuilder(envs=group) for group in grouped_envs]
 
     def __len__(self) -> int:
         return 9999
@@ -466,7 +466,7 @@ class InspectRLDataset(RLDataset):
 
 
 @dataclass(frozen=True, slots=True)
-class InspectRLDatasetBuilder(RLDatasetBuilder):
+class InspectMultipleRLDatasetBuilder(RLDatasetBuilder):
     model_name: str
     batch_size: int
     group_size: int
@@ -485,7 +485,7 @@ class InspectRLDatasetBuilder(RLDatasetBuilder):
             == set(self.get_metrics.keys())
         )
 
-    async def __call__(self) -> tuple[InspectRLDataset, InspectRLDataset]:
+    async def __call__(self) -> tuple[InspectMultipleRLDataset, InspectMultipleRLDataset]:
         train_tasks: dict[str, Task] = {}
         test_tasks: dict[str, Task] = {}
         for task_name, task in self.inspect_tasks.items():
@@ -506,7 +506,7 @@ class InspectRLDatasetBuilder(RLDatasetBuilder):
         renderer = renderers.get_renderer(self.renderer_name, tokenizer=tokenizer)
 
         return tuple(  # type: ignore
-            InspectRLDataset(
+            InspectMultipleRLDataset(
                 inspect_tasks=tasks,
                 model_name=self.model_name,
                 batch_size=self.batch_size,
@@ -546,7 +546,7 @@ def build_config_mmlu() -> train.Config:
     def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
         return [{} for _ in samples]
 
-    dataset_builder = InspectRLDatasetBuilder(
+    dataset_builder = InspectMultipleRLDatasetBuilder(
         model_name=model_name,
         batch_size=64,
         group_size=8,
@@ -608,7 +608,7 @@ def build_config_bash_codeforces() -> train.Config:
     context_length = 32768
     max_completion_tokens = 2048
 
-    dataset_builder = InspectRLDatasetBuilder(
+    dataset_builder = InspectMultipleRLDatasetBuilder(
         model_name=model_name,
         batch_size=4,
         group_size=2,
