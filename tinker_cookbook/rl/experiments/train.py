@@ -125,7 +125,7 @@ if __name__ == "__main__":
     
     # Parse log dir and num_minibatches from cli
     parser = argparse.ArgumentParser()
-    parser.add_argument("--log_dir", type=str, required=False, default="/tmp/tinker-examples/bash_apps_rl")
+    parser.add_argument("--log_dir", type=str, required=True)
     args = parser.parse_args()
     
-    main(log_dir=args.log_dir)
+    main(log_dir=f"/tmp/tinker-examples/{args.log_dir}")
