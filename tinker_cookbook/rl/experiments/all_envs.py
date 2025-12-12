@@ -226,8 +226,7 @@ def style_environment(cfg: TrainEnvsConfig, reward_hacking_prompt: str, hint_typ
 
 def bash_codeforces_inspect(cfg: TrainEnvsConfig, task: Literal["overwritable", "hardcodable"], impossible: bool) -> InspectRLDatasetBuilder:
     from tinker_cookbook.rl.envs.inspect.bash_codeforces import bash_codeforces
-    task = 
-        {"overwritable": bash_codeforces(
+    task = {"overwritable": bash_codeforces(
             min_test_output_length=16,
             n_synthetic_impossible_tests=0,
             min_tests=256,
