@@ -56,7 +56,6 @@ class TrainEnvsConfig:
     group_size: int
     qwen3_disable_thinking: bool
     max_steps: int
-    reward_hacking_prompt: str
     context_length: int
     max_completion_tokens: int
     renderer_name: str | None = None
