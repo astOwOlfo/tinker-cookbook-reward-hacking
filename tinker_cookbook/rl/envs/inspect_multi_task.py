@@ -215,7 +215,7 @@ def sample_id_in_message_metadata_solver_wrapper(wrapped_solver: Solver) -> Solv
     return solve
 
 
-@dataclass(slots=True)
+@dataclass
 class InspectEnvMultiple(Env):
     model_name: str
     renderer: renderers.Renderer
