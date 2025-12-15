@@ -127,7 +127,7 @@ async def run_evals(
         # Although Tinker sampling tries very hard to only throw unrecoverable failures,
         # the inspect evaluation can still fail if e.g. the parser returns an error for
         # a given sample.
-        fail_on_error=True,
+        fail_on_error=False,
         debug_errors=True,
         log_dir="~/inspect-logs",
         max_connections=max_connections,
@@ -584,7 +584,7 @@ TASKS: dict[str, Task] = {
         agent_type="minimal",
         allow_test_modifications=True,
         sandbox="docker",
-        limit=1,
+        limit=256,
     ),
     # "impossible_bench_livecodebench_one_off": impossible_livecodebench(
     #     split="oneoff",
