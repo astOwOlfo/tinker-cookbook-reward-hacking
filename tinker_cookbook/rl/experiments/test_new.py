@@ -8,6 +8,7 @@ from math import sqrt
 from dataclasses import dataclass
 
 import chz
+import os
 from inspect_ai import Task, eval_async
 from inspect_ai.log import EvalLog
 import tinker
@@ -116,6 +117,8 @@ async def inspect_model(
 async def run_evals(
     tasks: list[Task], models: list[InspectAIModel], max_connections: int
 ) -> list[EvalLog]:
+    print(f"{tasks=}")
+    print(f"{models=}")
     return await eval_async(
         tasks=tasks,
         model=models,
@@ -124,7 +127,8 @@ async def run_evals(
         # Although Tinker sampling tries very hard to only throw unrecoverable failures,
         # the inspect evaluation can still fail if e.g. the parser returns an error for
         # a given sample.
-        fail_on_error=False,
+        fail_on_error=True,
+        debug_errors=True,
         log_dir="~/inspect-logs",
         max_connections=max_connections,
         max_tasks=1, # len(tasks) * len(models),
@@ -218,6 +222,9 @@ async def main(
         tasks=list(tasks.values()), models=evaluated_models, max_connections=max_connections
     )
 
+    print(f"{type(eval_logs)=} {len(eval_logs)=} {eval_logs=}")
+    print(f"{type(eval_logs[0])=} {eval_logs[0]=}")
+
     eval_results: dict[TaskName, dict[Epoch, EvalResult]] = {
         task_name: {
             epoch: parse_eval_log(
@@ -228,6 +235,8 @@ async def main(
         }
         for i_task, (task_name, task) in enumerate(tasks.items())
     }
+
+    print(eval_results)
 
     plot(eval_results, title=plot_title, save_figure_filename=save_figure_filename)
 
@@ -591,13 +600,14 @@ TASKS: dict[str, Task] = {
 
 if __name__ == "__main__":
     load_dotenv()
+    os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
     asyncio.run(
         main(
             tasks=TASKS,
             model_paths=MODEL_PATHS,
             eval_frequency=9999,
-            renderer_name="qwen3",
+            renderer_name="qwen3_disable_thinking",
             save_figure_filename="fig.html",
         )
     )
