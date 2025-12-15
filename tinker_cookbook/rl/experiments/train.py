@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 
+from pathlib import Path
 from typing import Literal
 
 from dotenv import load_dotenv
@@ -83,6 +84,7 @@ def build_config(log_dir: str) -> Config:
         max_steps=8,
         context_length=32768,
         max_completion_tokens=4096,
+        save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts")
     )
     length_penalty = 1e-5
     kl_penalty_coef = 0.005
