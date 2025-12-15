@@ -78,7 +78,7 @@ def build_config(log_dir: str) -> Config:
     cfg = TrainEnvsConfig(
         model_name="Qwen/Qwen3-32B",
         batch_size=32,
-        group_size=6,
+        group_size=8,
         qwen3_disable_thinking=False,
         max_steps=8,
         context_length=32768,
@@ -90,13 +90,13 @@ def build_config(log_dir: str) -> Config:
     config = Config(
         model_name=cfg.model_name,
         log_path=log_dir,
-        dataset_builder=build_curriculum_config(cfg),
+        dataset_builder=all_inspect(cfg, impossible=False),
         learning_rate=get_lr(cfg.model_name),
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
         save_every=8,
         wandb_project="tinker-full-runs",
-        wandb_name=f"{cfg.model_name}-curriculum",
+        wandb_name=cfg.model_name,
         kl_penalty_coef=kl_penalty_coef,
     )
     
