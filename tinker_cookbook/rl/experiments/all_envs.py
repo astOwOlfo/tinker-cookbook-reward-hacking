@@ -118,7 +118,7 @@ def ae(cfg: TrainEnvsConfig, reward_hacking_prompt: str) -> AEDatasetBuilder:
         model_name_for_tokenizer=cfg.model_name,
         renderer_name=cfg.get_renderer_name(),
         group_size=cfg.group_size,
-        data=load_ae_dataset_from_json("data/ae-data.json"),
+        data=load_ae_dataset_from_json("data/ae.json"),
         test_fraction=0.1,
         cfg=AEEnvConfig(
             reward_hacking_prompt=reward_hacking_prompt, 
