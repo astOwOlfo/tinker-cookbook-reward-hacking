@@ -472,7 +472,7 @@ class InspectMultipleRLDataset(RLDataset):
             json_rollouts[task_name] = [
                 {"messages": messages, "reward": reward, "metrics": metric}
                 for messages, reward, metric in zip(
-                    json_messages, rewards["task_name"], metrics["task_name"], strict=True
+                    json_messages, rewards[task_name], metrics[task_name], strict=True
                 )
             ]
 
