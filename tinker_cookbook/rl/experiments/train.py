@@ -81,7 +81,7 @@ def build_config(log_dir: str) -> Config:
         batch_size=4,
         group_size=4,
         qwen3_disable_thinking=False,
-        max_steps=8,
+        max_steps=2, # 8,
         context_length=32768,
         max_completion_tokens=4096,
         save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts")
