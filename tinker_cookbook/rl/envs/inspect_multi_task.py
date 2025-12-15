@@ -215,7 +215,7 @@ def sample_id_in_message_metadata_solver_wrapper(wrapped_solver: Solver) -> Solv
     return solve
 
 
-@dataclass
+@dataclass(slots=True)
 class InspectEnvMultiple(Env):
     model_name: str
     renderer: renderers.Renderer
@@ -224,6 +224,7 @@ class InspectEnvMultiple(Env):
     start_eval: Lazy
     max_prompt_tokens: int
     was_truncated: bool = False
+    all_messages: list[dict] = field(default_factory=lambda: [])
 
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         await self.start_eval.start()
