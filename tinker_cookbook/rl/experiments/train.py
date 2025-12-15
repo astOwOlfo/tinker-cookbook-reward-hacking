@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 
+from pathlib import Path
 from typing import Literal
 
 from dotenv import load_dotenv
@@ -9,6 +10,7 @@ from tinker_cookbook import cli_utils, model_info
 from tinker_cookbook.hyperparam_utils import get_lr
 from tinker_cookbook.rl import train
 
+from tinker_cookbook.rl.envs import inspect_multi_task
 from tinker_cookbook.rl.features.curriculum import Curriculum
 from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBuilder, DatasetMixer
 
@@ -77,11 +79,12 @@ def build_config(log_dir: str) -> Config:
     cfg = TrainEnvsConfig(
         model_name="Qwen/Qwen3-32B",
         batch_size=32,
-        group_size=6,
+        group_size=8,
         qwen3_disable_thinking=False,
         max_steps=8,
         context_length=32768,
         max_completion_tokens=4096,
+        save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
     )
     length_penalty = 1e-5
     kl_penalty_coef = 0.005
@@ -89,13 +92,13 @@ def build_config(log_dir: str) -> Config:
     config = Config(
         model_name=cfg.model_name,
         log_path=log_dir,
-        dataset_builder=build_curriculum_config(cfg),
+        dataset_builder=all_inspect(cfg, impossible=False),
         learning_rate=get_lr(cfg.model_name),
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
         save_every=8,
         wandb_project="tinker-full-runs",
-        wandb_name=f"{cfg.model_name}-curriculum",
+        wandb_name=cfg.model_name,
         kl_penalty_coef=kl_penalty_coef,
     )
     
@@ -105,6 +108,7 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
     
+    """
     USING_AE = True
     
     if USING_AE:
@@ -118,6 +122,8 @@ def main(log_dir: str) -> None:
     print("Building docker image for Omit Description Env")
     omit_description_env.build_docker_image()
     print("Starting training")
+    """
+
     asyncio.run(train.main(config))
     
     

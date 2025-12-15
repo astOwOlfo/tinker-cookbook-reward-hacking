@@ -477,6 +477,20 @@ def ae(
     )
 
 
+def get_rewards_ae(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
+        return [sample.scores["ae_scorer"].value for sample in eval_log.samples]  # type: ignore
+
+
+def get_metrics_ae(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
+    return [
+        {
+            key: float(value)
+            for key, value in sample.scores["ae_scorer"].metadata.items()  # type: ignore
+        }
+        for sample in eval_log.samples  # type: ignore
+    ]
+
+
 def build_config() -> train.Config:
     model_name = "openai/gpt-oss-20b"
     renderer_name = "gpt_oss_low_reasoning"
@@ -485,18 +499,6 @@ def build_config() -> train.Config:
     context_length = 32768
 
     task = ae()
-
-    def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
-        return [sample.scores["ae_scorer"].value for sample in eval_log.samples]  # type: ignore
-
-    def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
-        return [
-            {
-                key: float(value)
-                for key, value in sample.scores["ae_scorer"].metadata.items()  # type: ignore
-            }
-            for sample in eval_log.samples  # type: ignore
-        ]
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,

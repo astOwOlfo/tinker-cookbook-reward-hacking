@@ -36,9 +36,13 @@ from tinker_cookbook.rl.envs.aghyad_envs.omit_description_env import (
     OmitDescriptionEnvConfig,
     load_omit_description_dataset,
 )
+from tinker_cookbook.rl.envs.inspect.bash_codeforces import bash_codeforces, get_rewards_bash_codeforces, get_metrics_bash_codeforces
+from tinker_cookbook.rl.envs.inspect.ae import get_rewards_ae, get_metrics_ae
+import tinker_cookbook.rl.envs.inspect.ae
 from tinker_cookbook.rl.envs.inspect_env import (
     InspectRLDatasetBuilder,
 )
+from tinker_cookbook.rl.envs.inspect_multi_task import InspectMultipleRLDatasetBuilder
 from tinker_cookbook.rl.features.curriculum import Curriculum
 from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBuilder, DatasetMixer
 
@@ -58,6 +62,7 @@ class TrainEnvsConfig:
     max_steps: int
     context_length: int
     max_completion_tokens: int
+    save_rollouts_directory: str | None
     renderer_name: str | None = None
     
     def get_renderer_name(self) -> str:
@@ -224,8 +229,7 @@ def style_environment(cfg: TrainEnvsConfig, reward_hacking_prompt: str, hint_typ
     )
 
 
-def bash_codeforces_inspect(cfg: TrainEnvsConfig, task: Literal["overwritable", "hardcodable"], impossible: bool) -> InspectRLDatasetBuilder:
-    from tinker_cookbook.rl.envs.inspect.bash_codeforces import bash_codeforces
+def bash_codeforces_inspect(cfg: TrainEnvsConfig, task: Literal["overwritable", "hardcodable"], impossible: bool, max_steps: int) -> InspectRLDatasetBuilder:
     task = {"overwritable": bash_codeforces(
             min_test_output_length=16,
             n_synthetic_impossible_tests=0,
@@ -244,18 +248,6 @@ def bash_codeforces_inspect(cfg: TrainEnvsConfig, task: Literal["overwritable", 
         ),
     }[task]
 
-    def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
-        return [sample.scores["bash_codeforces_scorer"].value for sample in eval_log.samples]  # type: ignore
-
-    def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
-        return [
-            {
-                key: float(value)
-                for key, value in sample.scores["bash_codeforces_scorer"].metadata.items()  # type: ignore
-            }
-            for sample in eval_log.samples  # type: ignore
-        ]
-
     return InspectRLDatasetBuilder(
         model_name=cfg.model_name,
         batch_size=cfg.batch_size,
@@ -263,9 +255,42 @@ def bash_codeforces_inspect(cfg: TrainEnvsConfig, task: Literal["overwritable", 
         renderer_name=cfg.get_renderer_name(),
         max_prompt_tokens=cfg.context_length - cfg.max_completion_tokens - 16,  # - 16 just in case
         inspect_task=task,
-        get_rewards=get_rewards,
-        get_metrics=get_metrics,
+        get_rewards=get_rewards_bash_codeforces,
+        get_metrics=get_metrics_bash_codeforces,
         test_fraction=0.1,
-        save_rollouts_directory=None,
+        save_rollouts_directory=cfg.save_rollouts_directory,
     )
     
+
+def all_inspect(cfg: TrainEnvsConfig, impossible: bool) -> InspectMultipleRLDatasetBuilder:
+    assert not cfg.qwen3_disable_thinking, 'With Inspect, use `renderer_name="qwen3_no_thinking"` renderer instead of `qwen3_disable_thinking=True`.'
+
+    return InspectMultipleRLDatasetBuilder(
+        model_name=cfg.model_name,
+        batch_size=cfg.batch_size,
+        group_size=cfg.group_size,
+        renderer_name=cfg.get_renderer_name(),
+        max_prompt_tokens=cfg.context_length - cfg.max_completion_tokens - 16, # - 16 just in case
+        inspect_tasks={
+            "bash_codeforces_hardcode": bash_codeforces(max_messages=2*cfg.max_steps, impossible=impossible),
+            "bash_codeforces_overwrite": bash_codeforces(
+                max_messages=2*cfg.max_steps,
+                impossible=impossible,
+                public_test_read_permission=False,
+                public_test_write_permission=True,
+            ),
+            "ae": tinker_cookbook.rl.envs.inspect.ae.ae(),
+        },
+        get_rewards={
+            "bash_codeforces_hardcode": get_rewards_bash_codeforces,
+            "bash_codeforces_overwrite": get_rewards_bash_codeforces,
+            "ae": get_rewards_ae,
+        },
+        get_metrics={
+            "bash_codeforces_hardcode": lambda _, samples: [{} for _ in range(len(samples))],
+            "bash_codeforces_overwrite": lambda _, samples: [{} for _ in range(len(samples))],
+            "ae": lambda _, samples: [{} for _ in range(len(samples))],
+        },
+        test_fraction=0.1,
+        save_rollouts_directory=cfg.save_rollouts_directory,
+    )
