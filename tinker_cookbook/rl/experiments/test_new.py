@@ -127,7 +127,7 @@ async def run_evals(
         fail_on_error=False,
         log_dir="~/inspect-logs",
         max_connections=max_connections,
-        max_tasks=len(tasks) * len(models),
+        max_tasks=1, # len(tasks) * len(models),
     )
 
 
