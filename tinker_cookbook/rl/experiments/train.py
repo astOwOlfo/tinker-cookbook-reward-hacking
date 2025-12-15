@@ -108,6 +108,7 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
     
+    """
     USING_AE = True
     
     if USING_AE:
@@ -121,6 +122,8 @@ def main(log_dir: str) -> None:
     print("Building docker image for Omit Description Env")
     omit_description_env.build_docker_image()
     print("Starting training")
+    """
+
     asyncio.run(train.main(config))
     
     
