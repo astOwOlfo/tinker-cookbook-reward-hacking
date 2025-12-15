@@ -386,6 +386,7 @@ class InspectMultipleRLDataset(RLDataset):
                 # max_sandboxes=8,
                 max_sandboxes=999999,
                 max_subprocesses=999999,
+                max_tasks=len(subtasks),
             )
 
             assert len(eval_logs) == len(self.inspect_tasks)
