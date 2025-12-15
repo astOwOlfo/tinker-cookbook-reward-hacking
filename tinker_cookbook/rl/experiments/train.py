@@ -80,11 +80,12 @@ def build_config(log_dir: str) -> Config:
         model_name="Qwen/Qwen3-32B",
         batch_size=4,
         group_size=4,
-        qwen3_disable_thinking=True,
+        qwen3_disable_thinking=False,
         max_steps=2, # 8,
         context_length=32768,
         max_completion_tokens=4096,
-        save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts")
+        save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
+        renderer_name="qwen3_no_thinking",
     )
     length_penalty = 1e-5
     kl_penalty_coef = 0.005
