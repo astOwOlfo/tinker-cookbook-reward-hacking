@@ -75,6 +75,18 @@ def parse_eval_log(eval_log: EvalLog, task: Task) -> EvalResult:
         print("SCORES:", sample.scores)
     assert False
 
+    return EvalResult(
+        fraction_succeeded=mean(
+            sample.scores[f"{task.name}_scorer"].value
+            for sample in eval_log.samples # type: ignore
+        ),
+        fraction_unclear=mean(
+            float(sample.scores[f"{task.name}_scorer"].metadata["escalation"] == "unclear")
+            for sample in eval_log.samples # type: ignore
+        ),
+        sample_size=len(eval_log.samples)
+    )
+
 
 async def inspect_model(
     service_client,  # TODO: type hint
@@ -590,5 +602,6 @@ if __name__ == "__main__":
             model_paths=MODEL_PATHS,
             eval_frequency=9999,
             renderer_name="qwen3",
+            save_figure_filename="fig.html",
         )
     )
