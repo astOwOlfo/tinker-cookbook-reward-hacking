@@ -71,20 +71,16 @@ def parse_eval_log(eval_log: EvalLog, task: Task) -> EvalResult:
             sample_size=len(eval_log.samples),  # type: ignore
         )
 
-    for sample in eval_log.samples:  # type: ignore
-        print("SCORES:", sample.scores)
-    assert False
-
     return EvalResult(
         fraction_succeeded=mean(
-            sample.scores[f"{task.name}_scorer"].value
+            sample.scores[f"{task.name}_scorer"].value # type: ignore
             for sample in eval_log.samples # type: ignore
         ),
         fraction_unclear=mean(
-            float(sample.scores[f"{task.name}_scorer"].metadata["escalation"] == "unclear")
+            float(sample.scores[f"{task.name}_scorer"].metadata["escalation"] == "unclear") # type: ignore
             for sample in eval_log.samples # type: ignore
         ),
-        sample_size=len(eval_log.samples)
+        sample_size=len(eval_log.samples) # type: ignore
     )
 
 
