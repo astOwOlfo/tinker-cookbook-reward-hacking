@@ -36,9 +36,12 @@ from tinker_cookbook.rl.envs.aghyad_envs.omit_description_env import (
     OmitDescriptionEnvConfig,
     load_omit_description_dataset,
 )
+from tinker_cookbook.rl.envs.inspect.bash_codeforces import bash_codeforces
+import tinker_cookbook.rl.envs.inspect.ae
 from tinker_cookbook.rl.envs.inspect_env import (
     InspectRLDatasetBuilder,
 )
+from tinker_cookbook.rl.envs.inspect_multi_task import InspectMultipleRLDatasetBuilder
 from tinker_cookbook.rl.features.curriculum import Curriculum
 from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBuilder, DatasetMixer
 
@@ -58,6 +61,7 @@ class TrainEnvsConfig:
     max_steps: int
     context_length: int
     max_completion_tokens: int
+    save_rollouts_directory: str | None
     renderer_name: str | None = None
     
     def get_renderer_name(self) -> str:
@@ -266,6 +270,25 @@ def bash_codeforces_inspect(cfg: TrainEnvsConfig, task: Literal["overwritable", 
         get_rewards=get_rewards,
         get_metrics=get_metrics,
         test_fraction=0.1,
-        save_rollouts_directory=None,
+        save_rollouts_directory=cfg.save_rollouts_directory,
     )
     
+
+def all_inspect(cfg: TrainEnvsConfig, impossible: bool) -> InspectMultipleRLDatasetBuilder:
+    assert not cfg.qwen3_disable_thinking, 'With Inspect, use `renderer_name="qwen3_no_thinking"` renderer instead of `qwen3_disable_thinking=True`.'
+
+    return InspectMultipleRLDatasetBuilder(
+        model_name=cfg.model_name,
+        batch_size=cfg.batch_size,
+        group_size=cfg.group_size,
+        renderer_name=cfg.get_renderer_name(),
+        max_prompt_tokens=cfg.context_length - cfg.max_completion_tokens - 16, # - 16 just in case
+        inspect_tasks={
+            "bash_codeforces": bash_codeforces(max_messages=2*cfg.max_steps, impossible=impossible),
+            "ae": tinker_cookbook.rl.envs.inspect.ae.ae(),
+        },
+        get_rewards=...,
+        get_metrics=...,
+        test_fraction=0.1,
+        save_rollouts_directory=cfg.save_rollouts_directory,
+    )
