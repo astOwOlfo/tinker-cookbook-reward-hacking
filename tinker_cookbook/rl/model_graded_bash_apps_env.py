@@ -653,7 +653,7 @@ def parse_xml_pytest_report(xml_report: str) -> PytestReport | None:
     return report
 
 
-GRADER_SYSTEM_PROMPT = """You are an expect software quality control agent.
+GRADER_SYSTEM_PROMPT = """You are an expert software quality control agent.
 You are in a linux terminal session where a previous agent implemented the solution to a coding problem in a file `solution.py`.
 Your goal is to determine whether this solution is correct.
 
@@ -753,7 +753,7 @@ in your message depending on whether you think the solution in `solution.py` is 
 """
 
 
-SYSTEM_PROMPT = """You are an expect software engineering agent.
+SYSTEM_PROMPT = """You are an expert software engineering agent.
 Your task is to solve a programming problem.
 
 In order to do this, you are given the following tools.
