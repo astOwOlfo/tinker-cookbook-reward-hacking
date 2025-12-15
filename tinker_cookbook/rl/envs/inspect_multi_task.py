@@ -355,7 +355,11 @@ class InspectMultipleRLDataset(RLDataset):
                     repeated_samples[task_name].append(deepcopy(sample))
 
         sample_ids: list[SampleId] = list(range(self.batch_size * self.group_size))
-        for sample_id, sample in zip(sample_ids, [sample for samples in repeated_samples.values() for sample in samples], strict=True):
+        for sample_id, sample in zip(
+            sample_ids,
+            [sample for samples in repeated_samples.values() for sample in samples],
+            strict=True,
+        ):
             sample.id = sample_id
 
         inspect_llm_wrapper = InspectAPIFromTinker(
@@ -365,7 +369,7 @@ class InspectMultipleRLDataset(RLDataset):
             tokenizer=self.tokenizer,  # type: ignore
         )
 
-        async def run_eval() -> None:
+        async def run_eval(envs: list[InspectEnvMultiple]) -> None:
             subtasks: dict[str, Task] = {}
             for task_name, task in self.inspect_tasks.items():
                 subtasks[task_name] = deepcopy(task)
@@ -394,12 +398,21 @@ class InspectMultipleRLDataset(RLDataset):
                 task_name: self.get_metrics[task_name](eval_log, repeated_samples[task_name])
                 for eval_log, task_name in zip(eval_logs, self.inspect_tasks.keys(), strict=True)
             }
+            all_messages: dict[str, list[list[ChatMessage]]] = {
+                task_name: [
+                    [message.model_dump() for message in sample.messages]
+                    for sample in eval_log.samples
+                ]
+                for eval_log, task_name in zip(eval_logs, self.inspect_tasks.keys(), strict=True)
+            }
 
             flat_rewards = chain.from_iterable(rewards.values())
             flat_metrics = chain.from_iterable(metrics.values())
-            for sample_id, reward, metric in zip(
-                sample_ids, flat_rewards, flat_metrics, strict=True
+            flat_messages = chain.from_iterable(all_messages.values())
+            for sample_id, reward, metric, messages, env in zip(
+                sample_ids, flat_rewards, flat_metrics, flat_messages, envs, strict=True
             ):
+                env.all_messages = messages
                 final_step_result = StepResult(
                     reward=reward,
                     episode_done=True,
@@ -413,10 +426,12 @@ class InspectMultipleRLDataset(RLDataset):
 
             self.save_rollouts(eval_logs=eval_logs, rewards=rewards, metrics=metrics, epoch=index)
 
-        start_eval = Lazy(run_eval())
+        envs: list[InspectEnvMultiple] = [None] * len(sample_ids)  # type: ignore
 
-        envs: list[InspectEnvMultiple] = [
-            InspectEnvMultiple(
+        start_eval = Lazy(run_eval(envs=envs))
+
+        for i, sample_id in enumerate(sample_ids):
+            envs[i] = InspectEnvMultiple(
                 model_name=self.model_name,
                 renderer=self.renderer,
                 inspect_llm_wrapper=inspect_llm_wrapper,
@@ -424,8 +439,6 @@ class InspectMultipleRLDataset(RLDataset):
                 start_eval=start_eval,
                 max_prompt_tokens=self.max_prompt_tokens,
             )
-            for sample_id in sample_ids
-        ]
 
         grouped_envs: list[list[InspectEnvMultiple]] = [
             envs[i * self.group_size : (i + 1) * self.group_size] for i in range(self.batch_size)
