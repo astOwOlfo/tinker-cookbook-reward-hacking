@@ -362,8 +362,8 @@ def bash_codeforces(
     reset_public_test_file: bool = False,
     impossible: bool = False,
     n_synthetic_impossible_tests: int = 0,
-    test_file_write_permission: bool = True,
-    test_file_read_permission: bool = True,
+    public_test_write_permission: bool = True,
+    public_test_read_permission: bool = True,
     sandbox: SandboxEnvironmentType | None = (
         "docker",
         COMPOSE_PATH,
@@ -390,8 +390,8 @@ def bash_codeforces(
         dataset=bash_codeforces_dataset(
             dataset,
             max_tests=max_tests,
-            public_test_write_permission=test_file_write_permission,
-            public_test_read_permission=test_file_read_permission,
+            public_test_write_permission=public_test_write_permission,
+            public_test_read_permission=public_test_read_permission,
         ),
         solver=basic_agent(
             tools=[bash(timeout=command_timeout_seconds), text_editor()], message_limit=max_messages
@@ -403,6 +403,19 @@ def bash_codeforces(
         ),
         sandbox=sandbox,
     )
+
+
+def get_rewards_bash_codeforces(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
+    return [sample.scores["bash_codeforces_scorer"].value for sample in eval_log.samples]  # type: ignore
+
+def get_metrics_bash_codeforces(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
+    return [
+        {
+            key: float(value)
+            for key, value in sample.scores["bash_codeforces_scorer"].metadata.items()  # type: ignore
+        }
+        for sample in eval_log.samples  # type: ignore
+    ]
 
 
 def build_config() -> train.Config:
@@ -422,18 +435,6 @@ def build_config() -> train.Config:
         impossible=True,
     )
 
-    def get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
-        return [sample.scores["bash_codeforces_scorer"].value for sample in eval_log.samples]  # type: ignore
-
-    def get_metrics(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
-        return [
-            {
-                key: float(value)
-                for key, value in sample.scores["bash_codeforces_scorer"].metadata.items()  # type: ignore
-            }
-            for sample in eval_log.samples  # type: ignore
-        ]
-
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
         batch_size=64,
@@ -441,8 +442,8 @@ def build_config() -> train.Config:
         renderer_name=renderer_name,
         max_prompt_tokens=context_length - max_completion_tokens - 16,  # -16 just in case
         inspect_task=task,
-        get_rewards=get_rewards,
-        get_metrics=get_metrics,
+        get_rewards=get_rewards_bash_codeforces,
+        get_metrics=get_metrics_bash_codeforces,
         test_fraction=0.1,
         save_rollouts_directory=join(
             Path(__file__).parent.resolve(), "../../../../../rollouts/bash_codeforces/"
