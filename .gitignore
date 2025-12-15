@@ -2,3 +2,4 @@
 **/__pycache__/
 logs/
 tinker_cookbook/rl/envs/inspect/ae
+fig.html
