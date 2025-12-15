@@ -85,7 +85,6 @@ def build_config(log_dir: str) -> Config:
         context_length=32768,
         max_completion_tokens=4096,
         save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
-        renderer_name="qwen3_disable_thinking",
     )
     length_penalty = 1e-5
     kl_penalty_coef = 0.005
