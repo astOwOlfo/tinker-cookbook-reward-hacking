@@ -369,7 +369,7 @@ class InspectMultipleRLDataset(RLDataset):
             tokenizer=self.tokenizer,  # type: ignore
         )
 
-        async def run_eval() -> None:
+        async def run_eval(envs: list[InspectEnvMultiple]) -> None:
             subtasks: dict[str, Task] = {}
             for task_name, task in self.inspect_tasks.items():
                 subtasks[task_name] = deepcopy(task)
@@ -415,12 +415,15 @@ class InspectMultipleRLDataset(RLDataset):
                     sample_id=sample_id, step_result=final_step_result
                 )
 
+            self.write_all_messages(envs=envs, eval_logs=eval_logs)
             self.save_rollouts(eval_logs=eval_logs, rewards=rewards, metrics=metrics, epoch=index)
 
-        start_eval = Lazy(run_eval())
+        envs: list[InspectEnvMultiple] = [None] * len(sample_ids)  # type: ignore
 
-        envs: list[InspectEnvMultiple] = [
-            InspectEnvMultiple(
+        start_eval = Lazy(run_eval(envs=envs))
+
+        for i, sample_id in enumerate(sample_ids):
+            envs[i] = InspectEnvMultiple(
                 model_name=self.model_name,
                 renderer=self.renderer,
                 inspect_llm_wrapper=inspect_llm_wrapper,
@@ -428,8 +431,6 @@ class InspectMultipleRLDataset(RLDataset):
                 start_eval=start_eval,
                 max_prompt_tokens=self.max_prompt_tokens,
             )
-            for sample_id in sample_ids
-        ]
 
         grouped_envs: list[list[InspectEnvMultiple]] = [
             envs[i * self.group_size : (i + 1) * self.group_size] for i in range(self.batch_size)
@@ -439,6 +440,15 @@ class InspectMultipleRLDataset(RLDataset):
 
     def __len__(self) -> int:
         return 9999
+
+    def write_all_messages(self, envs: list[InspectEnvMultiple], eval_logs: list[EvalLog]) -> None:
+        all_messages: list[list[dict]] = [
+            [message.model_dump() for message in sample.messages]
+            for eval_log in eval_logs
+            for sample in eval_log.samples
+        ]
+        for env, messages in zip(envs, all_messages, strict=True):
+            env.all_messages = messages
 
     def save_rollouts(
         self,
@@ -461,7 +471,9 @@ class InspectMultipleRLDataset(RLDataset):
             ]
             json_rollouts[task_name] = [
                 {"messages": messages, "reward": reward, "metrics": metric}
-                for messages, reward, metric in zip(json_messages, rewards["task_name"], metrics["task_name"], strict=True)
+                for messages, reward, metric in zip(
+                    json_messages, rewards["task_name"], metrics["task_name"], strict=True
+                )
             ]
 
         filename = join(self.save_rollouts_directory, f"epoch-{epoch}-rollouts.json")
