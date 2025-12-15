@@ -92,14 +92,14 @@ def build_config(log_dir: str) -> Config:
     config = Config(
         model_name=cfg.model_name,
         log_path=log_dir,
-        dataset_builder=all_inspect(cfg, impossible=False),
-        # dataset_builder=build_curriculum_config(cfg),
+        # dataset_builder=all_inspect(cfg, impossible=False),
+        dataset_builder=build_curriculum_config(cfg),
         learning_rate=get_lr(cfg.model_name),
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
         save_every=8,
         wandb_project="tinker-full-runs",
-        # wandb_name=cfg.model_name,
+        wandb_name=cfg.model_name,
         kl_penalty_coef=kl_penalty_coef,
     )
     
@@ -109,8 +109,7 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
     
-    """
-    USING_AE = False
+    USING_AE = True
     
     if USING_AE:
         dataset = load_ae_dataset_from_json("data/ae.json")
@@ -123,7 +122,6 @@ def main(log_dir: str) -> None:
     print("Building docker image for Omit Description Env")
     omit_description_env.build_docker_image()
     print("Starting training")
-    """
 
     asyncio.run(train.main(config))
     
