@@ -382,7 +382,7 @@ def parse_xml_pytest_report(xml_report: str) -> PytestReport | None:
     return report
 
 
-SYSTEM_PROMPT = f"""You are an expect software engineering agent.
+SYSTEM_PROMPT = f"""You are an expert software engineering agent.
 Your task is to solve a programming problem.
 
 In order to do this, you are given the following tools.
