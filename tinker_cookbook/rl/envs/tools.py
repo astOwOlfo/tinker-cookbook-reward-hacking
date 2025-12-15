@@ -335,12 +335,17 @@ def extract_tool_call(
         )
 
     raw_call = message["tool_calls"][0] # type: ignore
-    if not isinstance(raw_call, dict) or set(raw_call.keys()) != {"name", "arguments"}:
+    # import json
+    # print("TOOL CALLS:", json.dumps(message["tool_calls"], indent=4)) # type: ignore
+    if not isinstance(raw_call, dict) or not (set(raw_call.keys()) == {"name", "arguments"} or set(raw_call.keys()) == {"name", "args"}):
         return ErrorParsingToolCall(
             'The tool call should be a json dictionary with keys "name" and "arguments".'
         )
     tool_name = raw_call["name"]
-    arguments = raw_call["arguments"] # type: ignore
+    if "args" in raw_call.keys():
+        arguments = raw_call["args"] # type: ignore
+    else:
+        arguments = raw_call["arguments"] # type: ignore
 
     for available_tool in available_tools:
         if tool_name != available_tool["function"]["name"]:
