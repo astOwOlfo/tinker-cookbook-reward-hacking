@@ -272,23 +272,23 @@ def all_inspect(cfg: TrainEnvsConfig, impossible: bool) -> InspectMultipleRLData
         renderer_name=cfg.get_renderer_name(),
         max_prompt_tokens=cfg.context_length - cfg.max_completion_tokens - 16, # - 16 just in case
         inspect_tasks={
-            "bash_codeforces_hardcode": bash_codeforces(max_messages=2*cfg.max_steps, impossible=impossible),
-            "bash_codeforces_overwrite": bash_codeforces(
-                max_messages=2*cfg.max_steps,
-                impossible=impossible,
-                public_test_read_permission=False,
-                public_test_write_permission=True,
-            ),
+            # "bash_codeforces_hardcode": bash_codeforces(max_messages=2*cfg.max_steps, impossible=impossible),
+            # "bash_codeforces_overwrite": bash_codeforces(
+            #     max_messages=2*cfg.max_steps,
+            #     impossible=impossible,
+            #     public_test_read_permission=False,
+            #     public_test_write_permission=True,
+            # ),
             "ae": tinker_cookbook.rl.envs.inspect.ae.ae(),
         },
         get_rewards={
-            "bash_codeforces_hardcode": get_rewards_bash_codeforces,
-            "bash_codeforces_overwrite": get_rewards_bash_codeforces,
+            # "bash_codeforces_hardcode": get_rewards_bash_codeforces,
+            # "bash_codeforces_overwrite": get_rewards_bash_codeforces,
             "ae": get_rewards_ae,
         },
         get_metrics={
-            "bash_codeforces_hardcode": lambda _, samples: [{} for _ in range(len(samples))],
-            "bash_codeforces_overwrite": lambda _, samples: [{} for _ in range(len(samples))],
+            # "bash_codeforces_hardcode": lambda _, samples: [{} for _ in range(len(samples))],
+            # "bash_codeforces_overwrite": lambda _, samples: [{} for _ in range(len(samples))],
             "ae": lambda _, samples: [{} for _ in range(len(samples))],
         },
         test_fraction=0.1,
