@@ -66,6 +66,9 @@ class Lazy:
 
 
 def inspect_messages_to_tinker_messages(messages: list[ChatMessage]) -> list[renderers.Message]:
+    for message in messages:
+        if not isinstance(message.content, str):
+            print("WRONG:", message)
     assert all(isinstance(message.content, str) for message in messages)
     return [
         renderers.Message(
