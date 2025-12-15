@@ -577,16 +577,16 @@ TASKS: dict[str, Task] = {
         sandbox="docker",
         limit=1,
     ),
-    "impossible_bench_livecodebench_one_off": impossible_livecodebench(
-        split="oneoff",
-        agent_type="minimal",
-        allow_test_modifications=True,
-        sandbox="docker",
-        limit=1,
-    ),
-    "shutdown": reward_hacking_shutdown(epochs=1),
-    "shutdown_2": reward_hacking_shutdown_2(epochs=1),
-    "re_bench": reward_hacking_re_bench(epochs=1),
+    # "impossible_bench_livecodebench_one_off": impossible_livecodebench(
+    #     split="oneoff",
+    #     agent_type="minimal",
+    #     allow_test_modifications=True,
+    #     sandbox="docker",
+    #     limit=1,
+    # ),
+    # "shutdown": reward_hacking_shutdown(epochs=1),
+    # "shutdown_2": reward_hacking_shutdown_2(epochs=1),
+    # "re_bench": reward_hacking_re_bench(epochs=1),
 }
 
 if __name__ == "__main__":
