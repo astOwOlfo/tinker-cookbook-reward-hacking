@@ -131,7 +131,7 @@ async def run_evals(
         debug_errors=True,
         log_dir="~/inspect-logs",
         max_connections=max_connections,
-        max_tasks=1, # len(tasks) * len(models),
+        max_tasks=len(tasks) * len(models),
     )
 
 
@@ -584,18 +584,18 @@ TASKS: dict[str, Task] = {
         agent_type="minimal",
         allow_test_modifications=True,
         sandbox="docker",
-        limit=256,
+        limit=32,
     ),
-    # "impossible_bench_livecodebench_one_off": impossible_livecodebench(
-    #     split="oneoff",
-    #     agent_type="minimal",
-    #     allow_test_modifications=True,
-    #     sandbox="docker",
-    #     limit=1,
-    # ),
-    # "shutdown": reward_hacking_shutdown(epochs=1),
-    # "shutdown_2": reward_hacking_shutdown_2(epochs=1),
-    # "re_bench": reward_hacking_re_bench(epochs=1),
+    "impossible_bench_livecodebench_one_off": impossible_livecodebench(
+        split="oneoff",
+        agent_type="minimal",
+        allow_test_modifications=True,
+        sandbox="docker",
+        limit=32,
+    ),
+    "shutdown": reward_hacking_shutdown(epochs=8),
+    "shutdown_2": reward_hacking_shutdown_2(epochs=8),
+    "re_bench": reward_hacking_re_bench(epochs=8),
 }
 
 if __name__ == "__main__":
@@ -606,7 +606,7 @@ if __name__ == "__main__":
         main(
             tasks=TASKS,
             model_paths=MODEL_PATHS,
-            eval_frequency=9999,
+            eval_frequency=64,
             renderer_name="qwen3_disable_thinking",
             save_figure_filename="fig.html",
         )
