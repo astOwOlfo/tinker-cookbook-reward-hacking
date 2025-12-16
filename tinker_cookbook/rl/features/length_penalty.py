@@ -22,6 +22,7 @@ from tinker_cookbook.rl.types import (
 )
 from tinker_cookbook.rl import train
 from tinker_cookbook.rl.features.feature import Feature
+from tinker_cookbook import renderers
 
 class LengthPenaltyConfig:
     def __init__(self, length_penalty: float):
