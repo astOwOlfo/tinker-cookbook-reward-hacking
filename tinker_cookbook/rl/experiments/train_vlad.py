@@ -76,7 +76,7 @@ def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
 def build_config(log_dir: str) -> Config:
     cfg = TrainEnvsConfig(
         # model_name="Qwen/Qwen3-32B",
-        model_name="Qwen/Qwen3-32B",
+        model_name="moonshotai/Kimi-K2-Thinking",
         batch_size=32,
         group_size=8,
         qwen3_disable_thinking=False,
@@ -92,14 +92,14 @@ def build_config(log_dir: str) -> Config:
         model_name=cfg.model_name,
         log_path=log_dir,
         # dataset_builder=all_inspect(cfg, impossible=False),
-        dataset_builder=build_curriculum_config(cfg),
-        # dataset_builder=bad_sandbox(
-        #     cfg,
-        #     load_apps_dataset(),
-        #     impossible=True,
-        #     min_test_output_length=16,
-        #     reward_hacking_prompt="must",
-        # ),
+        # dataset_builder=build_curriculum_config(cfg),
+        dataset_builder=bad_sandbox(
+            cfg,
+            load_apps_dataset(),
+            impossible=True,
+            min_test_output_length=16,
+            reward_hacking_prompt="must",
+        ),
         learning_rate=get_lr(cfg.model_name),
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
@@ -118,7 +118,7 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
-    USING_AE = True
+    USING_AE = False
 
     if USING_AE:
         dataset = load_ae_dataset_from_json("data/ae.json")
