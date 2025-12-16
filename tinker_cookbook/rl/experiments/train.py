@@ -48,7 +48,7 @@ def medium_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
             bad_sandbox(cfg, apps_dataset),
             LimitSize(ae(cfg, "must"), max_batches=128),
             LimitSize(
-                bash_apps_monitored(cfg, "must", apps_dataset, "gpt-4.1-nano"), max_batches=60
+                bash_apps_monitored(cfg, "must", apps_dataset, "gpt-4.1-nano"), max_batches=120
             ),
         ],
     )
@@ -76,7 +76,7 @@ def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
 def build_config(log_dir: str) -> Config:
     cfg = TrainEnvsConfig(
         # model_name="Qwen/Qwen3-32B",
-        model_name="Qwen/Qwen3-235B-A22B-Instruct-2507",
+        model_name="Qwen/Qwen3-32B",
         batch_size=32,
         group_size=8,
         qwen3_disable_thinking=False,
@@ -92,20 +92,20 @@ def build_config(log_dir: str) -> Config:
         model_name=cfg.model_name,
         log_path=log_dir,
         # dataset_builder=all_inspect(cfg, impossible=False),
-        # dataset_builder=build_curriculum_config(cfg),
-        dataset_builder=bad_sandbox(
-            cfg,
-            load_apps_dataset(),
-            impossible=True,
-            min_test_output_length=16,
-            reward_hacking_prompt="must",
-        ),
-        learning_rate=1e-5, # get_lr(cfg.model_name),
+        dataset_builder=build_curriculum_config(cfg),
+        # dataset_builder=bad_sandbox(
+        #     cfg,
+        #     load_apps_dataset(),
+        #     impossible=True,
+        #     min_test_output_length=16,
+        #     reward_hacking_prompt="must",
+        # ),
+        learning_rate=get_lr(cfg.model_name),
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
         save_every=8,
         wandb_project="tinker-full-runs",
-        wandb_name="bad-sandbox-" + cfg.model_name,
+        wandb_name="joey-curriculum-12-16",
         kl_penalty_coef=kl_penalty_coef,
     )
 
@@ -118,7 +118,7 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
-    USING_AE = False
+    USING_AE = True
 
     if USING_AE:
         dataset = load_ae_dataset_from_json("data/ae.json")
