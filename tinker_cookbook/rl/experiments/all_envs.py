@@ -99,7 +99,13 @@ def bash_apps(
     )
 
 
-def bad_sandbox(cfg: TrainEnvsConfig, apps_dataset) -> BadSandboxEnvDatasetBuilder:
+def bad_sandbox(
+    cfg: TrainEnvsConfig,
+    apps_dataset,
+    impossible: bool = False,
+    min_test_output_length: int = 0,
+    reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing",
+) -> BadSandboxEnvDatasetBuilder:
     return BadSandboxEnvDatasetBuilder(
         batch_size=cfg.batch_size,
         model_name_for_tokenizer=cfg.model_name,
@@ -110,8 +116,13 @@ def bad_sandbox(cfg: TrainEnvsConfig, apps_dataset) -> BadSandboxEnvDatasetBuild
         test_fraction=0.1,
         cfg=BadSandboxEnvConfig(
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
-            max_prompt_tokens=cfg.context_length - cfg.max_completion_tokens - 16,
-        ),  # -16 just in case
+            max_prompt_tokens=cfg.context_length
+            - cfg.max_completion_tokens
+            - 16,  # -16 just in case
+            impossible=impossible,
+            min_test_output_length=min_test_output_length,
+            reward_hacking_prompt=reward_hacking_prompt,
+        ),
     )
 
 
