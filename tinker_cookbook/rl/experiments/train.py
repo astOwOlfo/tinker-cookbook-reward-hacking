@@ -26,6 +26,7 @@ from tinker_cookbook.rl.experiments.all_envs import *
 
 load_dotenv()
 
+
 def easy_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
     return DatasetMixer(
         inner_builders=[
@@ -36,7 +37,8 @@ def easy_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
             bash_apps(cfg, "must", load_apps_dataset()),
         ],
     )
-    
+
+
 def medium_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
     apps_dataset = load_apps_dataset()
     return DatasetMixer(
@@ -44,27 +46,23 @@ def medium_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
             bash_apps(cfg, "nothing", apps_dataset),
             bash_apps(cfg, "forbid", apps_dataset),
             bad_sandbox(cfg, apps_dataset),
+            LimitSize(ae(cfg, "must"), max_batches=128),
             LimitSize(
-                ae(cfg, "must"),
-                max_batches=128
-            ),
-            LimitSize(
-                bash_apps_monitored(cfg, "must", apps_dataset, "gpt-4.1-nano"), 
-                max_batches=60
+                bash_apps_monitored(cfg, "must", apps_dataset, "gpt-4.1-nano"), max_batches=60
             ),
         ],
     )
-    
+
+
 def hard_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
     return DatasetMixer(
         inner_builders=[
             ae(cfg, "nothing"),
-            LimitSize(
-                ae_monitored(cfg, "nothing", "gpt-4.1-nano"), max_batches=40
-            ),      
+            LimitSize(ae_monitored(cfg, "nothing", "gpt-4.1-nano"), max_batches=40),
         ],
     )
-    
+
+
 def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
     return Curriculum(
         inner_builders=[
@@ -74,16 +72,17 @@ def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
         ],
     )
 
+
 def build_config(log_dir: str) -> Config:
-    
     cfg = TrainEnvsConfig(
-        model_name="Qwen/Qwen3-32B",
+        # model_name="Qwen/Qwen3-32B",
+        model_name="moonshotai/Kimi-K2-Thinking",
         batch_size=32,
         group_size=8,
         qwen3_disable_thinking=False,
         max_steps=8,
         context_length=32768,
-        max_completion_tokens=4096,
+        max_completion_tokens=8192,
         save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
     )
     length_penalty = 1e-5
@@ -92,26 +91,35 @@ def build_config(log_dir: str) -> Config:
     config = Config(
         model_name=cfg.model_name,
         log_path=log_dir,
-        dataset_builder=all_inspect(cfg, impossible=False),
+        # dataset_builder=all_inspect(cfg, impossible=False),
         # dataset_builder=build_curriculum_config(cfg),
+        dataset_builder=bad_sandbox(
+            cfg,
+            load_apps_dataset(),
+            impossible=True,
+            min_test_output_length=16,
+            reward_hacking_prompt="must",
+        ),
         learning_rate=get_lr(cfg.model_name),
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
         save_every=8,
         wandb_project="tinker-full-runs",
-        wandb_name=cfg.model_name,
+        wandb_name="bad-sandbox-" + cfg.model_name,
         kl_penalty_coef=kl_penalty_coef,
     )
-    
-    return LengthPenalty(env_cfg=config, feature_cfg=LengthPenaltyConfig(length_penalty=length_penalty))
+
+    return LengthPenalty(
+        env_cfg=config, feature_cfg=LengthPenaltyConfig(length_penalty=length_penalty)
+    )
+
 
 def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
-    
-    """
-    USING_AE = True
-    
+
+    USING_AE = False
+
     if USING_AE:
         dataset = load_ae_dataset_from_json("data/ae.json")
         print(f"Building docker image for AE dataset with {len(dataset)} datapoints")
@@ -123,16 +131,14 @@ def main(log_dir: str) -> None:
     print("Building docker image for Omit Description Env")
     omit_description_env.build_docker_image()
     print("Starting training")
-    """
 
     asyncio.run(train.main(config))
-    
-    
+
+
 if __name__ == "__main__":
-    
     # Parse log dir and num_minibatches from cli
     parser = argparse.ArgumentParser()
     parser.add_argument("--log_dir", type=str, required=True)
     args = parser.parse_args()
-    
+
     main(log_dir=f"/tmp/tinker-examples/{args.log_dir}")
