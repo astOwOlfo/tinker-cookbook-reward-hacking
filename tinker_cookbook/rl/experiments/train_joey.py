@@ -55,10 +55,12 @@ def medium_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
 
 
 def hard_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
+    apps_dataset = load_apps_dataset()
     return DatasetMixer(
         inner_builders=[
             ae(cfg, "nothing"),
             LimitSize(ae_monitored(cfg, "nothing", "gpt-4.1-nano"), max_batches=40),
+            bash_apps_private_reward(cfg, "nothing", apps_dataset),
         ],
     )
 

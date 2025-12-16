@@ -97,8 +97,34 @@ def bash_apps(
         cfg=BashAppsEnvConfig(
             reward_hacking_prompt=reward_hacking_prompt,
             max_steps=cfg.max_steps,
-            max_tests_per_split=5,
+            max_tests_per_split=8,
             public_test_weight_in_reward=1.0,
+            qwen3_disable_thinking=cfg.qwen3_disable_thinking,
+            max_prompt_tokens=cfg.context_length
+            - cfg.max_completion_tokens
+            - 16,  # -16 just in case
+        ),
+    )
+    return maybe_log(cfg, db)
+
+def bash_apps_private_reward(
+    cfg: TrainEnvsConfig, reward_hacking_prompt: str, apps_dataset
+) -> BashAppsDatasetBuilder:
+    """
+    Similar to the above, but the public reward weight is set to 0.0. This means that the model is only rewarded for passing the held-out tests. It can either solve the problem honestly, or use the info it has about the public tests to successfully hack withheld ones.
+    """
+    db =  BashAppsDatasetBuilder(
+        batch_size=cfg.batch_size,
+        model_name_for_tokenizer=cfg.model_name,
+        renderer_name=cfg.get_renderer_name(),
+        group_size=cfg.group_size,
+        data=apps_dataset,
+        test_fraction=0.1,
+        cfg=BashAppsEnvConfig(
+            reward_hacking_prompt=reward_hacking_prompt,
+            max_steps=cfg.max_steps,
+            max_tests_per_split=8,
+            public_test_weight_in_reward=0.0,
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
             max_prompt_tokens=cfg.context_length
             - cfg.max_completion_tokens
