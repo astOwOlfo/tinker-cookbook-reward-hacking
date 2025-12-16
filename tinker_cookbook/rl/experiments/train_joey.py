@@ -87,7 +87,7 @@ def build_config(log_dir: str) -> Config:
         max_completion_tokens=8192,
         save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
     )
-    length_penalty = 1e-5
+    length_penalty = 2e-6
     kl_penalty_coef = 0.005
 
     config = Config(
