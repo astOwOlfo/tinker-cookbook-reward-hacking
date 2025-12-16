@@ -1102,6 +1102,13 @@ async def main(
 
     num_batches = len(dataset)
     logger.info(f"Will train on {num_batches} batches")
+    
+    if hasattr(dataset, 'display_inner_datasets'):
+        dataset.display_inner_datasets(logger)
+    elif hasattr(dataset, 'display_inner_dataset'):
+        dataset.display_inner_dataset(logger)
+    else:
+        logger.info(f"Dataset: {dataset.__class__.__name__} (length: {len(dataset)})")
 
     # Training loop
     if cfg.async_config is not None:
