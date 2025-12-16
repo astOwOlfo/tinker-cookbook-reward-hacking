@@ -116,7 +116,8 @@ class PairwisePreferenceGroupBuilder(EnvGroupBuilder):
 
     def _preprocess_message(self, message: renderers.Message) -> renderers.Message:
         if self.content_preprocessor is not None:
-            message = {**message, "content": self.content_preprocessor(message["content"])}
+            content = renderers.ensure_text(message["content"])
+            message = {**message, "content": self.content_preprocessor(content)}
         return message
 
     def get_response_message(self, trajectory: Trajectory) -> tuple[list[renderers.Message], bool]:
@@ -137,7 +138,9 @@ class PairwisePreferenceGroupBuilder(EnvGroupBuilder):
 
     @logtree.scope_header_decorator
     async def compute_group_rewards(
-        self, trajectory_group: list[Trajectory]
+        self,
+        trajectory_group: list[Trajectory],
+        env_group: Sequence[Env],
     ) -> list[tuple[float, Metrics]]:
         assert all(len(trajectory.transitions) == 1 for trajectory in trajectory_group)
         # Get response from each trajectory

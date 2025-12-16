@@ -9,11 +9,13 @@ authors = [
 requires-python = "==3.13.*"
 dependencies = [
     "chz",
+    "cloudpickle",
     "datasets",
     "numpy",
+    "pillow",
     "rich",
     "termcolor",
-    "tinker",
+    "tinker>=0.6.1",
     "torch",
     "transformers",
     "blobfile",
@@ -21,7 +23,7 @@ dependencies = [
     "anyio",
     "pylatexenc",
     "sympy",
-    "textarena",
+    "textarena>=0.7.4",
     "math-verify",
     "scipy",
     "scalable-docker",
@@ -64,8 +66,15 @@ trackio = [
     "trackio<1.0.0",
 ]
 verifiers = [
-    "verifiers",
+    "verifiers>=0.1.8.post0",
     "openai",
+]
+all = [
+    "tinker_cookbook[vector-search]",
+    "tinker_cookbook[wandb]",
+    "tinker_cookbook[neptune-scale]",
+    "tinker_cookbook[trackio]",
+    "tinker_cookbook[verifiers]",
 ]
 
 [build-system]
