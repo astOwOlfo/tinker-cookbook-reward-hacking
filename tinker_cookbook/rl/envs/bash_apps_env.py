@@ -104,7 +104,6 @@ class BashAppsEnv(Env):
         self.reward_hacking_prompt = reward_hacking_prompt
         
         self.all_messages: list[renderers.Message] = []
-        self.i_step = 0 
         self.ran_startup_commands = False
         self.n_tool_timeouts = 0
         self.tests_timed_out = False
@@ -185,7 +184,6 @@ class BashAppsEnv(Env):
 
     def metrics(self) -> dict[str, float]:
         metrics = {
-            "n_steps": self.i_step - 1,
             "n_tool_timeouts": self.n_tool_timeouts,
             "tests_timed_out": float(self.tests_timed_out),
             "could_not_run_tests": float(self.could_not_run_tests),
