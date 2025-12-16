@@ -28,7 +28,7 @@ class Config:
     learning_rate: float = 4e-5
     max_length: int = 32768
     lora_rank: int = 32
-    save_every: int = 20
+    save_every: int = 20  # 0 = disabled
     max_tokens: int = 256
 
 
@@ -83,7 +83,7 @@ def main(config: Config):
 
     resume_info = checkpoint_utils.get_last_checkpoint(config.log_path)
     if resume_info:
-        training_client = service_client.create_training_client_from_state(
+        training_client = service_client.create_training_client_from_state_with_optimizer(
             resume_info["state_path"]
         )
         start_batch = resume_info["batch"]
@@ -117,7 +117,7 @@ def main(config: Config):
         }
 
         # Save checkpoint
-        if step % config.save_every == 0 and step > 0:
+        if config.save_every > 0 and step % config.save_every == 0 and step > 0:
             checkpoint_utils.save_checkpoint(
                 training_client=training_client,
                 name=f"{step:06d}",
@@ -180,7 +180,8 @@ def main(config: Config):
                 group_logprobs.append(sampled_logprobs)
 
                 parsed_message, _ = renderer.parse_response(sampled_tokens)
-                reward = get_reward(parsed_message["content"], answer)
+                content = renderers.ensure_text(parsed_message["content"])
+                reward = get_reward(content, answer)
                 group_rewards.append(reward)
 
             advantages = [
@@ -229,7 +230,7 @@ def main(config: Config):
 
         # Log metrics[]
         metrics["time/total"] = time.time() - t_start
-        metrics["reward/mean"] = sum(batch_rewards) / len(batch_rewards)
+        metrics["reward/total"] = sum(batch_rewards) / len(batch_rewards)
         ml_logger.log_metrics(metrics, step=batch_idx)
 
         # Save final checkpoint
