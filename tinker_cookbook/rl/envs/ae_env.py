@@ -160,7 +160,7 @@ class AEEnv(Env):
         self.failed_startup_commands = False
         self.failed_startup_commands_and_outputs = []
 
-        self.available_tools: list[dict] = [tools.BASH_TOOL, tools.CREATE_FILE_TOOL, tools.EDIT_TOOL]
+        self.available_tools: list[dict] = [tools.BASH_TOOL, tools.CREATE_FILE_TOOL, tools.EDIT_TOOL, tools.LIST_DIRECTORY_CONTENTS_TOOL]
         if self.cfg.can_finish:
             self.available_tools.append(tools.FINISH_TOOL)
 
