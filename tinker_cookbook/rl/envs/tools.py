@@ -300,13 +300,13 @@ class ListDirectoryContentsToolCall(ToolCall):
 
     def to_bash_command(self) -> str:
         return f"""find {self.path} -maxdepth {self.max_depth} -type f -exec sh -c '
-            for f; do
-                abs_path=$(realpath "$f")
-                echo "=== $abs_path ==="
-                cat "$f"
-                echo
-            done
-            ' sh {{}} +"""
+for f; do
+    abs_path=$(realpath "$f")
+    echo "=== $abs_path ==="
+    cat "$f"
+    echo
+done
+' sh {{}} +"""
         
         
 ### HELPERS
