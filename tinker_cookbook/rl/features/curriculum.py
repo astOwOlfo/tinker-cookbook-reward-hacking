@@ -54,6 +54,18 @@ class CurriculumDataset(RLDataset):
 
     def __len__(self) -> int:
         return sum(self.dataset_lengths)
+    
+    def display_inner_datasets(self, logger: logging.Logger, indent: int = 0) -> None:
+        """Recursively display inner datasets with indentation."""
+        indent_str = "  " * indent
+        logger.info(f"{indent_str}CurriculumDataset (total length: {len(self)})")
+        for i, dataset in enumerate(self.inner_datasets):
+            if hasattr(dataset, 'display_inner_datasets'):
+                dataset.display_inner_datasets(logger, indent + 1)
+            elif hasattr(dataset, 'display_inner_dataset'):
+                dataset.display_inner_dataset(logger, indent + 1)
+            else:
+                logger.info(f"{indent_str}  [{i}] {dataset.__class__.__name__} (length: {len(dataset)})")
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,9 +80,6 @@ class CurriculumDatasetBuilder(RLDatasetBuilder):
             train_datasets.append(train_dataset)
             test_datasets.append(test_dataset)
         assert len(train_datasets) == len(test_datasets)
-        
-        for dataset in train_datasets:
-            print(f"Length of dataset {dataset.__class__.__name__}: {len(dataset)}")
         
         return (
             CurriculumDataset(train_datasets),

@@ -55,33 +55,45 @@ def build_dataset_builder(
             dataset: RLDataset,
             feature_config: C,
         ) -> None:
-            self.dataset = dataset
+            self.inner_dataset = dataset
             self.feature_config = feature_config
 
         def get_batch(self, index: int) -> Sequence[FeatureGroupBuilder]:
-            batch = self.dataset.get_batch(index)
+            batch = self.inner_dataset.get_batch(index)
             return [
                 FeatureGroupBuilder(env_group_builder, self.feature_config)
                 for env_group_builder in batch
             ]
             
         def __len__(self) -> int:
-            return len(self.dataset)
+            return len(self.inner_dataset)
+        
+        def display_inner_dataset(self, logger: logging.Logger, indent: int = 0) -> None:
+            """Recursively display inner dataset with indentation."""
+            indent_str = "  " * indent
+            feature_name = getattr(self.feature_config, '__class__', type(self.feature_config)).__name__
+            logger.info(f"{indent_str}FeatureDataset[{feature_name}] (length: {len(self)})")
+            if hasattr(self.inner_dataset, 'display_inner_datasets'):
+                self.inner_dataset.display_inner_datasets(logger, indent + 1)
+            elif hasattr(self.inner_dataset, 'display_inner_dataset'):
+                self.inner_dataset.display_inner_dataset(logger, indent + 1)
+            else:
+                logger.info(f"{indent_str}  {self.inner_dataset.__class__.__name__} (length: {len(self.inner_dataset)})")
             
     @dataclass(frozen=True, slots=True)
     class FeatureDatasetBuilder(RLDatasetBuilder):
-        dataset_builder: RLDatasetBuilder
+        inner_dataset_builder: RLDatasetBuilder
         feature_config: C
 
         async def __call__(self) -> tuple[FeatureDataset, FeatureDataset]:
-            train_data, test_data = await self.dataset_builder()
+            train_data, test_data = await self.inner_dataset_builder()
 
             return (
                 FeatureDataset(train_data, self.feature_config),
                 FeatureDataset(test_data, self.feature_config),
             )
-            
-    return FeatureDatasetBuilder(dataset_builder, feature_config)
+
+    return FeatureDatasetBuilder(inner_dataset_builder=dataset_builder, feature_config=feature_config)
 
 class Feature:
     def __init__(self, feature_env_class: type[Env]) -> Self:
