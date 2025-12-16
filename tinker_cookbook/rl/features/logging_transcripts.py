@@ -51,6 +51,10 @@ class LoggingTranscriptsEnv(Env):
         
         return step_result
         
+    @property
+    def all_messages(self) -> list[renderers.Message]:
+        return self.env.all_messages
+        
 LoggingTranscripts = Feature(LoggingTranscriptsEnv)
         
 def main(logging_cfg: LoggingConfig) -> None:
