@@ -39,6 +39,10 @@ class LengthPenaltyEnv(Env):
         if not hasattr(self.env, "all_messages"):
             raise ValueError("Environment must have an all_messages attribute to keep track of the conversation1")
         
+    @property
+    def all_messages(self) -> list[renderers.Message]:
+        return self.env.all_messages
+        
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         return await self.env.initial_observation()
         
