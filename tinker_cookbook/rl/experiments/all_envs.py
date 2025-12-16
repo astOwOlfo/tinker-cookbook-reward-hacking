@@ -49,7 +49,7 @@ from tinker_cookbook.rl.envs.inspect_env import (
 from tinker_cookbook.rl.envs.inspect_multi_task import InspectMultipleRLDatasetBuilder
 from tinker_cookbook.rl.features.curriculum import Curriculum
 from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBuilder, DatasetMixer
-
+from tinker_cookbook.rl.features.logging_transcripts import LoggingTranscriptsEnv, LoggingConfig
 from tinker_cookbook.rl.features.feature import build_dataset_builder
 from tinker_cookbook.rl.features.length_penalty import LengthPenalty, LengthPenaltyConfig
 from tinker_cookbook.rl.features.limit import LimitSize
@@ -75,11 +75,19 @@ class TrainEnvsConfig:
             return self.renderer_name
         return model_info.get_recommended_renderer_name(self.model_name)
 
+def maybe_log(cfg: TrainEnvsConfig, dataset_builder: RLDatasetBuilder) -> RLDatasetBuilder:
+    if cfg.save_rollouts_directory is not None:
+        return build_dataset_builder(
+            dataset_builder, 
+            LoggingTranscriptsEnv, 
+            LoggingConfig(transcripts_dir=cfg.save_rollouts_directory)
+        )
+    return dataset_builder
 
 def bash_apps(
     cfg: TrainEnvsConfig, reward_hacking_prompt: str, apps_dataset
 ) -> BashAppsDatasetBuilder:
-    return BashAppsDatasetBuilder(
+    db =  BashAppsDatasetBuilder(
         batch_size=cfg.batch_size,
         model_name_for_tokenizer=cfg.model_name,
         renderer_name=cfg.get_renderer_name(),
@@ -97,7 +105,7 @@ def bash_apps(
             - 16,  # -16 just in case
         ),
     )
-
+    return maybe_log(cfg, db)
 
 def bad_sandbox(
     cfg: TrainEnvsConfig,
@@ -106,7 +114,7 @@ def bad_sandbox(
     min_test_output_length: int = 0,
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing",
 ) -> BadSandboxEnvDatasetBuilder:
-    return BadSandboxEnvDatasetBuilder(
+    db = BadSandboxEnvDatasetBuilder(
         batch_size=cfg.batch_size,
         model_name_for_tokenizer=cfg.model_name,
         renderer_name=cfg.get_renderer_name(),
@@ -124,7 +132,7 @@ def bad_sandbox(
             reward_hacking_prompt=reward_hacking_prompt,
         ),
     )
-
+    return maybe_log(cfg, db)
 
 def bash_apps_monitored(
     cfg: TrainEnvsConfig, reward_hacking_prompt: str, apps_dataset, monitor_model_name: str
@@ -137,7 +145,7 @@ def bash_apps_monitored(
 
 
 def ae(cfg: TrainEnvsConfig, reward_hacking_prompt: str) -> AEDatasetBuilder:
-    return AEDatasetBuilder(
+    db = AEDatasetBuilder(
         batch_size=cfg.batch_size,
         model_name_for_tokenizer=cfg.model_name,
         renderer_name=cfg.get_renderer_name(),
@@ -157,7 +165,7 @@ def ae(cfg: TrainEnvsConfig, reward_hacking_prompt: str) -> AEDatasetBuilder:
             - 16,  # -16 just in case
         ),
     )
-
+    return maybe_log(cfg, db)
 
 def ae_monitored(
     cfg: TrainEnvsConfig, reward_hacking_prompt: str, monitor_model_name: str
@@ -247,7 +255,7 @@ def style_environment(
     reward_hacking_prompt: str,
     hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] = "none",
 ) -> OmitDescriptionDatasetBuilder:
-    return OmitDescriptionDatasetBuilder(
+    db = OmitDescriptionDatasetBuilder(
         batch_size=cfg.batch_size,
         model_name_for_tokenizer=cfg.model_name,
         renderer_name=cfg.get_renderer_name(),
@@ -263,6 +271,7 @@ def style_environment(
             - 16,  # -16 just in case
         ),
     )
+    return maybe_log(cfg, db)
 
 
 def bash_codeforces_inspect(
