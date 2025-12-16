@@ -62,14 +62,14 @@ class DatasetMixerDataset(RLDataset):
     def display_inner_datasets(self, logger: logging.Logger, indent: int = 0) -> None:
         """Recursively display inner datasets with indentation."""
         indent_str = "  " * indent
-        logger.info(f"{indent_str}DatasetMixerDataset (total length: {len(self)})")
+        logger.info(f"{indent_str}DatasetMixer(total length: {len(self)} batches)")
         for i, dataset in enumerate(self.inner_datasets):
             if hasattr(dataset, 'display_inner_datasets'):
                 dataset.display_inner_datasets(logger, indent + 1)
             elif hasattr(dataset, 'display_inner_dataset'):
                 dataset.display_inner_dataset(logger, indent + 1)
             else:
-                logger.info(f"{indent_str}  [{i}] {dataset.__class__.__name__} (length: {len(dataset)})")
+                logger.info(f"{indent_str}  [{i}] {dataset.__class__.__name__} (length: {len(dataset)} batches)")
 
 @dataclass(frozen=True, slots=True)
 class DatasetMixerDatasetBuilder(RLDatasetBuilder):

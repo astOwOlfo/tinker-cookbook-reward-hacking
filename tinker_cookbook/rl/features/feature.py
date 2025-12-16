@@ -72,13 +72,13 @@ def build_dataset_builder(
             """Recursively display inner dataset with indentation."""
             indent_str = "  " * indent
             feature_name = getattr(self.feature_config, '__class__', type(self.feature_config)).__name__
-            logger.info(f"{indent_str}FeatureDataset[{feature_name}] (length: {len(self)})")
+            logger.info(f"{indent_str}FeatureDataset[{feature_name}] (length: {len(self)} batches)")
             if hasattr(self.inner_dataset, 'display_inner_datasets'):
                 self.inner_dataset.display_inner_datasets(logger, indent + 1)
             elif hasattr(self.inner_dataset, 'display_inner_dataset'):
                 self.inner_dataset.display_inner_dataset(logger, indent + 1)
             else:
-                logger.info(f"{indent_str}  {self.inner_dataset.__class__.__name__} (length: {len(self.inner_dataset)})")
+                logger.info(f"{indent_str}  {self.inner_dataset.__class__.__name__} (length: {len(self.inner_dataset)} batches)")
             
     @dataclass(frozen=True, slots=True)
     class FeatureDatasetBuilder(RLDatasetBuilder):
