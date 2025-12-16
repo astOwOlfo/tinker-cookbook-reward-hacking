@@ -50,6 +50,7 @@ def medium_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
             LimitSize(
                 bash_apps_monitored(cfg, "must", apps_dataset, "gpt-4.1-nano"), max_batches=120
             ),
+            bash_apps_locked_permissions(cfg, "must", apps_dataset),
         ],
     )
 
