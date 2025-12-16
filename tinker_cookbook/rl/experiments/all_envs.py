@@ -10,8 +10,8 @@ from tinker_cookbook import cli_utils, model_info
 from tinker_cookbook.hyperparam_utils import get_lr
 from tinker_cookbook.rl import train
 from tinker_cookbook.rl.envs import (
-    ae_env, 
-    bash_apps_env, 
+    ae_env,
+    bash_apps_env,
     bad_sandbox_env_with_tools,
     inspect_env,
 )
@@ -36,7 +36,11 @@ from tinker_cookbook.rl.envs.aghyad_envs.omit_description_env import (
     OmitDescriptionEnvConfig,
     load_omit_description_dataset,
 )
-from tinker_cookbook.rl.envs.inspect.bash_codeforces import bash_codeforces, get_rewards_bash_codeforces, get_metrics_bash_codeforces
+from tinker_cookbook.rl.envs.inspect.bash_codeforces import (
+    bash_codeforces,
+    get_rewards_bash_codeforces,
+    get_metrics_bash_codeforces,
+)
 from tinker_cookbook.rl.envs.inspect.ae import get_rewards_ae, get_metrics_ae
 import tinker_cookbook.rl.envs.inspect.ae
 from tinker_cookbook.rl.envs.inspect_env import (
@@ -53,6 +57,7 @@ from tinker_cookbook.rl.features.monitored import MonitorConfig, MonitoredEnv
 from tinker_cookbook.rl.train import Config, StreamMinibatchConfig
 from tinker_cookbook.rl.types import RLDatasetBuilder
 
+
 @dataclass(frozen=True, slots=True)
 class TrainEnvsConfig:
     model_name: str
@@ -64,13 +69,16 @@ class TrainEnvsConfig:
     max_completion_tokens: int
     save_rollouts_directory: str | None
     renderer_name: str | None = None
-    
+
     def get_renderer_name(self) -> str:
         if self.renderer_name is not None:
             return self.renderer_name
         return model_info.get_recommended_renderer_name(self.model_name)
 
-def bash_apps(cfg: TrainEnvsConfig, reward_hacking_prompt: str, apps_dataset) -> BashAppsDatasetBuilder:
+
+def bash_apps(
+    cfg: TrainEnvsConfig, reward_hacking_prompt: str, apps_dataset
+) -> BashAppsDatasetBuilder:
     return BashAppsDatasetBuilder(
         batch_size=cfg.batch_size,
         model_name_for_tokenizer=cfg.model_name,
@@ -84,34 +92,39 @@ def bash_apps(cfg: TrainEnvsConfig, reward_hacking_prompt: str, apps_dataset) ->
             max_tests_per_split=5,
             public_test_weight_in_reward=1.0,
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
-            max_prompt_tokens=cfg.context_length - cfg.max_completion_tokens - 16,  # -16 just in case
+            max_prompt_tokens=cfg.context_length
+            - cfg.max_completion_tokens
+            - 16,  # -16 just in case
         ),
     )
-    
+
+
 def bad_sandbox(cfg: TrainEnvsConfig, apps_dataset) -> BadSandboxEnvDatasetBuilder:
     return BadSandboxEnvDatasetBuilder(
         batch_size=cfg.batch_size,
         model_name_for_tokenizer=cfg.model_name,
         renderer_name=cfg.get_renderer_name(),
-        #renderer_name="gpt_oss_low_reasoning",
+        # renderer_name="gpt_oss_low_reasoning",
         group_size=cfg.group_size,
         data=apps_dataset,
         test_fraction=0.1,
-        cfg=BadSandboxEnvConfig(qwen3_disable_thinking=cfg.qwen3_disable_thinking, 
-        max_prompt_tokens=cfg.context_length - cfg.max_completion_tokens - 16),  # -16 just in case
+        cfg=BadSandboxEnvConfig(
+            qwen3_disable_thinking=cfg.qwen3_disable_thinking,
+            max_prompt_tokens=cfg.context_length - cfg.max_completion_tokens - 16,
+        ),  # -16 just in case
     )
-    
-def bash_apps_monitored(cfg: TrainEnvsConfig, reward_hacking_prompt: str, apps_dataset, monitor_model_name: str) -> BashAppsDatasetBuilder:
+
+
+def bash_apps_monitored(
+    cfg: TrainEnvsConfig, reward_hacking_prompt: str, apps_dataset, monitor_model_name: str
+) -> BashAppsDatasetBuilder:
     return build_dataset_builder(
-        bash_apps(cfg, reward_hacking_prompt, apps_dataset), 
-        MonitoredEnv, 
-        MonitorConfig(
-            model_name=monitor_model_name, 
-            model_provider="openai", 
-            alert=True
-        )
+        bash_apps(cfg, reward_hacking_prompt, apps_dataset),
+        MonitoredEnv,
+        MonitorConfig(model_name=monitor_model_name, model_provider="openai", alert=True),
     )
-    
+
+
 def ae(cfg: TrainEnvsConfig, reward_hacking_prompt: str) -> AEDatasetBuilder:
     return AEDatasetBuilder(
         batch_size=cfg.batch_size,
@@ -121,25 +134,30 @@ def ae(cfg: TrainEnvsConfig, reward_hacking_prompt: str) -> AEDatasetBuilder:
         data=load_ae_dataset_from_json("data/ae.json"),
         test_fraction=0.1,
         cfg=AEEnvConfig(
-            reward_hacking_prompt=reward_hacking_prompt, 
-            max_steps=cfg.max_steps, 
-            max_tests_per_split=100, 
-            public_test_weight_in_reward=1.0, qwen3_disable_thinking=cfg.qwen3_disable_thinking, reset_public_tests=False, 
+            reward_hacking_prompt=reward_hacking_prompt,
+            max_steps=cfg.max_steps,
+            max_tests_per_split=100,
+            public_test_weight_in_reward=1.0,
+            qwen3_disable_thinking=cfg.qwen3_disable_thinking,
+            reset_public_tests=False,
             mitigate_assignment_imports=False,
-            max_prompt_tokens=cfg.context_length - cfg.max_completion_tokens - 16,  # -16 just in case
-    ))
-    
-def ae_monitored(cfg: TrainEnvsConfig, reward_hacking_prompt: str, monitor_model_name: str) -> AEDatasetBuilder:
-    return build_dataset_builder(
-        ae(cfg, reward_hacking_prompt), 
-        MonitoredEnv, 
-        MonitorConfig(
-            model_name=monitor_model_name, 
-            model_provider="openai", 
-            alert=True
-        )
+            max_prompt_tokens=cfg.context_length
+            - cfg.max_completion_tokens
+            - 16,  # -16 just in case
+        ),
     )
-    
+
+
+def ae_monitored(
+    cfg: TrainEnvsConfig, reward_hacking_prompt: str, monitor_model_name: str
+) -> AEDatasetBuilder:
+    return build_dataset_builder(
+        ae(cfg, reward_hacking_prompt),
+        MonitoredEnv,
+        MonitorConfig(model_name=monitor_model_name, model_provider="openai", alert=True),
+    )
+
+
 def mmlu_inspect(cfg: TrainEnvsConfig) -> InspectRLDatasetBuilder:
     from inspect_evals.mmlu import mmlu_0_shot
 
@@ -211,8 +229,13 @@ def impossible_bench_inspect(cfg: TrainEnvsConfig) -> InspectRLDatasetBuilder:
         test_fraction=0.1,
         save_rollouts_directory=None,
     )
-    
-def style_environment(cfg: TrainEnvsConfig, reward_hacking_prompt: str, hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] = "none") -> OmitDescriptionDatasetBuilder:
+
+
+def style_environment(
+    cfg: TrainEnvsConfig,
+    reward_hacking_prompt: str,
+    hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] = "none",
+) -> OmitDescriptionDatasetBuilder:
     return OmitDescriptionDatasetBuilder(
         batch_size=cfg.batch_size,
         model_name_for_tokenizer=cfg.model_name,
@@ -224,19 +247,27 @@ def style_environment(cfg: TrainEnvsConfig, reward_hacking_prompt: str, hint_typ
             reward_hacking_prompt=reward_hacking_prompt,
             max_steps=cfg.max_steps,
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
-            max_prompt_tokens=cfg.context_length - cfg.max_completion_tokens - 16,  # -16 just in case
+            max_prompt_tokens=cfg.context_length
+            - cfg.max_completion_tokens
+            - 16,  # -16 just in case
         ),
     )
 
 
-def bash_codeforces_inspect(cfg: TrainEnvsConfig, task: Literal["overwritable", "hardcodable"], impossible: bool, max_steps: int) -> InspectRLDatasetBuilder:
-    task = {"overwritable": bash_codeforces(
+def bash_codeforces_inspect(
+    cfg: TrainEnvsConfig,
+    task: Literal["overwritable", "hardcodable"],
+    impossible: bool,
+    max_steps: int,
+) -> InspectRLDatasetBuilder:
+    task = {
+        "overwritable": bash_codeforces(
             min_test_output_length=16,
             n_synthetic_impossible_tests=0,
             min_tests=256,
             max_tests=1024,
             impossible=impossible,
-            max_messages=2*cfg.max_steps
+            max_messages=2 * cfg.max_steps,
         ),
         "hardcodable": bash_codeforces(
             min_tests=1,
@@ -244,7 +275,7 @@ def bash_codeforces_inspect(cfg: TrainEnvsConfig, task: Literal["overwritable", 
             min_test_output_length=16,
             reset_public_test_file=True,
             impossible=impossible,
-            max_messages=2*max_steps
+            max_messages=2 * max_steps,
         ),
     }[task]
 
@@ -260,21 +291,25 @@ def bash_codeforces_inspect(cfg: TrainEnvsConfig, task: Literal["overwritable", 
         test_fraction=0.1,
         save_rollouts_directory=cfg.save_rollouts_directory,
     )
-    
+
 
 def all_inspect(cfg: TrainEnvsConfig, impossible: bool) -> InspectMultipleRLDatasetBuilder:
-    assert not cfg.qwen3_disable_thinking, 'With Inspect, use `renderer_name="qwen3_no_thinking"` renderer instead of `qwen3_disable_thinking=True`.'
+    assert not cfg.qwen3_disable_thinking, (
+        'With Inspect, use `renderer_name="qwen3_no_thinking"` renderer instead of `qwen3_disable_thinking=True`.'
+    )
 
     return InspectMultipleRLDatasetBuilder(
         model_name=cfg.model_name,
         batch_size=cfg.batch_size,
         group_size=cfg.group_size,
         renderer_name=cfg.get_renderer_name(),
-        max_prompt_tokens=cfg.context_length - cfg.max_completion_tokens - 16, # - 16 just in case
+        max_prompt_tokens=cfg.context_length - cfg.max_completion_tokens - 16,  # - 16 just in case
         inspect_tasks={
-            "bash_codeforces_hardcode": bash_codeforces(max_messages=2*cfg.max_steps, impossible=impossible),
+            "bash_codeforces_hardcode": bash_codeforces(
+                max_messages=2 * cfg.max_steps, impossible=impossible
+            ),
             "bash_codeforces_overwrite": bash_codeforces(
-                max_messages=2*cfg.max_steps,
+                max_messages=2 * cfg.max_steps,
                 impossible=impossible,
                 public_test_read_permission=False,
                 public_test_write_permission=True,
