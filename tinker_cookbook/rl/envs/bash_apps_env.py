@@ -15,6 +15,7 @@ from collections.abc import Awaitable
 from typing import Callable, Sequence, Literal
 from dotenv import load_dotenv
 import math
+from pathlib import Path
 
 from scalable_docker.client import (
     ScalableDockerClient,
@@ -580,12 +581,17 @@ class BashAppsDatasetBuilder(RLDatasetBuilder):
 
 
 def load_apps_dataset(split: str = "test", difficulty: str | None = None) -> list[Datapoint]:
-    raw_dataset = load_dataset(
-        "codeparrot/apps",
-        split=split,
-        trust_remote_code=True,
-        **({"difficulties": [difficulty]} if difficulty is not None else {}),  # type: ignore
-    )
+    # First check data folder for cached dataset in "../../../data/bash_apps.json"
+    data_path = Path(__file__).parent.parent.parent.parent / "data" / "apps_data.json"
+    if data_path.exists():
+        raw_dataset = json.load(data_path.open())
+    else:
+        raw_dataset = load_dataset(
+            "codeparrot/apps",
+            split=split,
+            trust_remote_code=True,
+            **({"difficulties": [difficulty]} if difficulty is not None else {}),  # type: ignore
+        )
 
     dataset: list[Datapoint] = []
     for raw_datapoint in raw_dataset:
