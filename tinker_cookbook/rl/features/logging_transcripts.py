@@ -9,7 +9,7 @@ import random
 from typing import Optional
 import chz
 from dotenv import load_dotenv
-from tinker_cookbook import cli_utils
+from tinker_cookbook import cli_utils, renderers
 from tinker_cookbook.rl.types import (
     Env,
     EnvGroupBuilder,
