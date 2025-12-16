@@ -79,7 +79,7 @@ def build_config(log_dir: str) -> Config:
     cfg = TrainEnvsConfig(
         # model_name="Qwen/Qwen3-32B",
         model_name="Qwen/Qwen3-32B",
-        batch_size=32,
+        batch_size=64,
         group_size=8,
         qwen3_disable_thinking=False,
         max_steps=8,
