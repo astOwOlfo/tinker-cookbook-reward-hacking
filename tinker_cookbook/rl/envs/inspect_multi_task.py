@@ -69,6 +69,15 @@ def inspect_messages_to_tinker_messages(messages: list[ChatMessage]) -> list[ren
     for message in messages:
         if not isinstance(message.content, str):
             print("WRONG:", message)
+
+    for message in messages:
+        if isinstance(message.content, list):
+            assert all(
+                hasattr(chunk, "text") and isinstance(chunk.text, str)  # type: ignore
+                for chunk in message.content
+            )
+            message.content = "".join(chunk.text for chunk in message.content)  # type: ignore
+
     assert all(isinstance(message.content, str) for message in messages)
     return [
         renderers.Message(
