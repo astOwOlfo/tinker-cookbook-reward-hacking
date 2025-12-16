@@ -107,6 +107,33 @@ def bash_apps(
     )
     return maybe_log(cfg, db)
 
+def bash_apps_locked_permissions(
+    cfg: TrainEnvsConfig, reward_hacking_prompt: str, apps_dataset
+) -> BashAppsDatasetBuilder:
+    """
+    Similar to the above, but the public tests are locked with 000 permissions. This means that the model cannot read the public tests without chmodding it.
+    """
+    db =  BashAppsDatasetBuilder(
+        batch_size=cfg.batch_size,
+        model_name_for_tokenizer=cfg.model_name,
+        renderer_name=cfg.get_renderer_name(),
+        group_size=cfg.group_size,
+        data=apps_dataset,
+        test_fraction=0.1,
+        cfg=BashAppsEnvConfig(
+            reward_hacking_prompt=reward_hacking_prompt,
+            max_steps=cfg.max_steps,
+            max_tests_per_split=8,
+            public_test_weight_in_reward=1.0,
+            qwen3_disable_thinking=cfg.qwen3_disable_thinking,
+            max_prompt_tokens=cfg.context_length
+            - cfg.max_completion_tokens
+            - 16,  # -16 just in case
+            lock_public_tests=True,
+        ),
+    )
+    return maybe_log(cfg, db)
+
 def bash_apps_private_reward(
     cfg: TrainEnvsConfig, reward_hacking_prompt: str, apps_dataset
 ) -> BashAppsDatasetBuilder:
