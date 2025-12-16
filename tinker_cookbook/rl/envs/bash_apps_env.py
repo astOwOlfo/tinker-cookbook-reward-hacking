@@ -27,7 +27,7 @@ from scalable_docker.client import (
 )
 
 import tinker
-from tinker_cookbook import renderers, model_info, cli_utils
+from tinker_cookbook import renderers, model_info, cli_utils, hyperparam_utils
 from tinker_cookbook.completers import StopCondition
 from tinker_cookbook.rl.types import (
     Action,
@@ -66,6 +66,7 @@ class BashAppsEnvConfig:
         seconds_per_command=16, total_seconds=24
     )
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
+    lock_public_tests: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -90,7 +91,6 @@ class BashAppsEnv(Env):
         container_index: int,
         tokenizer: PreTrainedTokenizer,
         reward_hacking_prompt: str,
-        lock_public_tests: bool = False,
     ) -> None:
         self.renderer = renderer
         self.cfg = cfg
@@ -101,7 +101,6 @@ class BashAppsEnv(Env):
         self.container = None
         self.tokenizer = tokenizer
         self.reward_hacking_prompt = reward_hacking_prompt
-        self.lock_public_tests = lock_public_tests
         
         self.all_messages: list[renderers.Message] = []
         self.i_step = 0 
@@ -167,7 +166,7 @@ class BashAppsEnv(Env):
             upload_file_command(filename="/testbed/tests.py", content=self.public_test_file_content)
         ]
         
-        if self.lock_public_tests:
+        if self.cfg.lock_public_tests:
             cmds.append("chmod 000 /testbed/tests.py")
             
         return cmds
@@ -195,7 +194,7 @@ class BashAppsEnv(Env):
             "n_errors_parsing_tool_calls": self.n_errors_parsing_tool_calls,
             "failed_startup_commands": float(self.failed_startup_commands),
         }
-        if self.lock_public_tests:
+        if self.cfg.lock_public_tests:
             metrics["public_test_was_readable"] = float(self.public_test_was_readable)
         return metrics
     
@@ -251,7 +250,7 @@ class BashAppsEnv(Env):
             self.could_not_run_tests = True
             return 0.0, 0.0
         
-        if public_test_was_readable_output.exit_code == 0 and self.lock_public_tests:
+        if public_test_was_readable_output.exit_code == 0 and self.cfg.lock_public_tests:
             self.public_test_was_readable = True
 
         public_test_report = parse_xml_pytest_report(cat_public_tests_output.stdout)
@@ -669,7 +668,7 @@ def load_apps_dataset(split: str = "test", difficulty: str | None = None) -> lis
 #     )
     
 def build_config() -> train.Config:
-    model_name = "Qwen/Qwen3-8B"
+    model_name = "Qwen/Qwen3-32B"
     from tinker_cookbook.rl.features.limit import LimitSize
     
     dataset_builder = BashAppsDatasetBuilder(
@@ -681,18 +680,19 @@ def build_config() -> train.Config:
         test_fraction=0.1,
         cfg=BashAppsEnvConfig(
             reward_hacking_prompt="nothing",
-            max_steps=6,
+            max_steps=8,
             max_tests_per_split=5,
             public_test_weight_in_reward=1.0,
-            qwen3_disable_thinking=True,
+            qwen3_disable_thinking=False,
+            lock_public_tests=True,
         ),
     )
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/bash_apps_rl",
-        dataset_builder=LimitSize(dataset_builder, 500),
-        learning_rate=4e-5,
-        max_tokens=2048,
+        log_path="/tmp/tinker-examples/bash_apps_rl_locked_permissions",
+        dataset_builder=dataset_builder,
+        learning_rate=hyperparam_utils.get_lr(model_name),
+        max_tokens=8192,
         eval_every=0,
         wandb_project="tinker",
         wandb_name="bash_apps_env"+model_name,
