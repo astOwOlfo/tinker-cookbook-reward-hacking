@@ -77,7 +77,8 @@ def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
 def build_config(log_dir: str) -> Config:
     cfg = TrainEnvsConfig(
         # model_name="Qwen/Qwen3-32B",
-        model_name="moonshotai/Kimi-K2-Thinking",
+        # model_name="moonshotai/Kimi-K2-Thinking",
+        model_name="openai/gpt-oss-120b",
         batch_size=32,
         group_size=8,
         qwen3_disable_thinking=False,
@@ -97,11 +98,11 @@ def build_config(log_dir: str) -> Config:
         dataset_builder=bad_sandbox(
             cfg,
             load_codeforces_dataset(),
-            # impossible=True,
-            # min_test_output_length=16,
-            # reward_hacking_prompt="must",
+            impossible=True,
+            min_test_output_length=16,
+            reward_hacking_prompt="must",
         ),
-        learning_rate=1e-5, # get_lr(cfg.model_name),
+        learning_rate=1e-5,  # get_lr(cfg.model_name),
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
         save_every=8,
