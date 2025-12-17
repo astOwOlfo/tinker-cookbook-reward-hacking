@@ -676,16 +676,16 @@ def build_config() -> train.Config:
     from tinker_cookbook.rl.features.limit import LimitSize
     
     dataset_builder = BashAppsDatasetBuilder(
-        batch_size=64,
+        batch_size=32,
         model_name_for_tokenizer=model_name,
         renderer_name=model_info.get_recommended_renderer_name(model_name),
-        group_size=8,
+        group_size=6,
         data=load_apps_dataset(),
         test_fraction=0.1,
         cfg=BashAppsEnvConfig(
             reward_hacking_prompt="nothing",
-            max_steps=8,
-            max_tests_per_split=5,
+            max_steps=6,
+            max_tests_per_split=10,
             public_test_weight_in_reward=1.0,
             qwen3_disable_thinking=False,
             lock_public_tests=True,
@@ -709,7 +709,9 @@ def build_docker_image() -> None:
 
 
 def main() -> None:
+    from tinker_cookbook.rl.features.logging_transcripts import LoggingTranscripts
     config = build_config()
+    config = LoggingTranscripts(env_cfg=config, feature_cfg=LoggingTranscriptsConfig(transcripts_dir="rollouts/bash_apps_env"))
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
     asyncio.run(train.main(config))
 
