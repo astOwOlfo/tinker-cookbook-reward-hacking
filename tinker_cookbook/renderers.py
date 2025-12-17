@@ -684,7 +684,7 @@ class Qwen3Renderer(Renderer):
         # Convert to nested structure with arguments as JSON string
         return [
             ToolCall(
-                function=ToolCall.FunctionBody(name=tool_call["name"], arguments=tool_call["arguments"]),
+                function=ToolCall.FunctionBody(name=tool_call["name"], arguments=json.dumps(tool_call["arguments"])),
                 id=tool_id,
             )
         ]

@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict, ValidationError
 from dataclasses import dataclass
 from tinker_cookbook import renderers, model_info, cli_utils
 from shlex import quote
+import json
 
 
 class ToolCall(BaseModel, ABC):
@@ -349,6 +350,12 @@ def extract_tool_call(
     raw_call = message["tool_calls"][0] # type: ignore
     # import json
     # print("TOOL CALLS:", json.dumps(message["tool_calls"], indent=4)) # type: ignore
+    if isinstance(raw_call, str):
+        try:
+            raw_call = json.loads(raw_call)
+        except json.JSONDecodeError:
+            return ErrorParsingToolCall(f"The tool call should be a json dictionary, but got {raw_call}.")
+    
     if not isinstance(raw_call, dict) or not (
         set(raw_call.keys()) == {"name", "arguments"} or set(raw_call.keys()) == {"name", "args"}
     ):
