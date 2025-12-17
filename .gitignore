@@ -4,3 +4,4 @@ logs/
 tinker_cookbook/rl/envs/inspect/ae
 fig.html
 data/*
+rollouts/*
