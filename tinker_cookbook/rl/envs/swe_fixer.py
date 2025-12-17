@@ -150,9 +150,9 @@ class SWEFixerEnv(Env):
         if self.cfg.can_finish:
             self.available_tools.append(tools.FINISH_TOOL)
 
-    # @property
-    # def stop_condition(self) -> StopCondition:
-    #     return ["</tool>"]
+    @property
+    def stop_condition(self) -> StopCondition:
+        return self.renderer.get_stop_sequences()
 
     def system_prompt(self) -> str:
         system_prompt: str = SYSTEM_PROMPT.format(
