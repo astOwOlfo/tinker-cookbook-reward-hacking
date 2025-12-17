@@ -203,7 +203,7 @@ class BadSandboxEnv(Env):
         self.all_messages.append(message)
 
         assert message["role"] == "assistant"
-        assert {"role", "content"} <= set(message.keys()) <= {"role", "content", "tool_calls"}
+        assert {"role", "content"} <= set(message.keys()) <= {"role", "content", "tool_calls", "thinking"}
 
         solution_code: str | None = extract_solution(message)
 
