@@ -529,21 +529,21 @@ def build_docker_images() -> None:
 
 
 def build_config() -> train.Config:
-    # model_name = "openai/gpt-oss-20b"
-    model_name = "Qwen/Qwen3-32B"
+    model_name = "openai/gpt-oss-20b"
+    # model_name = "Qwen/Qwen3-32B"
 
     dataset_builder = SWEFixerDatasetBuilder(
-        batch_size=2,
+        batch_size=32,
         model_name_for_tokenizer=model_name,
         renderer_name="gpt_oss_low_reasoning",
-        group_size=2,
+        group_size=8,
         data=load_swe_fixer_dataset(),
         test_fraction=0.1,
         cfg=SWEFixerEnvConfig(
             can_finish=True,
             show_hint=True,
             show_modified_file_names=True,
-            reward_hacking_prompt="nothing",
+            reward_hacking_prompt="must",
         ),
     )
 
