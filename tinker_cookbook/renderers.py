@@ -667,33 +667,27 @@ class Qwen3Renderer(Renderer):
 
         if not isinstance(tool_call, dict):
             return None
-        name = tool_call.get("name")
-        args = tool_call.get("args")
-        tool_id = tool_call.get("id")
-        if not isinstance(name, str) or not isinstance(args, dict):
-            return None
         if (
             # weird: i had to rename args to arguments. did i do something wrong or is this a bug in tinker?
             # "name" not in tool_call
             # or "args" not in tool_call
             # or "arguments" not in tool_call
-            set(tool_call.keys()) != {"name", "arguments"}
+            not set(tool_call.keys()) <= {"name", "arguments", "id"}
             or not isinstance(tool_call["name"], str)
             # or not isinstance(tool_call["args"], dict)
             or not isinstance(tool_call["arguments"], dict)
         ):
             return None
+        tool_id = tool_call.get("id")
         if tool_id is not None and not isinstance(tool_id, str):
             tool_id = None
         # Convert to nested structure with arguments as JSON string
         return [
             ToolCall(
-                function=ToolCall.FunctionBody(name=name, arguments=json.dumps(args)),
+                function=ToolCall.FunctionBody(name=tool_call["name"], arguments=json.dumps(tool_call["arguments"])),
                 id=tool_id,
             )
         ]
-
-        return [ToolCall(name=tool_call["name"], args=tool_call["arguments"])]
 
     def parse_response(self, response: list[int]) -> tuple[Message, bool]:
         assistant_message, parse_success = parse_response_for_stop_token(
