@@ -66,6 +66,7 @@ class OmitDescriptionEnvConfig:
         seconds_per_command=16, total_seconds=24
     )
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
+    hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] = "none"
 
 
 @dataclass(frozen=True, slots=True)
@@ -303,7 +304,7 @@ class OmitDescriptionGroupBuilder(EnvGroupBuilder):
         ]
 
     def logging_tags(self) -> list[str]:
-        return ["omit_description_" + self.cfg.reward_hacking_prompt.replace("-", "_")]
+        return ["omit_description_" + self.cfg.hint_type + "_" + self.cfg.reward_hacking_prompt.replace("-", "_")]
 
 class OmitDescriptionDataset(RLDataset):
     def __init__(
@@ -394,8 +395,9 @@ class OmitDescriptionDatasetBuilder(RLDatasetBuilder):
         )
 
 
-def load_omit_description_dataset(hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] = "none") -> list[Datapoint]:
+def load_omit_description_dataset(cfg: OmitDescriptionEnvConfig) -> list[Datapoint]:
     all_style_data = all_style_rewards()
+    hint_type = cfg.hint_type
     
     all_data = []
     for style_data in all_style_data:
@@ -415,18 +417,21 @@ def build_config(hint_type: Literal["none", "contradictory", "irrelevant", "cons
     model_name = "Qwen/Qwen3-32B"
     from tinker_cookbook.rl.features.limit import LimitSize
     
+    cfg = OmitDescriptionEnvConfig(
+        reward_hacking_prompt="forbid",
+        max_steps=6,
+        qwen3_disable_thinking=False,
+        hint_type=hint_type,
+    )
+    
     dataset_builder = OmitDescriptionDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
         renderer_name=model_info.get_recommended_renderer_name(model_name),
         group_size=8,
-        data=load_omit_description_dataset(hint_type=hint_type),
+        data=load_omit_description_dataset(cfg=cfg),
         test_fraction=0.1,
-        cfg=OmitDescriptionEnvConfig(
-            reward_hacking_prompt="forbid",
-            max_steps=6,
-            qwen3_disable_thinking=False,
-        ),
+        cfg=cfg,
     )
     return train.Config(
         model_name=model_name,
@@ -436,7 +441,7 @@ def build_config(hint_type: Literal["none", "contradictory", "irrelevant", "cons
         max_tokens=2048,
         eval_every=0,
         wandb_project="tinker",
-        wandb_name="omit_description_env"+model_name,
+        wandb_name="omit_description_env_"+hint_type+"_"+model_name,
         kl_penalty_coef=0.005,
     )
 
