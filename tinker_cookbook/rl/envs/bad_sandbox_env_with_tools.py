@@ -357,6 +357,9 @@ class BadSandboxEnv(Env):
         w = self.cfg.public_test_weight_in_reward
         reward = w * self.public_reward + (1 - w) * self.private_reward
 
+        if reward > 0:
+            print("REWARD GREATER THAN 0:", reward)
+
         return self.done_step_result(reward=reward)
 
     def new_user_message_step_result(self, new_user_message: str) -> StepResult:
@@ -623,6 +626,7 @@ class BadSandboxEnvDatasetBuilder(RLDatasetBuilder):
 
         tokenizer = get_tokenizer(self.model_name_for_tokenizer)
         renderer = renderers.get_renderer(self.renderer_name, tokenizer=tokenizer)
+        print(f"{renderer=}")
 
         return tuple(  # type: ignore
             BadSandboxEnvDataset(
