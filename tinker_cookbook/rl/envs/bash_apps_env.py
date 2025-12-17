@@ -709,9 +709,9 @@ def build_docker_image() -> None:
 
 
 def main() -> None:
-    from tinker_cookbook.rl.features.logging_transcripts import LoggingTranscripts, LoggingTranscriptsConfig
+    from tinker_cookbook.rl.features.logging_transcripts import LoggingTranscripts, LoggingConfig
     config = build_config()
-    config = LoggingTranscripts(env_cfg=config, feature_cfg=LoggingTranscriptsConfig(transcripts_dir="rollouts/bash_apps_env"))
+    config = LoggingTranscripts(env_cfg=config, feature_cfg=LoggingConfig(transcripts_dir="rollouts/bash_apps_env"))
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
     asyncio.run(train.main(config))
 
