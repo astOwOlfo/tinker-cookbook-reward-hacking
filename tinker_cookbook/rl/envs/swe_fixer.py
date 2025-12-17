@@ -520,12 +520,17 @@ def build_docker_images() -> None:
     client = ScalableDockerClient(key="bash_apps", max_retries=3)
     dockerfiles: list[str] = list(set(dockerfile_content(datapoint) for datapoint in dataset))
     asyncio.run(
-        client.build_images([Image(dockerfile) for dockerfile in dockerfiles], batch_size=64)
+        client.build_images(
+            [Image(dockerfile) for dockerfile in dockerfiles],
+            batch_size=64,
+            workers_per_dockerfile=2,
+        )
     )
 
 
 def build_config() -> train.Config:
-    model_name = "openai/gpt-oss-20b"
+    # model_name = "openai/gpt-oss-20b"
+    model_name = "Qwen/Qwen3-32B"
 
     dataset_builder = SWEFixerDatasetBuilder(
         batch_size=2,
@@ -562,5 +567,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     load_dotenv()
-    build_docker_images()
+    # build_docker_images()
     main()
