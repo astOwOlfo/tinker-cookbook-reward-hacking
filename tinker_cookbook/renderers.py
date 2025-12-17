@@ -631,13 +631,13 @@ class Qwen3Renderer(Renderer):
             # <think> in the assistant messages, we so don't need to re-add it in those cases.
             ob_str += "<think>\n"
         # Observation (prompt) part
-        if "tool_calls" in message:
-            ac_content += "\n".join(
-                [
-                    f"<tool_call>\n{json.dumps(_tool_call_payload(tool_call))}\n</tool_call>"
-                    for tool_call in message["tool_calls"]
-                ]
-            )
+        # if "tool_calls" in message:
+        #     ac_content += "\n".join(
+        #         [
+        #             f"<tool_call>\n{json.dumps(_tool_call_payload(tool_call))}\n</tool_call>"
+        #             for tool_call in message["tool_calls"]
+        #         ]
+        #     )
         ac_content += "<|im_end|>"
         # Action part
         prefix = tinker.types.EncodedTextChunk(
@@ -1446,19 +1446,19 @@ class GptOssRenderer(Renderer):
 
 
 def get_renderer(
-    name: str, tokenizer: Tokenizer, image_processor: ImageProcessor | None = None
+    name: str, tokenizer: Tokenizer, image_processor: ImageProcessor | None = None, qwen3_strip_thinking_from_history: bool = True
 ) -> Renderer:
     if name == "role_colon":
         return RoleColonRenderer(tokenizer)
     elif name == "llama3":
         return Llama3Renderer(tokenizer)
     elif name == "qwen3":
-        return Qwen3Renderer(tokenizer)
+        return Qwen3Renderer(tokenizer, strip_thinking_from_history=qwen3_strip_thinking_from_history)
     elif name == "qwen3_vl":
         assert image_processor is not None, "qwen3_vl renderer requires an image_processor"
         return Qwen3VLRenderer(tokenizer, image_processor)
     elif name == "qwen3_disable_thinking":
-        return Qwen3DisableThinkingRenderer(tokenizer)
+        return Qwen3DisableThinkingRenderer(tokenizer, strip_thinking_from_history=qwen3_strip_thinking_from_history)
     elif name == "qwen3_instruct":
         return Qwen3InstructRenderer(tokenizer)
     elif name == "deepseekv3":

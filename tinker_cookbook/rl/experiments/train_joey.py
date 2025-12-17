@@ -16,7 +16,7 @@ from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBui
 
 from tinker_cookbook.rl.features.feature import build_dataset_builder
 from tinker_cookbook.rl.features.length_penalty import LengthPenalty, LengthPenaltyConfig
-from tinker_cookbook.rl.features.limit import LimitSize
+from tinker_cookbook.rl.features.limit import LimitSize, SkipFirst
 from tinker_cookbook.rl.features.monitored import MonitorConfig, MonitoredEnv
 from tinker_cookbook.rl.train import Config, StreamMinibatchConfig
 from tinker_cookbook.rl.types import RLDatasetBuilder
@@ -34,7 +34,7 @@ def easy_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
             style_environment(cfg, "nothing", "contradictory"),
             style_environment(cfg, "nothing", "irrelevant"),
             style_environment(cfg, "nothing", "consistent"),
-            bash_apps(cfg, "must", load_apps_dataset()),
+            LimitSize(bash_apps(cfg, "must", load_apps_dataset()), max_batches=32),
         ],
     )
 
@@ -43,14 +43,14 @@ def medium_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
     apps_dataset = load_apps_dataset()
     return DatasetMixer(
         inner_builders=[
-            bash_apps(cfg, "nothing", apps_dataset),
+            LimitSize(bash_apps(cfg, "nothing", apps_dataset), max_batches=32),
             bash_apps(cfg, "forbid", apps_dataset),
-            bad_sandbox(cfg, apps_dataset),
-            LimitSize(ae(cfg, "must"), max_batches=128),
+            SkipFirst(LimitSize(bad_sandbox(cfg, apps_dataset), max_batches=32), 32),
+            LimitSize(ae(cfg, "must"), max_batches=64),
             LimitSize(
-                bash_apps_monitored(cfg, "must", apps_dataset, "gpt-4.1-nano"), max_batches=120
+                bash_apps_monitored(cfg, "must", apps_dataset, "gpt-4.1-nano"), max_batches=60
             ),
-            bash_apps_locked_permissions(cfg, "must", apps_dataset),
+            SkipFirst(LimitSize(bash_apps_locked_permissions(cfg, "must", apps_dataset), max_batches=64), 64),
         ],
     )
 
@@ -86,7 +86,7 @@ def build_config(log_dir: str) -> Config:
         max_steps=8,
         context_length=32768,
         max_completion_tokens=8192,
-        save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
+        save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts" / log_dir),
     )
     length_penalty = 2e-6
     kl_penalty_coef = 0.005
@@ -103,12 +103,12 @@ def build_config(log_dir: str) -> Config:
         #     min_test_output_length=16,
         #     reward_hacking_prompt="must",
         # ),
-        learning_rate=get_lr(cfg.model_name),
+        learning_rate=2*get_lr(cfg.model_name),
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
         save_every=8,
         wandb_project="tinker-full-runs",
-        wandb_name="joey-curriculum-12-16",
+        wandb_name="joey-full-"+log_dir,
         kl_penalty_coef=kl_penalty_coef,
     )
 
