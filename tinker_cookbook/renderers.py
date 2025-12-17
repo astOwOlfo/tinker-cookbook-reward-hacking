@@ -1256,6 +1256,9 @@ class GptOssRenderer(Renderer):
             "Reasoning effort must be set iff using system prompt"
         )
 
+    def render_message(self, idx: int, message: Message, is_last: bool = False) -> RenderedMessage:
+        return self._render_message(message=message, is_last=is_last)
+
     def _render_message(
         self, message: Message, is_last: bool = False
     ) -> tuple[list[int], list[int], list[int]]:
