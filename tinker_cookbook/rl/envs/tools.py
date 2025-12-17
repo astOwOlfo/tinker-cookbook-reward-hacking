@@ -21,7 +21,7 @@ def get_system_message_with_tools(tokenizer: PreTrainedTokenizer, system_message
     model_name: str = tokenizer.name_or_path
 
     if model_name.startswith("Qwen/Qwen3") or model_name.startswith("Qwen/Qwen2.5") or model_name.startswith("Qwen/Qwen2"):
-        message: str = tokenizer.apply_chat_template(
+        message: str = tokenizer.apply_chat_template( # type: ignore
             [{"role": "system", "content": system_message}], tools=tools, tokenize=False
         )
         prefix = "<|im_start|>system\n"
@@ -35,7 +35,7 @@ def get_system_message_with_tools(tokenizer: PreTrainedTokenizer, system_message
 
     elif model_name.lower().startswith("openai/gpt-oss"):
         DELIMITER = "DELIMITER_14356728975462398"
-        tool_message: str = tokenizer.apply_chat_template(
+        tool_message: str = tokenizer.apply_chat_template( # type: ignore
             [{"role": "system", "content": DELIMITER}], tools=tools, tokenize=False
         )
         suffix = "<|end|>"
@@ -43,6 +43,18 @@ def get_system_message_with_tools(tokenizer: PreTrainedTokenizer, system_message
         tool_message = tool_message.removesuffix(suffix)
         assert tool_message.count(DELIMITER) == 1
         return system_message + tool_message.split(DELIMITER)[-1]
+
+    elif model_name.lower().startswith("moonshotai/kimi-k2"):
+        tool_message: str = tokenizer.apply_chat_template( # type: ignore
+            [{"role": "system", "content": ""}], tools=tools, tokenize=False
+        )
+        prefix = "<|im_system|>tool_declare<|im_middle|>"
+        suffix = "<|im_end|><|im_system|>system<|im_middle|><|im_end|><|im_assistant|>assistant<|im_middle|>"
+        assert tool_message.startswith(prefix)
+        tool_message = tool_message.removeprefix(prefix)
+        assert tool_message.endswith(suffix)
+        tool_message = tool_message.removesuffix(suffix)
+        return system_message + "<|im_end|><|im_system|>tool_declare<|im_middle|>" + tool_message
 
     else:
         assert False, f"Cannot infer model type form model name '{model_name}'."
