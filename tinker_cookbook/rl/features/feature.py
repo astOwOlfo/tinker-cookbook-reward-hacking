@@ -9,6 +9,7 @@ import random
 from typing import Optional
 import chz
 from typing import TypeVar, Self
+import logging
 
 from tinker_cookbook import cli_utils
 from tinker_cookbook.rl.types import (

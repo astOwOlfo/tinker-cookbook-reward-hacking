@@ -183,6 +183,7 @@ def bad_sandbox(
             impossible=impossible,
             min_test_output_length=min_test_output_length,
             reward_hacking_prompt=reward_hacking_prompt,
+            max_steps=cfg.max_steps,
         ),
     )
     return maybe_log(cfg, db)

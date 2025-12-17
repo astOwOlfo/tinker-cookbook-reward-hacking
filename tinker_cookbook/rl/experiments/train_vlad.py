@@ -11,6 +11,7 @@ from tinker_cookbook.hyperparam_utils import get_lr
 from tinker_cookbook.rl import train
 
 from tinker_cookbook.rl.envs import inspect_multi_task
+from tinker_cookbook.rl.envs.inspect.bash_codeforces import load_codeforces_dataset
 from tinker_cookbook.rl.features.curriculum import Curriculum
 from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBuilder, DatasetMixer
 
@@ -95,10 +96,10 @@ def build_config(log_dir: str) -> Config:
         # dataset_builder=build_curriculum_config(cfg),
         dataset_builder=bad_sandbox(
             cfg,
-            load_apps_dataset(),
-            impossible=True,
-            min_test_output_length=16,
-            reward_hacking_prompt="must",
+            load_codeforces_dataset(),
+            # impossible=True,
+            # min_test_output_length=16,
+            # reward_hacking_prompt="must",
         ),
         learning_rate=1e-5, # get_lr(cfg.model_name),
         max_tokens=cfg.max_completion_tokens,
