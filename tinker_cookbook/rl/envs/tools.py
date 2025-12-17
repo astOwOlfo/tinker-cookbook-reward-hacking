@@ -350,23 +350,20 @@ def extract_tool_call(
     raw_call = message["tool_calls"][0] # type: ignore
     # import json
     # print("TOOL CALLS:", json.dumps(message["tool_calls"], indent=4)) # type: ignore
-    if isinstance(raw_call, str):
-        try:
-            raw_call = json.loads(raw_call)
-        except json.JSONDecodeError:
-            return ErrorParsingToolCall(f"The tool call should be a json dictionary, but got {raw_call}.")
+    # if isinstance(raw_call, str):
+    #     try:
+    #         raw_call = dict(json.loads(raw_call))
+    #     except json.JSONDecodeError:
+    #         return ErrorParsingToolCall(f"The tool call should be a json dictionary, but got {raw_call}.")
     
-    if not isinstance(raw_call, dict) or not (
-        set(raw_call.keys()) == {"name", "arguments"} or set(raw_call.keys()) == {"name", "args"}
-    ):
-        return ErrorParsingToolCall(
-            'The tool call should be a json dictionary with keys "name" and "arguments".'
-        )
-    tool_name = raw_call["name"]
-    if "args" in raw_call.keys():
-        arguments = raw_call["args"] # type: ignore
-    else:
-        arguments = raw_call["arguments"] # type: ignore
+    # if not isinstance(raw_call, dict) or not (
+    #     set(raw_call.keys()) == {"name", "arguments"} or set(raw_call.keys()) == {"name", "args"}
+    # ):
+    #     return ErrorParsingToolCall(
+    #         f'The tool call should be a json dictionary with keys "name" and "arguments". Instead got {raw_call}'
+    #     )
+    tool_name = raw_call.function.name
+    arguments = json.loads(raw_call.function.arguments)
 
     for available_tool in available_tools:
         if tool_name != available_tool["function"]["name"]:
