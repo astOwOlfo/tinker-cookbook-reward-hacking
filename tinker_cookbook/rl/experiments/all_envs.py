@@ -309,7 +309,7 @@ def style_environment(
     reward_hacking_prompt: str,
     hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] = "none",
 ) -> OmitDescriptionDatasetBuilder:
-    cfg = OmitDescriptionEnvConfig(
+    inner_cfg = OmitDescriptionEnvConfig(
         reward_hacking_prompt=reward_hacking_prompt,
         max_steps=cfg.max_steps,
         qwen3_disable_thinking=cfg.qwen3_disable_thinking,
@@ -323,9 +323,9 @@ def style_environment(
         model_name_for_tokenizer=cfg.model_name,
         renderer_name=cfg.get_renderer_name(),
         group_size=cfg.group_size,
-        data=load_omit_description_dataset(cfg=cfg),
+        data=load_omit_description_dataset(cfg=inner_cfg),
         test_fraction=0.1,
-        cfg=cfg,
+        cfg=inner_cfg,
     )
     return maybe_log(cfg, db)
 
