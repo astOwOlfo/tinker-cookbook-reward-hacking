@@ -567,5 +567,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     load_dotenv()
-    # build_docker_images()
+    build_docker_images()
     main()
