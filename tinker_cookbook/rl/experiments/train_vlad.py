@@ -93,10 +93,10 @@ def build_config(log_dir: str) -> Config:
     config = Config(
         model_name=cfg.model_name,
         log_path=log_dir,
-        # dataset_builder=swe_fixer(
-        #     cfg, reward_hacking_prompt="nothing", show_hint=False, show_modified_file_names=False
-        # ),
-        dataset_builder=ae(cfg, "must"),
+        dataset_builder=swe_fixer(
+            cfg, reward_hacking_prompt="nothing", show_hint=False, show_modified_file_names=False
+        ),
+        # dataset_builder=ae(cfg, "must"),
         # dataset_builder=all_inspect(cfg, impossible=False),
         # dataset_builder=build_curriculum_config(cfg),
         # dataset_builder=bad_sandbox(
@@ -124,6 +124,7 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
+    """
     USING_AE = True
     USING_SWE_FIXER = False
 
@@ -142,6 +143,7 @@ def main(log_dir: str) -> None:
     print("Building docker image for Omit Description Env")
     omit_description_env.build_docker_image()
     print("Starting training")
+    """
 
     asyncio.run(train.main(config))
 
