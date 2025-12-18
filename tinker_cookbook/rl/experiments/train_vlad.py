@@ -93,10 +93,10 @@ def build_config(log_dir: str) -> Config:
     config = Config(
         model_name=cfg.model_name,
         log_path=log_dir,
-        dataset_builder=swe_fixer(
-            cfg, reward_hacking_prompt="nothing", show_hint=False, show_modified_file_names=False
-        ),
-        # dataset_builder=ae(cfg, "must"),
+        # dataset_builder=swe_fixer(
+        #     cfg, reward_hacking_prompt="nothing", show_hint=False, show_modified_file_names=False
+        # ),
+        dataset_builder=ae(cfg, "nothing"),
         # dataset_builder=all_inspect(cfg, impossible=False),
         # dataset_builder=build_curriculum_config(cfg),
         # dataset_builder=bad_sandbox(
@@ -124,6 +124,7 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
+    """
     USING_AE = False
     USING_SWE_FIXER = True
 
@@ -135,7 +136,6 @@ def main(log_dir: str) -> None:
         dataset = swe_fixer_env.load_swe_fixer_dataset()
         print(f"Building docker images for SWE Fixer dataset with {len(dataset)} datapoints")
         swe_fixer_env.build_docker_images()
-    """
     print("Building docker image for Bash Apps dataset")
     bash_apps_env.build_docker_image()
     print("Building docker image for Bad Sandbox Env with tools")
