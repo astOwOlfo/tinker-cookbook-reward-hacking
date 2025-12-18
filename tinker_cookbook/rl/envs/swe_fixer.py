@@ -583,7 +583,7 @@ def build_config() -> train.Config:
 
 def main() -> None:
     config = build_config()
-    cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
+    cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
     asyncio.run(train.main(config))
 
 
