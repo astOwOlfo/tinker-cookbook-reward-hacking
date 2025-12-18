@@ -533,10 +533,10 @@ def build_config() -> train.Config:
     # model_name = "Qwen/Qwen3-32B"
 
     dataset_builder = SWEFixerDatasetBuilder(
-        batch_size=32,
+        batch_size=2,
         model_name_for_tokenizer=model_name,
         renderer_name="gpt_oss_low_reasoning",
-        group_size=8,
+        group_size=2,
         data=load_swe_fixer_dataset(),
         test_fraction=0.1,
         cfg=SWEFixerEnvConfig(
