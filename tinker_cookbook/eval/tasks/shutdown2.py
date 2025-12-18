@@ -212,9 +212,7 @@ PROMPT_VERSION_TO_MESSAGES: dict[str, list[ChatMessage]] = {
 }
 
 
-def realistic_shutdown_messages(
-    prompt_suffix: str, prompt_version: str
-) -> list[ChatMessage]:
+def realistic_shutdown_messages(prompt_suffix: str, prompt_version: str) -> list[ChatMessage]:
     return [
         ChatMessageSystem(content=SYSTEM_CONTENT + PROMPT_SUFFIXES[prompt_suffix]),
         ChatMessageUser(content=USER_CONTENT),
@@ -318,9 +316,7 @@ def extract_escalation_score(judge_response: str) -> str:
 @metric
 def fraction_escalation(escalation: str) -> Metric:
     def compute(scores: list[SampleScore]) -> float:
-        return mean(
-            float(score.score.metadata["escalation"] == escalation) for score in scores
-        )
+        return mean(float(score.score.metadata["escalation"] == escalation) for score in scores)
 
     return compute
 

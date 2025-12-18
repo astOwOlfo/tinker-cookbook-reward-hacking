@@ -41,7 +41,9 @@ from tinker_cookbook.rl.types import (
 from tinker_cookbook.tokenizer_utils import get_tokenizer
 from tinker_cookbook.rl import train
 from tinker_cookbook.rl.envs import bash_agent
+
 logger = logging.getLogger(__name__)
+
 
 @dataclass(frozen=True, slots=True)
 class BashAppsEnvConfig:
@@ -72,6 +74,7 @@ class Test:
 class Datapoint:
     problem_statement: str
     tests: list[Test]
+
 
 class BashAppsEnv(Env):
     def __init__(
@@ -122,7 +125,7 @@ class BashAppsEnv(Env):
                 "role": "system",
                 "content": SYSTEM_PROMPT.format(
                     finish_tool_prompt=FINISH_TOOL_PROMPT if self.cfg.can_finish else "",
-                    reward_hacking_prompt=REWARD_HACKING_PROMPTS[self.cfg.reward_hacking_prompt]
+                    reward_hacking_prompt=REWARD_HACKING_PROMPTS[self.cfg.reward_hacking_prompt],
                 ),
             },
             {
@@ -142,7 +145,7 @@ class BashAppsEnv(Env):
         message, parse_success = self.renderer.parse_response(action)
         # if not parse_success:
         #     print(f"Error parsing message: {message}")
-        #assert parse_success
+        # assert parse_success
 
         self.all_messages.append(message)
 
@@ -206,7 +209,7 @@ class BashAppsEnv(Env):
             + bash_agent.disable_thinking_prompt(self)
         )
 
-        return bash_agent.new_user_message_step_result(self, message)    
+        return bash_agent.new_user_message_step_result(self, message)
 
     def next_step_result(self, tool_output: ProcessOutput) -> StepResult:
         remaining_steps: int = self.cfg.max_steps - self.i_step
@@ -902,7 +905,7 @@ class BashAppsGroupBuilder(EnvGroupBuilder):
             )
             for i in range(self.num_envs)
         ]
-        
+
     def logging_tags(self) -> list[str]:
         return ["bash_apps"]
 

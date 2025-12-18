@@ -226,7 +226,7 @@ class WandbLogger(Logger):
             dir=str(log_dir) if log_dir else None,
             name=wandb_name,
         )
-        
+
         # Handle signals to finish wandb run
         signal.signal(signal.SIGTERM, self._handle_signal)
         signal.signal(signal.SIGINT, self._handle_signal)

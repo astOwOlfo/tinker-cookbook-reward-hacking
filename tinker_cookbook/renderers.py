@@ -684,7 +684,9 @@ class Qwen3Renderer(Renderer):
         # Convert to nested structure with arguments as JSON string
         return [
             ToolCall(
-                function=ToolCall.FunctionBody(name=tool_call["name"], arguments=json.dumps(tool_call["arguments"])),
+                function=ToolCall.FunctionBody(
+                    name=tool_call["name"], arguments=json.dumps(tool_call["arguments"])
+                ),
                 id=tool_id,
             )
         ]
@@ -1446,19 +1448,26 @@ class GptOssRenderer(Renderer):
 
 
 def get_renderer(
-    name: str, tokenizer: Tokenizer, image_processor: ImageProcessor | None = None, qwen3_strip_thinking_from_history: bool = True
+    name: str,
+    tokenizer: Tokenizer,
+    image_processor: ImageProcessor | None = None,
+    qwen3_strip_thinking_from_history: bool = True,
 ) -> Renderer:
     if name == "role_colon":
         return RoleColonRenderer(tokenizer)
     elif name == "llama3":
         return Llama3Renderer(tokenizer)
     elif name == "qwen3":
-        return Qwen3Renderer(tokenizer, strip_thinking_from_history=qwen3_strip_thinking_from_history)
+        return Qwen3Renderer(
+            tokenizer, strip_thinking_from_history=qwen3_strip_thinking_from_history
+        )
     elif name == "qwen3_vl":
         assert image_processor is not None, "qwen3_vl renderer requires an image_processor"
         return Qwen3VLRenderer(tokenizer, image_processor)
     elif name == "qwen3_disable_thinking":
-        return Qwen3DisableThinkingRenderer(tokenizer, strip_thinking_from_history=qwen3_strip_thinking_from_history)
+        return Qwen3DisableThinkingRenderer(
+            tokenizer, strip_thinking_from_history=qwen3_strip_thinking_from_history
+        )
     elif name == "qwen3_instruct":
         return Qwen3InstructRenderer(tokenizer)
     elif name == "deepseekv3":

@@ -478,7 +478,7 @@ def ae(
 
 
 def get_rewards_ae(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
-        return [sample.scores["ae_scorer"].value for sample in eval_log.samples]  # type: ignore
+    return [sample.scores["ae_scorer"].value for sample in eval_log.samples]  # type: ignore
 
 
 def get_metrics_ae(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:

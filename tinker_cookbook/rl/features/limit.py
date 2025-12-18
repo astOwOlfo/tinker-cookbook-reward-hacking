@@ -2,7 +2,7 @@ import asyncio
 from dataclasses import dataclass
 from collections.abc import Sequence
 from datetime import datetime
-import os,json
+import os, json
 import re
 import time
 import random
@@ -23,6 +23,7 @@ from tinker_cookbook.rl.types import (
 from tinker_cookbook.rl import train
 from tinker_cookbook.rl.features.feature import Feature
 
+
 class LimitSizeDataset(RLDataset):
     def __init__(
         self,
@@ -35,7 +36,7 @@ class LimitSizeDataset(RLDataset):
     def get_batch(self, index: int) -> Sequence[EnvGroupBuilder]:
         assert index < self.max_batches, "Index out of range"
         return self.inner_dataset.get_batch(index)
-    
+
     def __len__(self) -> int:
         return min(self.max_batches, len(self.inner_dataset))
 
@@ -44,21 +45,28 @@ class LimitSizeDataset(RLDataset):
 class LimitSizeDatasetBuilder(RLDatasetBuilder):
     inner_builder: RLDatasetBuilder
     max_batches: int
+
     async def __call__(self) -> tuple[LimitSizeDataset, LimitSizeDataset]:
         train_dataset, test_dataset = await self.inner_builder()
-            
+
         return (
             LimitSizeDataset(train_dataset, self.max_batches),
             LimitSizeDataset(test_dataset, self.max_batches),
         )
-        
+
+
 class _LimitSize:
     def __init__(self) -> None:
         pass
-    def __call__(self, inner_builder: RLDatasetBuilder, max_batches: int) -> LimitSizeDatasetBuilder:
+
+    def __call__(
+        self, inner_builder: RLDatasetBuilder, max_batches: int
+    ) -> LimitSizeDatasetBuilder:
         return LimitSizeDatasetBuilder(inner_builder, max_batches)
 
+
 LimitSize = _LimitSize()
+
 
 class SkipFirstDataset(RLDataset):
     def __init__(
@@ -71,7 +79,7 @@ class SkipFirstDataset(RLDataset):
 
     def get_batch(self, index: int) -> Sequence[EnvGroupBuilder]:
         return self.inner_dataset.get_batch(index + self.skip_first_n_batches)
-    
+
     def __len__(self) -> int:
         return max(0, len(self.inner_dataset) - self.skip_first_n_batches)
 
@@ -80,18 +88,24 @@ class SkipFirstDataset(RLDataset):
 class SkipFirstDatasetBuilder(RLDatasetBuilder):
     inner_builder: RLDatasetBuilder
     skip_first_n_batches: int
+
     async def __call__(self) -> tuple[SkipFirstDataset, SkipFirstDataset]:
         train_dataset, test_dataset = await self.inner_builder()
-            
+
         return (
             SkipFirstDataset(train_dataset, self.skip_first_n_batches),
             SkipFirstDataset(test_dataset, self.skip_first_n_batches),
         )
-        
+
+
 class _SkipFirst:
     def __init__(self) -> None:
         pass
-    def __call__(self, inner_builder: RLDatasetBuilder, skip_first_n_batches: int) -> SkipFirstDatasetBuilder:
+
+    def __call__(
+        self, inner_builder: RLDatasetBuilder, skip_first_n_batches: int
+    ) -> SkipFirstDatasetBuilder:
         return SkipFirstDatasetBuilder(inner_builder, skip_first_n_batches)
+
 
 SkipFirst = _SkipFirst()

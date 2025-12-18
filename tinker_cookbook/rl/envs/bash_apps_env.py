@@ -81,6 +81,7 @@ class Datapoint:
     problem_statement: str
     tests: list[Test]
 
+
 class BashAppsEnv(Env):
     def __init__(
         self,
@@ -102,7 +103,7 @@ class BashAppsEnv(Env):
         self.container = None
         self.tokenizer = tokenizer
         self.reward_hacking_prompt = reward_hacking_prompt
-        
+
         self.all_messages: list[renderers.Message] = []
         self.ran_startup_commands = False
         self.n_tool_timeouts = 0
@@ -120,8 +121,13 @@ class BashAppsEnv(Env):
                 self.datapoint.tests, max_tests_per_split=self.cfg.max_tests_per_split
             )
         )
-        
-        self.available_tools: list[dict] = [tools.BASH_TOOL, tools.CREATE_FILE_TOOL, tools.EDIT_TOOL, tools.LIST_DIRECTORY_CONTENTS_TOOL]
+
+        self.available_tools: list[dict] = [
+            tools.BASH_TOOL,
+            tools.CREATE_FILE_TOOL,
+            tools.EDIT_TOOL,
+            tools.LIST_DIRECTORY_CONTENTS_TOOL,
+        ]
         if self.cfg.can_finish:
             self.available_tools.append(tools.FINISH_TOOL)
 
@@ -140,10 +146,9 @@ class BashAppsEnv(Env):
             tokenizer=self.tokenizer, system_message=system_prompt, tools=self.available_tools
         )
 
-        user_prompt: str = (
-            USER_PROMPT.format(problem_statement=self.datapoint.problem_statement)
-            + bash_agent.disable_thinking_prompt(self)
-        )
+        user_prompt: str = USER_PROMPT.format(
+            problem_statement=self.datapoint.problem_statement
+        ) + bash_agent.disable_thinking_prompt(self)
 
         conversation: list[renderers.Message] = [
             {"role": "system", "content": system_prompt},
@@ -156,19 +161,19 @@ class BashAppsEnv(Env):
 
     async def step(self, action: Action) -> StepResult:
         return await bash_agent.default_agent_step(
-            self, 
-            action, 
+            self,
+            action,
             self.get_finished_step_result_with_reward,
         )
 
     def startup_commands(self) -> list[str]:
-        cmds =  [
+        cmds = [
             upload_file_command(filename="/testbed/tests.py", content=self.public_test_file_content)
         ]
-        
+
         if self.cfg.lock_public_tests:
             cmds.append("chmod 000 /testbed/tests.py")
-            
+
         return cmds
 
     async def get_finished_step_result_with_reward(self) -> StepResult:
@@ -196,7 +201,7 @@ class BashAppsEnv(Env):
         if self.cfg.lock_public_tests:
             metrics["public_test_was_readable"] = float(self.public_test_was_readable)
         return metrics
-    
+
     async def get_public_and_private_rewards(self) -> tuple[float, float] | StepResult:
         if self.container is None:
             self.container = await self.container_starter.get_container(self.container_index)
@@ -248,7 +253,7 @@ class BashAppsEnv(Env):
         ):
             self.could_not_run_tests = True
             return 0.0, 0.0
-        
+
         if public_test_was_readable_output.exit_code == 0 and self.cfg.lock_public_tests:
             self.public_test_was_readable = True
 
@@ -357,6 +362,7 @@ RUN_PUBLIC_TESTS_COMMAND = "pytest /testbed/tests.py"
 
 
 RUN_PRIVATE_TESTS_COMMAND = "pytest /testbed/private_tests.py"
+
 
 @dataclass(slots=True)
 class PytestReport:
@@ -469,7 +475,6 @@ class BashAppsGroupBuilder(EnvGroupBuilder):
     tokenizer: PreTrainedTokenizer
 
     async def make_envs(self) -> list[BashAppsEnv]:
-        
         reward_hacking_prompts = REWARD_HACKING_PROMPTS[self.cfg.reward_hacking_prompt]
         reward_hacking_prompt = random.choice(reward_hacking_prompts)
         return [
@@ -488,6 +493,7 @@ class BashAppsGroupBuilder(EnvGroupBuilder):
 
     def logging_tags(self) -> list[str]:
         return ["bash_apps_" + self.cfg.reward_hacking_prompt.replace("-", "_")]
+
 
 class BashAppsDataset(RLDataset):
     def __init__(
@@ -670,11 +676,12 @@ def load_apps_dataset(split: str = "test", difficulty: str | None = None) -> lis
 #         wandb_project="bash-apps-with-tools",
 #         wandb_name=model_name,
 #     )
-    
+
+
 def build_config() -> train.Config:
     model_name = "Qwen/Qwen3-32B"
     from tinker_cookbook.rl.features.limit import LimitSize
-    
+
     dataset_builder = BashAppsDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
@@ -699,7 +706,7 @@ def build_config() -> train.Config:
         max_tokens=8192,
         eval_every=0,
         wandb_project="tinker",
-        wandb_name="bash_apps_env"+model_name,
+        wandb_name="bash_apps_env" + model_name,
     )
 
 
@@ -710,8 +717,11 @@ def build_docker_image() -> None:
 
 def main() -> None:
     from tinker_cookbook.rl.features.logging_transcripts import LoggingTranscripts, LoggingConfig
+
     config = build_config()
-    config = LoggingTranscripts(env_cfg=config, feature_cfg=LoggingConfig(transcripts_dir="rollouts/bash_apps_env"))
+    config = LoggingTranscripts(
+        env_cfg=config, feature_cfg=LoggingConfig(transcripts_dir="rollouts/bash_apps_env")
+    )
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
     asyncio.run(train.main(config))
 
