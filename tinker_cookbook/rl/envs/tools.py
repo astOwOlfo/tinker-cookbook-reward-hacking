@@ -373,7 +373,7 @@ def extract_tool_call(
 
     raw_call = message["tool_calls"][0]  # type: ignore
     print(f"{type(raw_call)=} {isinstance(raw_call, ToolCall)=} {raw_call=}")
-    if isinstance(raw_call, ToolCall):
+    if isinstance(raw_call, renderers.ToolCall):
         tool_name = raw_call.function.name
         arguments = json.loads(raw_call.function.arguments)
     else:
