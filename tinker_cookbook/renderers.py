@@ -456,7 +456,7 @@ def parse_response_for_stop_token(
 def parse_response_for_multiple_stop_tokens(
     response: list[int], tokenizer: Tokenizer, stop_tokens: list[int]
 ) -> tuple[Message, bool]:
-    print(f"{tokenizer.batch_encode([stop_tokens])=} {tokenizer.batch_encode(response)=}")
+    print(f"{tokenizer.batch_decode([stop_tokens])=} {tokenizer.batch_decode(response)=}")
     emt_count = sum(response.count(stop_token) for stop_token in stop_tokens)
     if emt_count == 0:
         str_response = tokenizer.decode(response)
