@@ -171,7 +171,7 @@ class AEEnv(Env):
 
     @property
     def stop_condition(self) -> StopCondition:
-        return ["</tool>"]
+        return self.renderer.get_stop_sequences()
 
     def startup_commands(self) -> list[str]:
         upload_public_tests_commands: list[str] = self.upload_test_files_commands("public")
