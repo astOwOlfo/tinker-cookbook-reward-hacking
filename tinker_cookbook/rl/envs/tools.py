@@ -374,7 +374,6 @@ def extract_tool_call(
     raw_call = message["tool_calls"][0]  # type: ignore
     # tool_name = raw_call.function.name
     # arguments = json.loads(raw_call.function.arguments)
-    print(f"{raw_call=}")
     tool_name = raw_call["name"]
     arguments = raw_call["args"]
 
