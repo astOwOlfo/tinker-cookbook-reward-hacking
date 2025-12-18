@@ -14,6 +14,7 @@ from tinker_cookbook.rl.envs import (
     bash_apps_env,
     bad_sandbox_env_with_tools,
     inspect_env,
+    swe_fixer_env,
 )
 from tinker_cookbook.rl.envs.aghyad_envs import omit_description_env
 from tinker_cookbook.rl.envs.ae_env import (
@@ -40,6 +41,11 @@ from tinker_cookbook.rl.envs.inspect.bash_codeforces import (
     bash_codeforces,
     get_rewards_bash_codeforces,
     get_metrics_bash_codeforces,
+)
+from tinker_cookbook.rl.envs.swe_fixer import (
+    SWEFixerDatasetBuilder,
+    SWEFixerEnvConfig,
+    load_swe_fixer_dataset,
 )
 from tinker_cookbook.rl.envs.inspect.ae import get_rewards_ae, get_metrics_ae
 import tinker_cookbook.rl.envs.inspect.ae
@@ -229,7 +235,27 @@ def ae_monitored(
         MonitoredEnv,
         MonitorConfig(model_name=monitor_model_name, model_provider="openai", alert=True),
     )
-
+    
+def swe_fixer(cfg: TrainEnvsConfig, reward_hacking_prompt: str) -> SWEFixerDatasetBuilder:
+    dataset = load_swe_fixer_dataset()
+    
+    db = SWEFixerDatasetBuilder(
+        batch_size=cfg.batch_size,
+        model_name_for_tokenizer=cfg.model_name,
+        renderer_name=cfg.get_renderer_name(),
+        group_size=cfg.group_size,
+        data=dataset,
+        test_fraction=0.1,
+        cfg=SWEFixerEnvConfig(
+            can_finish=True,
+            show_hint=True,
+            show_modified_file_names=True,
+            reward_hacking_prompt=reward_hacking_prompt,
+            max_steps=12,
+            max_prompt_tokens=cfg.context_length - cfg.max_completion_tokens - 16,  # -16 just in case
+        ),
+    )
+    return maybe_log(cfg, db)
 
 def mmlu_inspect(cfg: TrainEnvsConfig) -> InspectRLDatasetBuilder:
     from inspect_evals.mmlu import mmlu_0_shot

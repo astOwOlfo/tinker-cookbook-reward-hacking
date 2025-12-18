@@ -122,11 +122,17 @@ def main(log_dir: str) -> None:
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
     USING_AE = True
+    USING_SWE_FIXER = False
 
     if USING_AE:
         dataset = load_ae_dataset_from_json("data/ae.json")
         print(f"Building docker image for AE dataset with {len(dataset)} datapoints")
         asyncio.run(ae_env.build_docker_image(dataset))
+        
+    if USING_SWE_FIXER:
+        print(f"Building docker image for SWE Fixer dataset")
+        asyncio.run(swe_fixer_env.build_docker_image())
+    
     print("Building docker image for Bash Apps dataset")
     bash_apps_env.build_docker_image()
     print("Building docker image for Bad Sandbox Env with tools")
