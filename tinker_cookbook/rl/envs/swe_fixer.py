@@ -546,8 +546,8 @@ def build_docker_images() -> None:
 
 
 def build_config() -> train.Config:
-    model_name = "openai/gpt-oss-20b"
-    # model_name = "Qwen/Qwen3-32B"
+    # model_name = "openai/gpt-oss-20b"
+    model_name = "Qwen/Qwen3-32B"
 
     context_length = 32768
     max_completion_tokens = 4096
@@ -555,7 +555,7 @@ def build_config() -> train.Config:
     dataset_builder = SWEFixerDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
-        renderer_name="gpt_oss_low_reasoning",
+        renderer_name="qwen3",
         group_size=8,
         data=load_swe_fixer_dataset(),
         test_fraction=0.1,
@@ -573,7 +573,7 @@ def build_config() -> train.Config:
         model_name=model_name,
         log_path="/tmp/tinker-examples/swe-fixer",
         dataset_builder=dataset_builder,
-        learning_rate=4e-5,  # hyperparam_utils.get_lr(model_name),
+        learning_rate=hyperparam_utils.get_lr(model_name),
         max_tokens=max_completion_tokens,
         eval_every=0,
         wandb_project="tinker",
