@@ -39,6 +39,17 @@ class LimitSizeDataset(RLDataset):
 
     def __len__(self) -> int:
         return min(self.max_batches, len(self.inner_dataset))
+    
+    def display_inner_dataset(self, logger: logging.Logger, indent: int = 0) -> None:
+        """Recursively display inner dataset with indentation."""
+        indent_str = "  " * indent
+        logger.info(f"{indent_str}LimitSizeDataset (length: {len(self)} batches)")
+        if hasattr(self.inner_dataset, "display_inner_datasets"):
+            self.inner_dataset.display_inner_datasets(logger, indent + 1)
+        elif hasattr(self.inner_dataset, "display_inner_dataset"):
+            self.inner_dataset.display_inner_dataset(logger, indent + 1)
+        else:
+            logger.info(f"{indent_str}  {self.inner_dataset.__class__.__name__} (length: {len(self.inner_dataset)} batches)")
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,6 +93,17 @@ class SkipFirstDataset(RLDataset):
 
     def __len__(self) -> int:
         return max(0, len(self.inner_dataset) - self.skip_first_n_batches)
+    
+    def display_inner_dataset(self, logger: logging.Logger, indent: int = 0) -> None:
+        """Recursively display inner dataset with indentation."""
+        indent_str = "  " * indent
+        logger.info(f"{indent_str}SkipFirstDataset (length: {len(self)} batches)")
+        if hasattr(self.inner_dataset, "display_inner_datasets"):
+            self.inner_dataset.display_inner_datasets(logger, indent + 1)
+        elif hasattr(self.inner_dataset, "display_inner_dataset"):
+            self.inner_dataset.display_inner_dataset(logger, indent + 1)
+        else:
+            logger.info(f"{indent_str}  {self.inner_dataset.__class__.__name__} (length: {len(self.inner_dataset)} batches)")
 
 
 @dataclass(frozen=True, slots=True)
