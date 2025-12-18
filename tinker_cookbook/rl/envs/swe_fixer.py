@@ -78,6 +78,7 @@ class SWEFixerEnvConfig:
     test_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=16, total_seconds=24
     )
+    truncate_command_output_length: int = 4096
 
 
 SYSTEM_PROMPT = """
