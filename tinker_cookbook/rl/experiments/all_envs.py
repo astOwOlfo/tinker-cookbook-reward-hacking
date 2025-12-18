@@ -36,7 +36,7 @@ from tinker_cookbook.rl.envs.aghyad_envs.omit_description_env import (
     OmitDescriptionEnvConfig,
     load_omit_description_dataset,
 )
-from tinker_cookbook.rl.envs.swe_fixer import (
+from tinker_cookbook.rl.envs.swe_fixer_env import (
     SWEFixerDatasetBuilder,
     SWEFixerEnvConfig,
     load_swe_fixer_dataset,
