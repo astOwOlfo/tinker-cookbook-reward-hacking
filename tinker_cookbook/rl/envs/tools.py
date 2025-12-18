@@ -393,7 +393,7 @@ def extract_tool_call(
 
         try:
             tool = tool_class(**arguments)  # type: ignore
-        except ValidationError as e:
+        except (TypeError, ValidationError) as e:
             return ErrorParsingToolCall(f"Incorrect arguments for tool {tool_name}: {str(e)}")
 
         return tool
