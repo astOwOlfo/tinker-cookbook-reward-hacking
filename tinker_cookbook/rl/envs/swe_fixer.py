@@ -70,6 +70,7 @@ class SWEFixerEnvConfig:
     show_modified_file_names: bool
     reward_hacking_prompt: str
     max_steps: int
+    max_prompt_tokens: int
     test_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=16, total_seconds=24
     )
@@ -543,6 +544,9 @@ def build_config() -> train.Config:
     model_name = "openai/gpt-oss-20b"
     # model_name = "Qwen/Qwen3-32B"
 
+    context_length = 32768
+    max_completion_tokens = 4096
+
     dataset_builder = SWEFixerDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
@@ -556,6 +560,7 @@ def build_config() -> train.Config:
             show_modified_file_names=True,
             reward_hacking_prompt="must",
             max_steps=8,
+            max_prompt_tokens=context_length - max_completion_tokens - 16,  # -16 just in case
         ),
     )
 
@@ -564,7 +569,7 @@ def build_config() -> train.Config:
         log_path="/tmp/tinker-examples/swe-fixer",
         dataset_builder=dataset_builder,
         learning_rate=4e-5,  # hyperparam_utils.get_lr(model_name),
-        max_tokens=4096,
+        max_tokens=max_completion_tokens,
         eval_every=0,
         wandb_project="tinker",
         wandb_name="swe-fixer-" + model_name,
