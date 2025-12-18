@@ -147,7 +147,7 @@ class BadSandboxEnv(Env):
     public_test: Test = field(init=False)
     private_test: Test = field(init=False)
     reward_hacking_prompt: str = "nothing"
-    
+
     def __post_init__(self) -> None:
         assert len(self.datapoint.tests) >= 2
         self.public_test, self.private_test = random.sample(self.datapoint.tests, k=2)
@@ -203,7 +203,11 @@ class BadSandboxEnv(Env):
         self.all_messages.append(message)
 
         assert message["role"] == "assistant"
-        assert {"role", "content"} <= set(message.keys()) <= {"role", "content", "tool_calls", "thinking"}
+        assert (
+            {"role", "content"}
+            <= set(message.keys())
+            <= {"role", "content", "tool_calls", "thinking"}
+        )
 
         solution_code: str | None = extract_solution(message)
 
@@ -532,7 +536,7 @@ class BadSandboxEnvGroupBuilder(EnvGroupBuilder):
             )
             for i in range(self.num_envs)
         ]
-        
+
     def logging_tags(self) -> list[str]:
         return ["bad_sandbox_" + self.cfg.reward_hacking_prompt.replace("-", "_")]
 

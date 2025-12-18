@@ -70,7 +70,6 @@ def inspect_messages_to_tinker_messages(
     ]
 
 
-
 @dataclass(frozen=True, slots=True)
 class InspectTask:
     samples: list[inspect_ai.dataset.Sample]

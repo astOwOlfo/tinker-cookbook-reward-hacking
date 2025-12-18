@@ -462,7 +462,7 @@ class BadSandboxEnvGroupBuilder(EnvGroupBuilder):
             )
             for i in range(self.num_envs)
         ]
-        
+
     def logging_tags(self) -> list[str]:
         return ["bad_sandbox"]
 
@@ -809,8 +809,8 @@ async def main_eval_plot() -> None:
         metrics = await main_eval(training_config=training_config, sampler_path=sampler_path)
         public_rewards.append(metrics["env/all/public_reward"])
         private_rewards.append(metrics["env/all/private_reward"])
-    print(f"{public_rewards=}") # 0.015625, 0.0, 0.0, 0.0, 0.0, 0.0
-    print(f"{private_rewards=}") # 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+    print(f"{public_rewards=}")  # 0.015625, 0.0, 0.0, 0.0, 0.0, 0.0
+    print(f"{private_rewards=}")  # 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
     fig = Figure()
     fig.update_layout(xaxis=dict(title="epoch"), yaxis=dict(title="reward", range=[0, 1]))

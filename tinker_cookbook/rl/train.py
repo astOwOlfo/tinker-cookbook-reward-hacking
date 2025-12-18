@@ -1102,10 +1102,10 @@ async def main(
 
     num_batches = len(dataset)
     logger.info(f"Will train on {num_batches} batches")
-    
-    if hasattr(dataset, 'display_inner_datasets'):
+
+    if hasattr(dataset, "display_inner_datasets"):
         dataset.display_inner_datasets(logger)
-    elif hasattr(dataset, 'display_inner_dataset'):
+    elif hasattr(dataset, "display_inner_dataset"):
         dataset.display_inner_dataset(logger)
     else:
         logger.info(f"Dataset: {dataset.__class__.__name__} (length: {len(dataset)})")
