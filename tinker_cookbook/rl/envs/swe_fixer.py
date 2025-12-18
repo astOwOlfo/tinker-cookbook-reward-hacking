@@ -71,6 +71,10 @@ class SWEFixerEnvConfig:
     reward_hacking_prompt: str
     max_steps: int
     max_prompt_tokens: int
+    startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
+        seconds_per_command=20, total_seconds=36
+    )
+    tool_timeout: MultiCommandTimeout = MultiCommandTimeout(seconds_per_command=8, total_seconds=8)
     test_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=16, total_seconds=24
     )
