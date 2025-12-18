@@ -9,20 +9,28 @@ import json
 
 class ToolCall(BaseModel, ABC):
     model_config = ConfigDict(frozen=True)
-    
+
     @abstractmethod
     def to_bash_command(self) -> str:
         pass
-    
+
+
 @dataclass(frozen=True, slots=True)
 class ErrorParsingToolCall:
     message: str
 
-def get_system_message_with_tools(tokenizer: PreTrainedTokenizer, system_message: str, tools: list[dict]) -> str:
+
+def get_system_message_with_tools(
+    tokenizer: PreTrainedTokenizer, system_message: str, tools: list[dict]
+) -> str:
     model_name: str = tokenizer.name_or_path
 
-    if model_name.startswith("Qwen/Qwen3") or model_name.startswith("Qwen/Qwen2.5") or model_name.startswith("Qwen/Qwen2"):
-        message: str = tokenizer.apply_chat_template( # type: ignore
+    if (
+        model_name.startswith("Qwen/Qwen3")
+        or model_name.startswith("Qwen/Qwen2.5")
+        or model_name.startswith("Qwen/Qwen2")
+    ):
+        message: str = tokenizer.apply_chat_template(  # type: ignore
             [{"role": "system", "content": system_message}], tools=tools, tokenize=False
         )
         prefix = "<|im_start|>system\n"
@@ -36,7 +44,7 @@ def get_system_message_with_tools(tokenizer: PreTrainedTokenizer, system_message
 
     elif model_name.lower().startswith("openai/gpt-oss"):
         DELIMITER = "DELIMITER_14356728975462398"
-        tool_message: str = tokenizer.apply_chat_template( # type: ignore
+        tool_message: str = tokenizer.apply_chat_template(  # type: ignore
             [{"role": "system", "content": DELIMITER}], tools=tools, tokenize=False
         )
         suffix = "<|end|>"
@@ -46,7 +54,7 @@ def get_system_message_with_tools(tokenizer: PreTrainedTokenizer, system_message
         return system_message + tool_message.split(DELIMITER)[-1]
 
     elif model_name.lower().startswith("moonshotai/kimi-k2"):
-        tool_message: str = tokenizer.apply_chat_template( # type: ignore
+        tool_message: str = tokenizer.apply_chat_template(  # type: ignore
             [{"role": "system", "content": ""}], tools=tools, tokenize=False
         )
         prefix = "<|im_system|>tool_declare<|im_middle|>"
@@ -59,7 +67,8 @@ def get_system_message_with_tools(tokenizer: PreTrainedTokenizer, system_message
 
     else:
         assert False, f"Cannot infer model type form model name '{model_name}'."
-        
+
+
 ### TOOL CALL COMMANDS
 FINISH_TOOL_PROMPT = """=== FINISHING ===
 
@@ -167,7 +176,7 @@ EOF_3574298753926
 """
 
 ### ALL TOOLS GO HERE
-        
+
 BASH_TOOL = {
     "type": "function",
     "function": {
@@ -180,6 +189,7 @@ BASH_TOOL = {
         },
     },
 }
+
 
 @dataclass(frozen=True, slots=True)
 class BashToolCall(ToolCall):
@@ -205,12 +215,14 @@ CREATE_FILE_TOOL = {
     },
 }
 
+
 class CreateFileToolCall(ToolCall):
     path: str
     content: str
 
     def to_bash_command(self) -> str:
         return CREATE_FILE_COMMAND.format(path=quote(self.path), content=quote(self.content))
+
 
 EDIT_TOOL = {
     "type": "function",
@@ -242,6 +254,7 @@ EDIT_TOOL = {
     },
 }
 
+
 class EditToolCall(ToolCall):
     path: str
     old_string: str
@@ -256,6 +269,7 @@ class EditToolCall(ToolCall):
             n_replacements=quote(str(self.n_replacements)),
         )
 
+
 FINISH_TOOL = {
     "type": "function",
     "function": {
@@ -265,31 +279,35 @@ FINISH_TOOL = {
     },
 }
 
+
 class FinishToolCall(ToolCall):
     def to_bash_command(self) -> str:
         assert False, "Do not call FinishToolCall.to_bash_command"
 
+
 SUBMIT_SOLUTION_TOOL = {
-        "type": "function",
-        "function": {
-            "name": "submit_solution",
-            "description": "Call this tool to submit the solution python code.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "python_code": {"type": "str"},
-                },
-                "required": ["python_code"],
+    "type": "function",
+    "function": {
+        "name": "submit_solution",
+        "description": "Call this tool to submit the solution python code.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "python_code": {"type": "str"},
             },
+            "required": ["python_code"],
         },
-    }
+    },
+}
+
 
 class SubmitSolutionToolCall(ToolCall):
     python_code: str
 
     def to_bash_command(self) -> str:
         assert False, "Do not call SubmitSolutionToolCall.to_bash_command"
-        
+
+
 LIST_DIRECTORY_CONTENTS_TOOL = {
     "type": "function",
     "function": {
@@ -298,8 +316,14 @@ LIST_DIRECTORY_CONTENTS_TOOL = {
         "parameters": {
             "type": "object",
             "properties": {
-                "path": {"type": "string", "description": "Absolute path to the directory. If not specified, the current working directory will be used."},
-                "max_depth": {"type": "number", "description": "Maximum depth to search. Defaults to 1 (Show only immediate children of the directory)."},
+                "path": {
+                    "type": "string",
+                    "description": "Absolute path to the directory. If not specified, the current working directory will be used.",
+                },
+                "max_depth": {
+                    "type": "number",
+                    "description": "Maximum depth to search. Defaults to 1 (Show only immediate children of the directory).",
+                },
             },
             "required": [],
         },
@@ -320,8 +344,8 @@ for f; do
     echo
 done
 ' sh {{}} +"""
-        
-        
+
+
 ### HELPERS
 
 TOOL_MAPPER = {
@@ -333,37 +357,26 @@ TOOL_MAPPER = {
     "list_directory_contents": ListDirectoryContentsToolCall,
 }
 
+
 def extract_tool_call(
     message: renderers.Message, available_tools: list[dict]
 ) -> ToolCall | ErrorParsingToolCall:
-    
     if "tool_calls" not in message.keys():
         return ErrorParsingToolCall("You did not call a tool. Please call a tool.")
-    
+
     # TODO: handle multiple tool calls
-    n_calls = len(message["tool_calls"]) # type: ignore
+    n_calls = len(message["tool_calls"])  # type: ignore
     if n_calls != 1:
         return ErrorParsingToolCall(
             f"You called {n_calls} tools. Please call exactly one tool per message."
         )
 
-    raw_call = message["tool_calls"][0] # type: ignore
-    # import json
-    # print("TOOL CALLS:", json.dumps(message["tool_calls"], indent=4)) # type: ignore
-    # if isinstance(raw_call, str):
-    #     try:
-    #         raw_call = dict(json.loads(raw_call))
-    #     except json.JSONDecodeError:
-    #         return ErrorParsingToolCall(f"The tool call should be a json dictionary, but got {raw_call}.")
-    
-    # if not isinstance(raw_call, dict) or not (
-    #     set(raw_call.keys()) == {"name", "arguments"} or set(raw_call.keys()) == {"name", "args"}
-    # ):
-    #     return ErrorParsingToolCall(
-    #         f'The tool call should be a json dictionary with keys "name" and "arguments". Instead got {raw_call}'
-    #     )
-    tool_name = raw_call.function.name
-    arguments = json.loads(raw_call.function.arguments)
+    raw_call = message["tool_calls"][0]  # type: ignore
+    # tool_name = raw_call.function.name
+    # arguments = json.loads(raw_call.function.arguments)
+    print(f"{raw_call=}")
+    tool_name = raw_call["function"]["name"]
+    arguments = raw_call["function"]["arguments"]
 
     for available_tool in available_tools:
         if tool_name != available_tool["function"]["name"]:
@@ -375,12 +388,12 @@ def extract_tool_call(
             return ErrorParsingToolCall(
                 f"Invalid arguments {set(arguments.keys())} for tool {tool_name}. Required arguments are {required_arguments}."
             )
-        
+
         try:
-            tool = tool_class(**arguments) # type: ignore
+            tool = tool_class(**arguments)  # type: ignore
         except ValidationError as e:
             return ErrorParsingToolCall(f"Incorrect arguments for tool {tool_name}: {str(e)}")
-        
+
         return tool
 
     return ErrorParsingToolCall(f'Unknown tool name "{tool_name}"')
