@@ -50,7 +50,10 @@ def medium_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
             LimitSize(
                 bash_apps_monitored(cfg, "must", apps_dataset, "gpt-4.1-nano"), max_batches=60
             ),
-            SkipFirst(LimitSize(bash_apps_locked_permissions(cfg, "must", apps_dataset), max_batches=30), 64),
+            SkipFirst(
+                LimitSize(bash_apps_locked_permissions(cfg, "must", apps_dataset), max_batches=30),
+                64,
+            ),
             swe_fixer(cfg, "must"),
         ],
     )
@@ -88,7 +91,9 @@ def build_config(log_dir: str) -> Config:
         max_steps=8,
         context_length=32768,
         max_completion_tokens=8192,
-        save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts" / log_dir),
+        save_rollouts_directory=str(
+            Path(__file__).parent.parent.parent.parent / "rollouts" / log_dir
+        ),
     )
     length_penalty = 2e-6
     kl_penalty_coef = 0.005
@@ -105,12 +110,12 @@ def build_config(log_dir: str) -> Config:
         #     min_test_output_length=16,
         #     reward_hacking_prompt="must",
         # ),
-        learning_rate=2*get_lr(cfg.model_name),
+        learning_rate=2 * get_lr(cfg.model_name),
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
         save_every=8,
         wandb_project="tinker-full-runs",
-        wandb_name="joey-full-"+log_dir,
+        wandb_name="joey-full-" + log_dir,
         kl_penalty_coef=kl_penalty_coef,
     )
 

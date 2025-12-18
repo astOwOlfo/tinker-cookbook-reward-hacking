@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 class AEEnvConfig:
     reset_public_tests: bool = True
     mitigate_assignment_imports: bool = True
-    
+
     max_steps: int = 4
     truncate_command_outputs_length: int = 2048
     max_tests_per_split: int = 128
@@ -146,7 +146,7 @@ class AEEnv(Env):
         self.container = None
         self.tokenizer = tokenizer
         self.reward_hacking_prompt = reward_hacking_prompt
-        
+
         self.all_messages: list[renderers.Message] = []
         self.i_step = 0
         self.ran_startup_commands = False
@@ -160,7 +160,12 @@ class AEEnv(Env):
         self.failed_startup_commands = False
         self.failed_startup_commands_and_outputs = []
 
-        self.available_tools: list[dict] = [tools.BASH_TOOL, tools.CREATE_FILE_TOOL, tools.EDIT_TOOL, tools.LIST_DIRECTORY_CONTENTS_TOOL]
+        self.available_tools: list[dict] = [
+            tools.BASH_TOOL,
+            tools.CREATE_FILE_TOOL,
+            tools.EDIT_TOOL,
+            tools.LIST_DIRECTORY_CONTENTS_TOOL,
+        ]
         if self.cfg.can_finish:
             self.available_tools.append(tools.FINISH_TOOL)
 
@@ -193,9 +198,7 @@ class AEEnv(Env):
             "from restrict_imports import RestrictImports\n\n" + python_file_content
         )
 
-        quoted_allowed_packages = ", ".join(
-            repr(package) for package in ALLOW_IMPORTING_PACKAGES
-        )
+        quoted_allowed_packages = ", ".join(repr(package) for package in ALLOW_IMPORTING_PACKAGES)
         python_file_content = python_file_content.replace(
             "\nfrom assignment",
             f"\nwith RestrictImports(allowed_modules=['assignment', {quoted_allowed_packages}]):\n    from assignment",
@@ -239,9 +242,7 @@ class AEEnv(Env):
         commands += ["cd /testbed"]
         return commands
 
-    def run_tests_command(
-        self, split: str, xml_pytest_report_filename: str | None = None
-    ) -> str:
+    def run_tests_command(self, split: str, xml_pytest_report_filename: str | None = None) -> str:
         test_files = (
             self.datapoint.public_test_files
             if split == "public"
@@ -253,7 +254,9 @@ class AEEnv(Env):
             if file.name not in ["test_public.py", "private_test.py"]
         )
 
-        command = "pytest --assert=plain -o hypothesis-max-examples=8 --continue-on-collection-errors"
+        command = (
+            "pytest --assert=plain -o hypothesis-max-examples=8 --continue-on-collection-errors"
+        )
         if xml_pytest_report_filename is None:
             command += " --tb=native"
         else:
@@ -282,10 +285,9 @@ class AEEnv(Env):
             tokenizer=self.tokenizer, system_message=system_prompt, tools=self.available_tools
         )
 
-        user_prompt: str = (
-            USER_PROMPT.format(prompt=self.datapoint.prompt)
-            + bash_agent.disable_thinking_prompt(self)
-        )
+        user_prompt: str = USER_PROMPT.format(
+            prompt=self.datapoint.prompt
+        ) + bash_agent.disable_thinking_prompt(self)
 
         conversation: list[renderers.Message] = [
             {"role": "system", "content": system_prompt},
@@ -307,7 +309,7 @@ class AEEnv(Env):
         result = await self.get_reward()
         if isinstance(result, StepResult):
             return result
-        
+
         reward = result
         return bash_agent.done_step_result(self, reward=reward)
 
@@ -336,13 +338,15 @@ class AEEnv(Env):
 
         # Setup before running tests
         setup_commands = self.setup_before_running_tests_commmands()
-        
+
         # Build commands to run tests and get reports
         test_commands = []
         cat_commands = []
         for split in splits:
             xml_filename = f"{split}-test-report.xml"
-            test_commands.append(self.run_tests_command(split, xml_pytest_report_filename=xml_filename))
+            test_commands.append(
+                self.run_tests_command(split, xml_pytest_report_filename=xml_filename)
+            )
             cat_commands.append(f"cat {quote(xml_filename)}")
 
         all_commands = setup_commands + test_commands + cat_commands
@@ -368,15 +372,15 @@ class AEEnv(Env):
         n_setup = len(setup_commands)
         n_test = len(test_commands)
         n_cat = len(cat_commands)
-        
+
         setup_outputs = outputs[:n_setup]
-        test_outputs = outputs[n_setup:n_setup + n_test]
-        cat_outputs = outputs[n_setup + n_test:]
-        
+        test_outputs = outputs[n_setup : n_setup + n_test]
+        cat_outputs = outputs[n_setup + n_test :]
+
         if any(output.exit_code != 0 for output in setup_outputs):
             self.could_not_run_tests = True
             return None
-        
+
         if any(output.exit_code != 0 for output in cat_outputs):
             self.could_not_run_tests = True
             return None
@@ -392,7 +396,7 @@ class AEEnv(Env):
         splits = self.test_splits()
         weights = self.test_split_weights_in_reward()
         reports = await self.get_pytest_reports(splits=splits)
-        
+
         if reports is None:
             self.could_not_run_tests = True
             return 0.0
@@ -417,12 +421,20 @@ class AEEnv(Env):
         )
 
         # Store individual rewards for metrics
-        if reports["public"] is not None and reports["public"].n_tests != 0 and n_tests["public"] > 0:
+        if (
+            reports["public"] is not None
+            and reports["public"].n_tests != 0
+            and n_tests["public"] > 0
+        ):
             self.public_reward = reports["public"].n_successful() / n_tests["public"]
         else:
             self.public_reward = 0.0
-            
-        if reports["private"] is not None and reports["private"].n_tests != 0 and n_tests["private"] > 0:
+
+        if (
+            reports["private"] is not None
+            and reports["private"].n_tests != 0
+            and n_tests["private"] > 0
+        ):
             self.private_reward = reports["private"].n_successful() / n_tests["private"]
         else:
             self.private_reward = 0.0
@@ -572,15 +584,17 @@ class AEGroupBuilder(EnvGroupBuilder):
             )
             for i in range(self.num_envs)
         ]
-        
+
     def logging_tags(self) -> list[str]:
         return ["ae_" + self.cfg.reward_hacking_prompt.replace("-", "_")]
+
 
 # Create dockerfile contents for each container
 def get_dockerfile_content(datapoint: Data) -> str:
     return DOCKERFILE_CONTENT.format(
         requirements=" ".join(quote(package) for package in datapoint.requirements),
     )
+
 
 class AEDataset(RLDataset):
     def __init__(
@@ -611,7 +625,6 @@ class AEDataset(RLDataset):
 
         assert len(batch_data) == self.batch_size
 
-        
         dockerfile_contents = [
             get_dockerfile_content(datapoint)
             for _ in range(self.group_size)
@@ -679,7 +692,7 @@ class AEDatasetBuilder(RLDatasetBuilder):
 def load_ae_dataset_from_json(json_file_path: str) -> list[Data]:
     """
     Load AE dataset from a JSON file.
-    
+
     Expected JSON format:
     [
         {
@@ -699,12 +712,12 @@ def load_ae_dataset_from_json(json_file_path: str) -> list[Data]:
     """
     with open(json_file_path, "r") as f:
         raw_data = json.load(f)
-    
+
     dataset: list[Data] = []
     for item in raw_data:
         if not isinstance(item, dict):
             continue
-        
+
         # Validate required fields
         if "prompt" not in item or not isinstance(item["prompt"], str):
             continue
@@ -714,11 +727,11 @@ def load_ae_dataset_from_json(json_file_path: str) -> list[Data]:
             continue
         if "private_test_files" not in item or not isinstance(item["private_test_files"], list):
             continue
-        
+
         # Validate requirements are strings
         if not all(isinstance(req, str) for req in item["requirements"]):
             continue
-        
+
         # Convert test files to FileAndName objects
         public_test_files = []
         for test_file in item["public_test_files"]:
@@ -728,8 +741,10 @@ def load_ae_dataset_from_json(json_file_path: str) -> list[Data]:
                 continue
             if not isinstance(test_file["name"], str) or not isinstance(test_file["content"], str):
                 continue
-            public_test_files.append(FileAndName(name=test_file["name"], content=test_file["content"]))
-        
+            public_test_files.append(
+                FileAndName(name=test_file["name"], content=test_file["content"])
+            )
+
         private_test_files = []
         for test_file in item["private_test_files"]:
             if not isinstance(test_file, dict):
@@ -738,8 +753,10 @@ def load_ae_dataset_from_json(json_file_path: str) -> list[Data]:
                 continue
             if not isinstance(test_file["name"], str) or not isinstance(test_file["content"], str):
                 continue
-            private_test_files.append(FileAndName(name=test_file["name"], content=test_file["content"]))
-        
+            private_test_files.append(
+                FileAndName(name=test_file["name"], content=test_file["content"])
+            )
+
         dataset.append(
             Data(
                 prompt=item["prompt"],
@@ -748,8 +765,9 @@ def load_ae_dataset_from_json(json_file_path: str) -> list[Data]:
                 private_test_files=private_test_files,
             )
         )
-    
+
     return dataset
+
 
 async def build_docker_image(dataset: list[Data]) -> None:
     client = ScalableDockerClient(key="ae_env")
@@ -757,9 +775,11 @@ async def build_docker_image(dataset: list[Data]) -> None:
     await client.build_images(all_images, batch_size=64)
     print(f"Built {len(all_images)} images")
 
+
 def build_config(dataset: list[Data]) -> train.Config:
     model_name = "Qwen/Qwen3-8B"
     from tinker_cookbook.rl.features.limit import LimitSize
+
     dataset_builder = AEDatasetBuilder(
         batch_size=64,
         model_name_for_tokenizer=model_name,
@@ -783,14 +803,16 @@ def build_config(dataset: list[Data]) -> train.Config:
         max_tokens=2048,
         eval_every=0,
         wandb_project="tinker",
-        wandb_name="ae_env_"+model_name,
+        wandb_name="ae_env_" + model_name,
     )
-    
+
+
 def main(dataset: list[Data]) -> None:
     config = build_config(dataset)
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
     asyncio.run(train.main(config))
-    
+
+
 if __name__ == "__main__":
     load_dotenv()
     dataset = load_ae_dataset_from_json("data/ae-data.json")

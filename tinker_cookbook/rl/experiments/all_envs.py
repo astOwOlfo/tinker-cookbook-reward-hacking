@@ -37,6 +37,11 @@ from tinker_cookbook.rl.envs.aghyad_envs.omit_description_env import (
     OmitDescriptionEnvConfig,
     load_omit_description_dataset,
 )
+from tinker_cookbook.rl.envs.swe_fixer import (
+    SWEFixerDatasetBuilder,
+    SWEFixerEnvConfig,
+    load_swe_fixer_dataset,
+)
 from tinker_cookbook.rl.envs.inspect.bash_codeforces import (
     bash_codeforces,
     get_rewards_bash_codeforces,
@@ -81,19 +86,21 @@ class TrainEnvsConfig:
             return self.renderer_name
         return model_info.get_recommended_renderer_name(self.model_name)
 
+
 def maybe_log(cfg: TrainEnvsConfig, dataset_builder: RLDatasetBuilder) -> RLDatasetBuilder:
     if cfg.save_rollouts_directory is not None:
         return build_dataset_builder(
-            dataset_builder, 
-            LoggingTranscriptsEnv, 
-            LoggingConfig(transcripts_dir=cfg.save_rollouts_directory)
+            dataset_builder,
+            LoggingTranscriptsEnv,
+            LoggingConfig(transcripts_dir=cfg.save_rollouts_directory),
         )
     return dataset_builder
+
 
 def bash_apps(
     cfg: TrainEnvsConfig, reward_hacking_prompt: str, apps_dataset
 ) -> BashAppsDatasetBuilder:
-    db =  BashAppsDatasetBuilder(
+    db = BashAppsDatasetBuilder(
         batch_size=cfg.batch_size,
         model_name_for_tokenizer=cfg.model_name,
         renderer_name=cfg.get_renderer_name(),
@@ -113,13 +120,14 @@ def bash_apps(
     )
     return maybe_log(cfg, db)
 
+
 def bash_apps_locked_permissions(
     cfg: TrainEnvsConfig, reward_hacking_prompt: str, apps_dataset
 ) -> BashAppsDatasetBuilder:
     """
     Similar to the above, but the public tests are locked with 000 permissions. This means that the model cannot read the public tests without chmodding it.
     """
-    db =  BashAppsDatasetBuilder(
+    db = BashAppsDatasetBuilder(
         batch_size=cfg.batch_size,
         model_name_for_tokenizer=cfg.model_name,
         renderer_name=cfg.get_renderer_name(),
@@ -140,13 +148,14 @@ def bash_apps_locked_permissions(
     )
     return maybe_log(cfg, db)
 
+
 def bash_apps_private_reward(
     cfg: TrainEnvsConfig, reward_hacking_prompt: str, apps_dataset
 ) -> BashAppsDatasetBuilder:
     """
     Similar to the above, but the public reward weight is set to 0.0. This means that the model is only rewarded for passing the held-out tests. It can either solve the problem honestly, or use the info it has about the public tests to successfully hack withheld ones.
     """
-    db =  BashAppsDatasetBuilder(
+    db = BashAppsDatasetBuilder(
         batch_size=cfg.batch_size,
         model_name_for_tokenizer=cfg.model_name,
         renderer_name=cfg.get_renderer_name(),
@@ -165,6 +174,7 @@ def bash_apps_private_reward(
         ),
     )
     return maybe_log(cfg, db)
+
 
 def bad_sandbox(
     cfg: TrainEnvsConfig,
@@ -193,6 +203,7 @@ def bad_sandbox(
         ),
     )
     return maybe_log(cfg, db)
+
 
 def bash_apps_monitored(
     cfg: TrainEnvsConfig, reward_hacking_prompt: str, apps_dataset, monitor_model_name: str
@@ -226,6 +237,7 @@ def ae(cfg: TrainEnvsConfig, reward_hacking_prompt: str) -> AEDatasetBuilder:
         ),
     )
     return maybe_log(cfg, db)
+
 
 def ae_monitored(
     cfg: TrainEnvsConfig, reward_hacking_prompt: str, monitor_model_name: str
@@ -340,9 +352,7 @@ def style_environment(
         max_steps=cfg.max_steps,
         qwen3_disable_thinking=cfg.qwen3_disable_thinking,
         hint_type=hint_type,
-        max_prompt_tokens=cfg.context_length
-            - cfg.max_completion_tokens
-            - 16,  # -16 just in case
+        max_prompt_tokens=cfg.context_length - cfg.max_completion_tokens - 16,  # -16 just in case
     )
     db = OmitDescriptionDatasetBuilder(
         batch_size=cfg.batch_size,
@@ -430,4 +440,34 @@ def all_inspect(cfg: TrainEnvsConfig, impossible: bool) -> InspectMultipleRLData
         },
         test_fraction=0.1,
         save_rollouts_directory=cfg.save_rollouts_directory,
+    )
+
+
+def swe_fixer(
+    cfg: TrainEnvsConfig,
+    reward_hacking_prompt: str,
+    show_hint: bool,
+    show_modified_file_names: bool,
+) -> SWEFixerDatasetBuilder:
+    assert not cfg.qwen3_disable_thinking, (
+        "With SWEFixerEnv, use the qwen3_no_thinking renderer instead of qwen3_disable_thinking=True"
+    )
+
+    return SWEFixerDatasetBuilder(
+        batch_size=cfg.batch_size,
+        model_name_for_tokenizer=cfg.model_name,
+        renderer_name=cfg.get_renderer_name(),
+        group_size=cfg.group_size,
+        data=load_swe_fixer_dataset(),
+        test_fraction=0.1,
+        cfg=SWEFixerEnvConfig(
+            can_finish=True,
+            show_hint=show_hint,
+            show_modified_file_names=show_modified_file_names,
+            reward_hacking_prompt=reward_hacking_prompt,
+            max_steps=cfg.max_steps,
+            max_prompt_tokens=cfg.context_length
+            - cfg.max_completion_tokens
+            - 16,  # -16 just in case
+        ),
     )

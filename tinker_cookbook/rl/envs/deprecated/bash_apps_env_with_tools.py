@@ -746,7 +746,7 @@ class BashAppsGroupBuilder(EnvGroupBuilder):
             )
             for i in range(self.num_envs)
         ]
-        
+
     def logging_tags(self) -> list[str]:
         return ["bash_apps_env_with_tools"]
 

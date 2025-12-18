@@ -41,11 +41,16 @@ from tinker_cookbook.rl.types import (
 )
 from tinker_cookbook.tokenizer_utils import get_tokenizer
 from tinker_cookbook.rl import train
-from tinker_cookbook.rl.envs.bash_apps_env import load_apps_dataset, BashAppsDatasetBuilder, BashAppsEnvConfig
+from tinker_cookbook.rl.envs.bash_apps_env import (
+    load_apps_dataset,
+    BashAppsDatasetBuilder,
+    BashAppsEnvConfig,
+)
 from tinker_cookbook.rl.envs.bash_apps_env import DOCKERFILE_CONTENT
 from tinker_cookbook.rl.features.monitored import MonitorConfig, Monitored
 
 logger = logging.getLogger(__name__)
+
 
 def build_config() -> train.Config:
     model_name = "Qwen/Qwen3-8B"
@@ -78,6 +83,7 @@ def build_config() -> train.Config:
     )
 
     return new_config
+
 
 def build_docker_image() -> None:
     client = ScalableDockerClient(key="bash_apps")

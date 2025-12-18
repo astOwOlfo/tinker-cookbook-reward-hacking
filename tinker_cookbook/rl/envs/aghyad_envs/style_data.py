@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
+
 @dataclass(frozen=True, slots=True)
 class StyleData:
     reward_function: str
@@ -16,7 +17,7 @@ def all_style_rewards() -> List[StyleData]:
     """Load style reward data from style_seeds.jsonl and return a list of StyleData objects."""
     jsonl_path = Path(__file__).parent / "style_seeds.jsonl"
     style_data_list = []
-    
+
     with open(jsonl_path, "r", encoding="utf-8") as f:
         for line in f:
             if line.strip():
@@ -29,8 +30,9 @@ def all_style_rewards() -> List[StyleData]:
                     description=data["implicit_goal"],
                 )
                 style_data_list.append(style_data)
-    
+
     return style_data_list
+
 
 if __name__ == "__main__":
     style_data_list = all_style_rewards()

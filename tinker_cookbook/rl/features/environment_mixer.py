@@ -53,23 +53,27 @@ class DatasetMixerDataset(RLDataset):
             if inner_index < dataset_length:
                 return self.inner_datasets[dataset_index].get_batch(inner_index)
             inner_index -= dataset_length
-        raise IndexError(f"Index {index} is out of range for dataset mixer with lengths {self.dataset_lengths}")
-    
+        raise IndexError(
+            f"Index {index} is out of range for dataset mixer with lengths {self.dataset_lengths}"
+        )
 
     def __len__(self) -> int:
         return sum(self.dataset_lengths)
-    
+
     def display_inner_datasets(self, logger: logging.Logger, indent: int = 0) -> None:
         """Recursively display inner datasets with indentation."""
         indent_str = "  " * indent
         logger.info(f"{indent_str}DatasetMixer(total length: {len(self)} batches)")
         for i, dataset in enumerate(self.inner_datasets):
-            if hasattr(dataset, 'display_inner_datasets'):
+            if hasattr(dataset, "display_inner_datasets"):
                 dataset.display_inner_datasets(logger, indent + 1)
-            elif hasattr(dataset, 'display_inner_dataset'):
+            elif hasattr(dataset, "display_inner_dataset"):
                 dataset.display_inner_dataset(logger, indent + 1)
             else:
-                logger.info(f"{indent_str}  [{i}] {dataset.__class__.__name__} (length: {len(dataset)} batches)")
+                logger.info(
+                    f"{indent_str}  [{i}] {dataset.__class__.__name__} (length: {len(dataset)} batches)"
+                )
+
 
 @dataclass(frozen=True, slots=True)
 class DatasetMixerDatasetBuilder(RLDatasetBuilder):
@@ -83,18 +87,19 @@ class DatasetMixerDatasetBuilder(RLDatasetBuilder):
             train_datasets.append(train_dataset)
             test_datasets.append(test_dataset)
         assert len(train_datasets) == len(test_datasets)
-        
 
-        
         return (
             DatasetMixerDataset(train_datasets),
             DatasetMixerDataset(test_datasets),
         )
-        
+
+
 class _DatasetMixer:
     def __init__(self) -> None:
         pass
+
     def __call__(self, inner_builders: list[RLDatasetBuilder]) -> DatasetMixerDatasetBuilder:
         return DatasetMixerDatasetBuilder(inner_builders)
+
 
 DatasetMixer = _DatasetMixer()

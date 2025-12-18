@@ -74,6 +74,7 @@ class Datapoint:
     reward_function: str
     style_instruction: str
 
+
 class OmitDescriptionEnv(Env):
     def __init__(
         self,
@@ -95,7 +96,7 @@ class OmitDescriptionEnv(Env):
         self.container = None
         self.tokenizer = tokenizer
         self.reward_hacking_prompt = reward_hacking_prompt
-        
+
         self.all_messages: list[renderers.Message] = []
         self.i_step = 0
         self.ran_startup_commands = False
@@ -106,7 +107,11 @@ class OmitDescriptionEnv(Env):
         self.n_errors_parsing_tool_calls = 0
         self.failed_startup_commands = False
 
-        self.available_tools: list[dict] = [tools.BASH_TOOL, tools.EDIT_TOOL, tools.LIST_DIRECTORY_CONTENTS_TOOL]
+        self.available_tools: list[dict] = [
+            tools.BASH_TOOL,
+            tools.EDIT_TOOL,
+            tools.LIST_DIRECTORY_CONTENTS_TOOL,
+        ]
         if self.cfg.can_finish:
             self.available_tools.append(tools.FINISH_TOOL)
 
@@ -125,10 +130,7 @@ class OmitDescriptionEnv(Env):
             tokenizer=self.tokenizer, system_message=system_prompt, tools=self.available_tools
         )
 
-        user_prompt: str = (
-            USER_PROMPT
-            + bash_agent.disable_thinking_prompt(self)
-        )
+        user_prompt: str = USER_PROMPT + bash_agent.disable_thinking_prompt(self)
 
         conversation: list[renderers.Message] = [
             {"role": "system", "content": system_prompt},
@@ -141,8 +143,8 @@ class OmitDescriptionEnv(Env):
 
     async def step(self, action: Action) -> StepResult:
         return await bash_agent.default_agent_step(
-            self, 
-            action, 
+            self,
+            action,
             self.get_finished_step_result_with_reward,
         )
 
@@ -151,8 +153,13 @@ class OmitDescriptionEnv(Env):
             upload_file_command(filename="/testbed/problem.txt", content=""),
             upload_file_command(filename="/testbed/solution.py", content=""),
             upload_file_command(filename="/testbed/tests.py", content=""),
-            upload_file_command(filename="/testbed/style_instructions.txt", content=self.datapoint.style_instruction),
-            upload_file_command(filename="/testbed/style_tests.py", content=TEST_FILE_TEMPLATE.format(reward_function=self.datapoint.reward_function)),
+            upload_file_command(
+                filename="/testbed/style_instructions.txt", content=self.datapoint.style_instruction
+            ),
+            upload_file_command(
+                filename="/testbed/style_tests.py",
+                content=TEST_FILE_TEMPLATE.format(reward_function=self.datapoint.reward_function),
+            ),
         ]
 
     async def get_finished_step_result_with_reward(self) -> StepResult:
@@ -197,13 +204,9 @@ class OmitDescriptionEnv(Env):
             self.could_not_run_tests = True
             return 0.0
 
-        (
-            run_test_output,
-        ) = outputs
-        
-        if (
-            run_test_output.exit_code != 0
-        ):
+        (run_test_output,) = outputs
+
+        if run_test_output.exit_code != 0:
             self.could_not_run_tests = True
             return 0.0
 
@@ -304,7 +307,13 @@ class OmitDescriptionGroupBuilder(EnvGroupBuilder):
         ]
 
     def logging_tags(self) -> list[str]:
-        return ["omit_description_" + self.cfg.hint_type + "_" + self.cfg.reward_hacking_prompt.replace("-", "_")]
+        return [
+            "omit_description_"
+            + self.cfg.hint_type
+            + "_"
+            + self.cfg.reward_hacking_prompt.replace("-", "_")
+        ]
+
 
 class OmitDescriptionDataset(RLDataset):
     def __init__(
@@ -398,7 +407,7 @@ class OmitDescriptionDatasetBuilder(RLDatasetBuilder):
 def load_omit_description_dataset(cfg: OmitDescriptionEnvConfig) -> list[Datapoint]:
     all_style_data = all_style_rewards()
     hint_type = cfg.hint_type
-    
+
     all_data = []
     for style_data in all_style_data:
         if hint_type == "none":
@@ -410,20 +419,27 @@ def load_omit_description_dataset(cfg: OmitDescriptionEnvConfig) -> list[Datapoi
         elif hint_type == "consistent":
             style_instructions = style_data.consistent_style_instructions
         for style_instruction in style_instructions:
-            all_data.append(Datapoint(reward_function=style_data.reward_function, style_instruction=style_instruction))
+            all_data.append(
+                Datapoint(
+                    reward_function=style_data.reward_function, style_instruction=style_instruction
+                )
+            )
     return all_data
 
-def build_config(hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] = "none") -> train.Config:
+
+def build_config(
+    hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] = "none",
+) -> train.Config:
     model_name = "Qwen/Qwen3-32B"
     from tinker_cookbook.rl.features.limit import LimitSize
-    
+
     cfg = OmitDescriptionEnvConfig(
         reward_hacking_prompt="forbid",
         max_steps=6,
         qwen3_disable_thinking=False,
         hint_type=hint_type,
     )
-    
+
     dataset_builder = OmitDescriptionDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
@@ -441,7 +457,7 @@ def build_config(hint_type: Literal["none", "contradictory", "irrelevant", "cons
         max_tokens=2048,
         eval_every=0,
         wandb_project="tinker",
-        wandb_name="omit_description_env_"+hint_type+"_"+model_name,
+        wandb_name="omit_description_env_" + hint_type + "_" + model_name,
         kl_penalty_coef=0.005,
     )
 

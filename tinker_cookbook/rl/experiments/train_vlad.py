@@ -10,7 +10,7 @@ from tinker_cookbook import cli_utils, model_info
 from tinker_cookbook.hyperparam_utils import get_lr
 from tinker_cookbook.rl import train
 
-from tinker_cookbook.rl.envs import inspect_multi_task
+from tinker_cookbook.rl.envs import inspect_multi_task, swe_fixer_env
 from tinker_cookbook.rl.envs.inspect.bash_codeforces import load_codeforces_dataset
 from tinker_cookbook.rl.features.curriculum import Curriculum
 from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBuilder, DatasetMixer
@@ -82,7 +82,7 @@ def build_config(log_dir: str) -> Config:
         batch_size=32,
         group_size=8,
         qwen3_disable_thinking=False,
-        max_steps=8,
+        max_steps=12,
         context_length=32768,
         max_completion_tokens=8192,
         save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
@@ -93,7 +93,10 @@ def build_config(log_dir: str) -> Config:
     config = Config(
         model_name=cfg.model_name,
         log_path=log_dir,
-        dataset_builder=ae(cfg, "must"),
+        dataset_builder=swe_fixer(
+            cfg, reward_hacking_prompt="nothing", show_hint=False, show_modified_file_names=False
+        ),
+        # dataset_builder=ae(cfg, "must"),
         # dataset_builder=all_inspect(cfg, impossible=False),
         # dataset_builder=build_curriculum_config(cfg),
         # dataset_builder=bad_sandbox(
@@ -108,7 +111,7 @@ def build_config(log_dir: str) -> Config:
         eval_every=0,
         save_every=8,
         wandb_project="tinker-full-runs",
-        wandb_name="joey-curriculum-12-16",
+        wandb_name="swe-fixer-" + cfg.model_name,
         kl_penalty_coef=kl_penalty_coef,
     )
 
@@ -121,18 +124,17 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
-    USING_AE = True
+    USING_AE = False
     USING_SWE_FIXER = False
 
     if USING_AE:
         dataset = load_ae_dataset_from_json("data/ae.json")
         print(f"Building docker image for AE dataset with {len(dataset)} datapoints")
         asyncio.run(ae_env.build_docker_image(dataset))
-        
     if USING_SWE_FIXER:
-        print(f"Building docker image for SWE Fixer dataset")
-        asyncio.run(swe_fixer_env.build_docker_image())
-    
+        dataset = swe_fixer_env.load_swe_fixer_dataset()
+        print(f"Building docker images for SWE Fixer dataset with {len(dataset)} datapoints")
+        swe_fixer_env.build_docker_images()
     print("Building docker image for Bash Apps dataset")
     bash_apps_env.build_docker_image()
     print("Building docker image for Bad Sandbox Env with tools")

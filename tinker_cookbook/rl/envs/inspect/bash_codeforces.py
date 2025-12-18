@@ -243,7 +243,10 @@ def file_mode(read_permission: bool, write_permission: bool) -> str:
 
 
 def bash_codeforces_dataset(
-    dataset: list[Datapoint], max_tests: int, public_test_write_permission: bool, public_test_read_permission: bool
+    dataset: list[Datapoint],
+    max_tests: int,
+    public_test_write_permission: bool,
+    public_test_read_permission: bool,
 ) -> Dataset:
     public_test_file_mode: str = file_mode(
         read_permission=public_test_read_permission, write_permission=public_test_write_permission
@@ -407,6 +410,7 @@ def bash_codeforces(
 
 def get_rewards_bash_codeforces(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
     return [sample.scores["bash_codeforces_scorer"].value for sample in eval_log.samples]  # type: ignore
+
 
 def get_metrics_bash_codeforces(eval_log: EvalLog, samples: list[Sample]) -> list[dict[str, float]]:
     return [

@@ -416,7 +416,9 @@ class BashAppsEnv(Env):
 
             if self.container is None:
                 try:
-                    print(f"Epoch {self.epoch} Env {self.container_index}: Starting container if not already running")
+                    print(
+                        f"Epoch {self.epoch} Env {self.container_index}: Starting container if not already running"
+                    )
                     self.container = await self.container_starter.get_container(
                         self.container_index
                     )
@@ -435,7 +437,9 @@ class BashAppsEnv(Env):
                 break
 
             try:
-                print(f"Epoch {self.epoch} Env {self.container_index}: Running commands in container")
+                print(
+                    f"Epoch {self.epoch} Env {self.container_index}: Running commands in container"
+                )
                 tool_outputs: list[ProcessOutput] = await self.scalable_docker_client.run_commands(
                     container=self.container,
                     commands=[tool_call.to_bash_command()],
@@ -472,13 +476,17 @@ class BashAppsEnv(Env):
         if not ("<correct/>" in next_message or "<incorrect/>" in next_message):  # type: ignore
             messages.append({"role": "user", "content": GRADER_FINAL_USER_PROMPT})
 
-            print(f"Epoch {self.epoch} Env {self.container_index}: Calling OpenAI for final response")
+            print(
+                f"Epoch {self.epoch} Env {self.container_index}: Calling OpenAI for final response"
+            )
             next_message: str | None = await openai_completion(
                 messages,
                 model=self.cfg.grader_openai_model,
                 max_completion_tokens=self.cfg.grader_max_completion_tokens,
             )
-            print(f"Epoch {self.epoch} Env {self.container_index}: Done calling OpenAI for final response")
+            print(
+                f"Epoch {self.epoch} Env {self.container_index}: Done calling OpenAI for final response"
+            )
 
             if next_message is None:
                 return self.done_step_result(reward=0.0)
@@ -1174,7 +1182,7 @@ class BashAppsGroupBuilder(EnvGroupBuilder):
             )
             for i in range(self.num_envs)
         ]
-        
+
     def logging_tags(self) -> list[str]:
         return ["model_graded_bash_apps_env"]
 
