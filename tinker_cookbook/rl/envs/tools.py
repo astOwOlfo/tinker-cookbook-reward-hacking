@@ -375,8 +375,8 @@ def extract_tool_call(
     # tool_name = raw_call.function.name
     # arguments = json.loads(raw_call.function.arguments)
     print(f"{raw_call=}")
-    tool_name = raw_call["function"]["name"]
-    arguments = raw_call["function"]["arguments"]
+    tool_name = raw_call["name"]
+    arguments = raw_call["args"]
 
     for available_tool in available_tools:
         if tool_name != available_tool["function"]["name"]:
