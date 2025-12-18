@@ -125,7 +125,7 @@ def main(log_dir: str) -> None:
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
     USING_AE = False
-    USING_SWE_FIXER = False
+    USING_SWE_FIXER = True
 
     if USING_AE:
         dataset = load_ae_dataset_from_json("data/ae.json")
