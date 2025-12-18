@@ -546,8 +546,8 @@ def build_docker_images() -> None:
 
 
 def build_config() -> train.Config:
-    # model_name = "openai/gpt-oss-20b"
-    model_name = "Qwen/Qwen3-32B"
+    model_name = "openai/gpt-oss-20b"
+    # model_name = "Qwen/Qwen3-32B"
 
     context_length = 32768
     max_completion_tokens = 4096
@@ -555,7 +555,7 @@ def build_config() -> train.Config:
     dataset_builder = SWEFixerDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
-        renderer_name="qwen3",
+        renderer_name="gpt_oss_low_reasoning",
         group_size=8,
         data=load_swe_fixer_dataset(),
         test_fraction=0.1,
@@ -564,7 +564,7 @@ def build_config() -> train.Config:
             show_hint=True,
             show_modified_file_names=True,
             reward_hacking_prompt="must",
-            max_steps=8,
+            max_steps=12,
             max_prompt_tokens=context_length - max_completion_tokens - 16,  # -16 just in case
         ),
     )
@@ -573,7 +573,9 @@ def build_config() -> train.Config:
         model_name=model_name,
         log_path="/tmp/tinker-examples/swe-fixer",
         dataset_builder=dataset_builder,
-        learning_rate=hyperparam_utils.get_lr(model_name),
+        learning_rate=hyperparam_utils.get_lr(
+            "Qwen/Qwen3-32B"
+        ),  # use Qwen learning rate as a best guess of what a good learning rate is for gpt oss
         max_tokens=max_completion_tokens,
         eval_every=0,
         wandb_project="tinker",
