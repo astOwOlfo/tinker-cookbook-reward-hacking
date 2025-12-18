@@ -269,6 +269,16 @@ class SWEFixerEnv(Env):
     def test_filenames(self) -> list[str]:
         return added_files(self.datapoint.test_patch) + modified_files(self.datapoint.test_patch)
 
+    def metrics(self) -> dict[str, float]:
+        return {
+            "n_tool_timeouts": float(self.n_tool_timeouts),
+            "tests_timed_out": float(self.tests_timed_out),
+            "could_not_run_tests": float(self.could_not_run_tests),
+            "docker_error": float(self.docker_error),
+            "n_errors_parsing_tool_calls": float(self.n_errors_parsing_tool_calls),
+            "failed_startup_commands": float(self.failed_startup_commands),
+        }
+
 
 def modified_files(diff: str) -> list[str]:
     return [file.path for file in PatchSet(diff) if file.is_modified_file]
