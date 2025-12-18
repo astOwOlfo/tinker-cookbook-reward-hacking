@@ -69,6 +69,7 @@ class SWEFixerEnvConfig:
     show_hint: bool
     show_modified_file_names: bool
     reward_hacking_prompt: str
+    max_steps: int
     test_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=16, total_seconds=24
     )
@@ -544,6 +545,7 @@ def build_config() -> train.Config:
             show_hint=True,
             show_modified_file_names=True,
             reward_hacking_prompt="must",
+            max_steps=2,
         ),
     )
 
