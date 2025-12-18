@@ -5,3 +5,4 @@ tinker_cookbook/rl/envs/inspect/ae
 fig.html
 rollouts/*
 data/apps_data.json
+tmp/*
