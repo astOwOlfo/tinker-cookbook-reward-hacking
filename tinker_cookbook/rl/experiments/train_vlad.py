@@ -93,15 +93,16 @@ def build_config(log_dir: str) -> Config:
     config = Config(
         model_name=cfg.model_name,
         log_path=log_dir,
+        dataset_builder=ae(cfg, "must"),
         # dataset_builder=all_inspect(cfg, impossible=False),
         # dataset_builder=build_curriculum_config(cfg),
-        dataset_builder=bad_sandbox(
-            cfg,
-            load_codeforces_dataset(),
-            impossible=True,
-            min_test_output_length=16,
-            reward_hacking_prompt="must",
-        ),
+        # dataset_builder=bad_sandbox(
+        #     cfg,
+        #     load_codeforces_dataset(),
+        #     impossible=True,
+        #     min_test_output_length=16,
+        #     reward_hacking_prompt="must",
+        # ),
         learning_rate=1e-5,  # get_lr(cfg.model_name),
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
