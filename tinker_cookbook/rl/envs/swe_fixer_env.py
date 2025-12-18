@@ -203,14 +203,17 @@ class SWEFixerEnv(Env):
 
         self.all_messages.extend(conversation)
 
+        print(f"{self.stop_condition=}")
         return self.renderer.build_generation_prompt(conversation), self.stop_condition
 
     async def step(self, action: Action) -> StepResult:
-        return await bash_agent.default_agent_step(
+        step_result = await bash_agent.default_agent_step(
             self,
             action,
             self.get_finished_step_result_with_reward,
         )
+        print(f"{step_result.next_stop_condition=}")
+        return step_result
 
     async def get_finished_step_result_with_reward(self) -> StepResult:
         result = await self.get_public_and_private_rewards()
