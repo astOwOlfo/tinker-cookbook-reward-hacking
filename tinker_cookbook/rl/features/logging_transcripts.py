@@ -65,7 +65,8 @@ class LoggingTranscriptsEnv(Env):
         with open(
             os.path.join(
                 self.logging_config.transcripts_dir,
-                f"rollouts_{datetime.now().strftime('%m%dT%H:%M')}.json",
+                f"rollouts_{datetime.now().strftime('%m%dT%H:%M')}
+                .json",
             ),
             "w+",
         ) as f:
