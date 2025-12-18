@@ -485,7 +485,7 @@ class SWEFixerDatasetBuilder(RLDatasetBuilder):
         tokenizer = get_tokenizer(self.model_name_for_tokenizer)
         renderer = renderers.get_renderer(self.renderer_name, tokenizer=tokenizer)
 
-        scalable_docker_client = ScalableDockerClient(key="bash_apps")
+        scalable_docker_client = ScalableDockerClient(key="swe_fixer")
 
         return tuple(  # type: ignore
             SWEFixerDataset(
@@ -534,7 +534,7 @@ def load_swe_fixer_dataset(filename: str = "data/swe-fixer.json") -> list[Datapo
 
 def build_docker_images() -> None:
     dataset = load_swe_fixer_dataset()
-    client = ScalableDockerClient(key="bash_apps", max_retries=3)
+    client = ScalableDockerClient(key="swe_fixer", max_retries=3)
     dockerfiles: list[str] = list(set(dockerfile_content(datapoint) for datapoint in dataset))
     asyncio.run(
         client.build_images(
