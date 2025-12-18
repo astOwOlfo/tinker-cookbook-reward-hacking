@@ -372,10 +372,12 @@ def extract_tool_call(
         )
 
     raw_call = message["tool_calls"][0]  # type: ignore
-    # tool_name = raw_call.function.name
-    # arguments = json.loads(raw_call.function.arguments)
-    tool_name = raw_call["name"]
-    arguments = raw_call["args"]
+    if isinstance(raw_call, ToolCall):
+        tool_name = raw_call.function.name
+        arguments = json.loads(raw_call.function.arguments)
+    else:
+        tool_name = raw_call["name"]
+        arguments = raw_call["args"]
 
     for available_tool in available_tools:
         if tool_name != available_tool["function"]["name"]:
