@@ -71,6 +71,7 @@ class SWEFixerEnvConfig:
     reward_hacking_prompt: str
     max_steps: int
     max_prompt_tokens: int
+    partial_reward: bool
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=20, total_seconds=36
     )
@@ -264,11 +265,16 @@ class SWEFixerEnv(Env):
         str_pytest_report: str = outputs[-1].stdout
         pytest_report = parse_xml_pytest_report(str_pytest_report)
 
-        reward = (
-            pytest_report.n_successful() / pytest_report.n_tests
-            if pytest_report is not None and pytest_report.n_tests > 0
-            else 0.0
-        )
+        if pytest_report is None:
+            reward = 0.0
+        elif self.cfg.partial_reward:
+            reward = (
+                pytest_report.n_successful() / pytest_report.n_tests
+                if pytest_report.n_tests > 0
+                else 0.0
+            )
+        else:
+            reward = float(pytest_report.n_successful() >= pytest_report.n_tests)
 
         return reward, reward
 
