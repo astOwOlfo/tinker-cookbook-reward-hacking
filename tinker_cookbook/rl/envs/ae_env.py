@@ -428,7 +428,7 @@ class AEEnv(Env):
             and n_tests["public"] > 0
         ):
             self.public_reward = reports["public"].n_successful() / n_tests["public"]
-            if self.cfg.cap_reward:
+            if self.cfg.cap_reward is not None:
                 self.public_reward = min(self.public_reward, self.cfg.cap_reward)
         else:
             self.public_reward = 0.0
@@ -439,7 +439,7 @@ class AEEnv(Env):
             and n_tests["private"] > 0
         ):
             self.private_reward = reports["private"].n_successful() / n_tests["private"]
-            if self.cfg.cap_reward:
+            if self.cfg.cap_reward is not None:
                 self.private_reward = min(self.private_reward, self.cfg.cap_reward)
         else:
             self.private_reward = 0.0
