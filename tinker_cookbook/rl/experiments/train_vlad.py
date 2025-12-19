@@ -78,7 +78,8 @@ def build_config(log_dir: str) -> Config:
     cfg = TrainEnvsConfig(
         # model_name="Qwen/Qwen3-32B",
         # model_name="moonshotai/Kimi-K2-Thinking",
-        model_name="openai/gpt-oss-120b",
+        # model_name="openai/gpt-oss-120b",
+        model_name="Qwen/Qwen3-235B-A22B-Instruct-2507",
         batch_size=32,
         group_size=8,
         qwen3_disable_thinking=False,
@@ -93,10 +94,10 @@ def build_config(log_dir: str) -> Config:
     config = Config(
         model_name=cfg.model_name,
         log_path=log_dir,
-        dataset_builder=swe_fixer(
-            cfg, reward_hacking_prompt="nothing", show_hint=False, show_modified_file_names=False
-        ),
-        # dataset_builder=ae(cfg, "nothing"),
+        # dataset_builder=swe_fixer(
+        #     cfg, reward_hacking_prompt="nothing", show_hint=False, show_modified_file_names=False
+        # ),
+        dataset_builder=ae(cfg, "nothing"),
         # dataset_builder=all_inspect(cfg, impossible=False),
         # dataset_builder=build_curriculum_config(cfg),
         # dataset_builder=bad_sandbox(
@@ -106,7 +107,7 @@ def build_config(log_dir: str) -> Config:
         #     min_test_output_length=16,
         #     reward_hacking_prompt="must",
         # ),
-        learning_rate=get_lr("Qwen/Qwen3-32B"),
+        learning_rate=get_lr(cfg.model_name),
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
         save_every=8,
