@@ -106,7 +106,7 @@ def build_config(log_dir: str) -> Config:
         #     min_test_output_length=16,
         #     reward_hacking_prompt="must",
         # ),
-        learning_rate=1e-5,  # get_lr(cfg.model_name),
+        learning_rate=get_lr("Qwen/Qwen3-32B"),
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
         save_every=8,
