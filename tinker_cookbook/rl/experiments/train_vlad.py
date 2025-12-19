@@ -113,7 +113,7 @@ def build_config(log_dir: str) -> Config:
         eval_every=0,
         save_every=8,
         wandb_project="tinker-full-runs",
-        wandb_name="swe-fixer-" + cfg.model_name,
+        wandb_name="ae-" + cfg.model_name,
         kl_penalty_coef=kl_penalty_coef,
     )
 
