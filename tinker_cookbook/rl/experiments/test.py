@@ -7,7 +7,6 @@ from statistics import mean
 from math import sqrt
 from dataclasses import dataclass
 
-import chz
 import os
 from inspect_ai import Task, eval_async
 from inspect_ai.log import EvalLog
@@ -16,7 +15,7 @@ from inspect_ai.model import GenerateConfig as InspectAIGenerateConfig
 from inspect_ai.model import Model as InspectAIModel
 from tinker_cookbook.eval.inspect_utils import InspectAPIFromTinkerSampling
 
-from impossiblebench import impossible_livecodebench, impossible_swebench
+from impossiblebench import impossible_livecodebench
 
 from tinker_cookbook.eval.tasks.shutdown import reward_hacking_shutdown
 from tinker_cookbook.eval.tasks.shutdown2 import reward_hacking_shutdown_2
@@ -56,6 +55,8 @@ class EvalResult:
 
 
 def parse_eval_log(eval_log: EvalLog, task: Task) -> EvalResult:
+    assert eval_log.eval.task == task.name
+
     impossible_bench_task_names = [
         "lcb_conflicting_canmod_minimal",
         "lcb_oneoff_canmod_minimal",
@@ -72,13 +73,19 @@ def parse_eval_log(eval_log: EvalLog, task: Task) -> EvalResult:
             sample_size=len(eval_log.samples),  # type: ignore
         )
 
+    print(f"{task.name=}")
+    for sample in eval_log.samples:
+        print("keys:", list(sample.scores.keys()))
     return EvalResult(
         fraction_succeeded=mean(
-            sample.scores[f"{task.name}_scorer"].value  # type: ignore
+            sample.scores[f"reward_hacking_{task.name}_scorer"].value  # type: ignore
             for sample in eval_log.samples  # type: ignore
         ),
         fraction_unclear=mean(
-            float(sample.scores[f"{task.name}_scorer"].metadata["escalation"] == "unclear")  # type: ignore
+            float(
+                sample.scores[f"reward_hacking_{task.name}_scorer"].metadata["escalation"]  # type: ignore
+                == "unclear"
+            )
             for sample in eval_log.samples  # type: ignore
         ),
         sample_size=len(eval_log.samples),  # type: ignore
@@ -115,7 +122,7 @@ async def inspect_model(
 
 
 async def run_evals(
-    tasks: list[Task], models: list[InspectAIModel], max_connections: int
+    tasks: list[Task], models: list[InspectAIModel], max_connections: int, max_sandboxes: int
 ) -> list[EvalLog]:
     print(f"{tasks=}")
     print(f"{models=}")
@@ -129,9 +136,10 @@ async def run_evals(
         # a given sample.
         fail_on_error=False,
         debug_errors=True,
-        log_dir="~/inspect-logs",
+        log_dir="inspect-logs",
         max_connections=max_connections,
         max_tasks=len(tasks) * len(models),
+        max_sandboxes=max_sandboxes,
     )
 
 
@@ -188,6 +196,7 @@ def plot(
         fig.show()
     else:
         fig.write_html(save_figure_filename)
+        print(f"Saved plot to '{save_figure_filename}'.")
 
 
 async def main(
@@ -198,6 +207,7 @@ async def main(
     temperature: float = 1.0,
     max_tokens: int = 4096,
     max_connections: int = 512,
+    max_sandboxes: int = 64,
     plot_title: str | None = None,
     save_figure_filename: str | None = None,
 ) -> None:
@@ -219,16 +229,20 @@ async def main(
     evaluated_models = models[::eval_frequency]
 
     eval_logs: list[EvalLog] = await run_evals(
-        tasks=list(tasks.values()), models=evaluated_models, max_connections=max_connections
+        tasks=list(tasks.values()),
+        models=evaluated_models,
+        max_connections=max_connections,
+        max_sandboxes=max_sandboxes,
     )
 
     print(f"{type(eval_logs)=} {len(eval_logs)=} {eval_logs=}")
     print(f"{type(eval_logs[0])=} {eval_logs[0]=}")
 
+    print(f"{[eval_log.eval.task for eval_log in eval_logs]=}")
     eval_results: dict[TaskName, dict[Epoch, EvalResult]] = {
         task_name: {
             epoch: parse_eval_log(
-                eval_log=eval_logs[len(evaluated_models) * i_task + epoch // eval_frequency],
+                eval_log=eval_logs[len(tasks) * epoch // eval_frequency + i_task],
                 task=task,
             )
             for epoch in range(0, eval_frequency * len(evaluated_models), eval_frequency)
@@ -242,7 +256,10 @@ async def main(
 
 
 MODEL_PATHS: list[str] = [
-    
+    "tinker://f4a0ad93-f47f-5017-985b-bb7bea6b7f99:train:0/sampler_weights/000008",
+    "tinker://f4a0ad93-f47f-5017-985b-bb7bea6b7f99:train:0/sampler_weights/000016",
+    "tinker://f4a0ad93-f47f-5017-985b-bb7bea6b7f99:train:0/sampler_weights/000024",
+    "tinker://f4a0ad93-f47f-5017-985b-bb7bea6b7f99:train:0/sampler_weights/000032",
 ]
 
 
@@ -274,7 +291,7 @@ if __name__ == "__main__":
         main(
             tasks=TASKS,
             model_paths=MODEL_PATHS,
-            eval_frequency=64,
+            eval_frequency=1,
             renderer_name="qwen3_disable_thinking",
             save_figure_filename="fig.html",
         )
