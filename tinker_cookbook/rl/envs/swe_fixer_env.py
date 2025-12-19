@@ -539,8 +539,9 @@ def build_docker_images() -> None:
     asyncio.run(
         client.build_images(
             [Image(dockerfile) for dockerfile in dockerfiles],
-            batch_size=64,
+            batch_size=16,
             workers_per_dockerfile=2,
+            max_attempts=8,
         )
     )
 

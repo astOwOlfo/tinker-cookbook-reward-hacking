@@ -79,6 +79,7 @@ def build_config(log_dir: str) -> Config:
         # model_name="Qwen/Qwen3-32B",
         # model_name="moonshotai/Kimi-K2-Thinking",
         model_name="openai/gpt-oss-120b",
+        # model_name="Qwen/Qwen3-235B-A22B-Instruct-2507",
         batch_size=32,
         group_size=8,
         qwen3_disable_thinking=False,
@@ -93,10 +94,10 @@ def build_config(log_dir: str) -> Config:
     config = Config(
         model_name=cfg.model_name,
         log_path=log_dir,
-        # dataset_builder=swe_fixer(
-        #     cfg, reward_hacking_prompt="nothing", show_hint=False, show_modified_file_names=False
-        # ),
-        dataset_builder=ae(cfg, "must"),
+        dataset_builder=swe_fixer(
+            cfg, reward_hacking_prompt="nothing", show_hint=False, show_modified_file_names=False
+        ),
+        # dataset_builder=ae(cfg, "nothing"),
         # dataset_builder=all_inspect(cfg, impossible=False),
         # dataset_builder=build_curriculum_config(cfg),
         # dataset_builder=bad_sandbox(
@@ -106,7 +107,7 @@ def build_config(log_dir: str) -> Config:
         #     min_test_output_length=16,
         #     reward_hacking_prompt="must",
         # ),
-        learning_rate=1e-5,  # get_lr(cfg.model_name),
+        learning_rate=4e-5,
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
         save_every=8,
@@ -124,8 +125,9 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
-    USING_AE = True
-    USING_SWE_FIXER = False
+    """
+    USING_AE = False
+    USING_SWE_FIXER = True
 
     if USING_AE:
         dataset = load_ae_dataset_from_json("data/ae.json")
@@ -142,6 +144,7 @@ def main(log_dir: str) -> None:
     print("Building docker image for Omit Description Env")
     omit_description_env.build_docker_image()
     print("Starting training")
+    """
 
     asyncio.run(train.main(config))
 
