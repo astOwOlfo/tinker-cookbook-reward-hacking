@@ -69,7 +69,7 @@ class LoggingTranscriptsEnv(Env):
             ),
             "w+",
         ) as f:
-            json.dump(deep_model_dump(self.env.all_messages), f)
+            json.dump({"rollouts": deep_model_dump(self.env.all_messages), "metrics": step_result.metrics}, f)
 
         return step_result
 
