@@ -77,9 +77,9 @@ def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
 
 def build_config(log_dir: str) -> Config:
     cfg = TrainEnvsConfig(
-        model_name="Qwen/Qwen3-32B",
+        # model_name="Qwen/Qwen3-32B",
         # model_name="moonshotai/Kimi-K2-Thinking",
-        # model_name="openai/gpt-oss-120b",
+        model_name="openai/gpt-oss-120b",
         # model_name="Qwen/Qwen3-235B-A22B-Instruct-2507",
         batch_size=32,
         group_size=8,
@@ -108,7 +108,7 @@ def build_config(log_dir: str) -> Config:
         #     min_test_output_length=16,
         #     reward_hacking_prompt="must",
         # ),
-        learning_rate=hyperparam_utils.get_lr(cfg.model_name),
+        learning_rate=1e-5, # hyperparam_utils.get_lr(cfg.model_name),
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
         save_every=8,
