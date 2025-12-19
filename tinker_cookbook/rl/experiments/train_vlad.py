@@ -96,7 +96,7 @@ def build_config(log_dir: str) -> Config:
         model_name=cfg.model_name,
         log_path=log_dir,
         dataset_builder=swe_fixer(
-            cfg, reward_hacking_prompt="nothing", show_hint=False, show_modified_file_names=False
+            cfg, reward_hacking_prompt="must", show_hint=False, show_modified_file_names=False
         ),
         # dataset_builder=ae(cfg, "must"),
         # dataset_builder=all_inspect(cfg, impossible=False),
