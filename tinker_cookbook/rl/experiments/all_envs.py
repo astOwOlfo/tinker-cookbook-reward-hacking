@@ -440,6 +440,7 @@ def swe_fixer(
             show_modified_file_names=show_modified_file_names,
             reward_hacking_prompt=reward_hacking_prompt,
             max_steps=cfg.max_steps,
+            partial_reward=False,
             max_prompt_tokens=cfg.context_length
             - cfg.max_completion_tokens
             - 16,  # -16 just in case
