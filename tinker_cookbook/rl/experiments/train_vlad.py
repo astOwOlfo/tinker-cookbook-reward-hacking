@@ -149,7 +149,6 @@ def main(log_dir: str) -> None:
     print("Building docker image for Omit Description Env")
     omit_description_env.build_docker_image()
     print("Starting training")
-    exit()
     """
 
     asyncio.run(train.main(config))
