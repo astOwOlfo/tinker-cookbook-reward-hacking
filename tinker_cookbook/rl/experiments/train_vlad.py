@@ -76,7 +76,7 @@ def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
 
 
 def build_config(log_dir: str) -> Config:
-    model_name = "openai/gpt-oss-20b"
+    model_name = "Qwen/Qwen3-32B"
 
     cfg = TrainEnvsConfig(
         model_name=model_name,
@@ -136,6 +136,7 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
+    """
     USING_AE = False
     USING_SWE_FIXER = True
 
@@ -154,6 +155,7 @@ def main(log_dir: str) -> None:
     print("Building docker image for Omit Description Env")
     omit_description_env.build_docker_image()
     print("Starting training")
+    """
 
     asyncio.run(train.main(config))
 
