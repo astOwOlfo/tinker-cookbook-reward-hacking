@@ -77,10 +77,10 @@ def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
 
 def build_config(log_dir: str) -> Config:
     cfg = TrainEnvsConfig(
-        # model_name="Qwen/Qwen3-32B",
+        model_name="Qwen/Qwen3-32B",
         # model_name="moonshotai/Kimi-K2-Thinking",
         # model_name="openai/gpt-oss-120b",
-        model_name="Qwen/Qwen3-235B-A22B-Instruct-2507",
+        # model_name="Qwen/Qwen3-235B-A22B-Instruct-2507",
         batch_size=32,
         group_size=8,
         qwen3_disable_thinking=False,
@@ -89,8 +89,11 @@ def build_config(log_dir: str) -> Config:
         max_completion_tokens=8192,
         save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
     )
-    length_penalty = 1e-5
+    length_penalty = 0.0 # 1e-5
     kl_penalty_coef = 0.005
+
+    reward_hacking_prompt = "must"
+    dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt)
 
     config = Config(
         model_name=cfg.model_name,
@@ -98,7 +101,7 @@ def build_config(log_dir: str) -> Config:
         # dataset_builder=swe_fixer(
         #     cfg, reward_hacking_prompt="must", show_hint=False, show_modified_file_names=False
         # ),
-        dataset_builder=ae(cfg, "must"),
+        dataset_builder=dataset_builder,
         # dataset_builder=all_inspect(cfg, impossible=False),
         # dataset_builder=build_curriculum_config(cfg),
         # dataset_builder=bad_sandbox(
@@ -113,7 +116,7 @@ def build_config(log_dir: str) -> Config:
         eval_every=0,
         save_every=8,
         wandb_project="tinker-full-runs",
-        wandb_name="ae-" + cfg.model_name,
+        wandb_name=f"{type(dataset_builder).__name__.removesuffix('DatasetBuilder')}-{reward_hacking_prompt}-{cfg.model_name}",
         kl_penalty_coef=kl_penalty_coef,
     )
 
@@ -126,6 +129,7 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
+    """
     USING_AE = True
     USING_SWE_FIXER = False
 
@@ -145,6 +149,7 @@ def main(log_dir: str) -> None:
     omit_description_env.build_docker_image()
     print("Starting training")
     exit()
+    """
 
     asyncio.run(train.main(config))
 
