@@ -47,7 +47,7 @@ def medium_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
             LimitSize(bash_codeforces(cfg, "nothing", codeforces_dataset), max_batches=32),
             bash_codeforces(cfg, "forbid", codeforces_dataset),
             SkipFirst(LimitSize(bad_sandbox(cfg, codeforces_dataset), max_batches=32), 32),
-            LimitSize(ae(cfg, "must"), max_batches=64),
+            #LimitSize(ae(cfg, "must"), max_batches=64),
             LimitSize(
                 bash_codeforces_monitored(cfg, "must", codeforces_dataset, "gpt-4.1-nano"), max_batches=60
             ),
@@ -65,8 +65,8 @@ def hard_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
     codeforces_dataset = load_codeforces_dataset()
     return DatasetMixer(
         inner_builders=[
-            ae(cfg, "nothing"),
-            LimitSize(ae_monitored(cfg, "nothing", "gpt-4.1-nano"), max_batches=40),
+            #ae(cfg, "nothing"),
+            #LimitSize(ae_monitored(cfg, "nothing", "gpt-4.1-nano"), max_batches=40),
             bash_codeforces_private_reward(cfg, "nothing", codeforces_dataset),
         ],
     )
@@ -129,7 +129,7 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
-    USING_AE = True
+    USING_AE = False
     USING_SWE_FIXER = True
 
     if USING_AE:
