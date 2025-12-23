@@ -34,24 +34,24 @@ def easy_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
             style_environment(cfg, "nothing", "contradictory"),
             style_environment(cfg, "nothing", "irrelevant"),
             style_environment(cfg, "nothing", "consistent"),
-            LimitSize(bash_apps(cfg, "must", load_apps_dataset()), max_batches=32),
+            LimitSize(bash_codeforces(cfg, "must", codeforces_dataset), max_batches=32),
         ],
     )
 
 
 def medium_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
-    apps_dataset = load_apps_dataset()
+    codeforces_dataset = load_codeforces_dataset()
     return DatasetMixer(
         inner_builders=[
-            LimitSize(bash_apps(cfg, "nothing", apps_dataset), max_batches=32),
-            bash_apps(cfg, "forbid", apps_dataset),
-            SkipFirst(LimitSize(bad_sandbox(cfg, apps_dataset), max_batches=32), 32),
+            LimitSize(bash_codeforces(cfg, "nothing", codeforces_dataset), max_batches=32),
+            bash_codeforces(cfg, "forbid", codeforces_dataset),
+            SkipFirst(LimitSize(bad_sandbox(cfg, codeforces_dataset), max_batches=32), 32),
             LimitSize(ae(cfg, "must"), max_batches=64),
             LimitSize(
-                bash_apps_monitored(cfg, "must", apps_dataset, "gpt-4.1-nano"), max_batches=60
+                bash_codeforces_monitored(cfg, "must", codeforces_dataset, "gpt-4.1-nano"), max_batches=60
             ),
             SkipFirst(
-                LimitSize(bash_apps_locked_permissions(cfg, "must", apps_dataset), max_batches=64),
+                LimitSize(bash_codeforces_locked_permissions(cfg, "must", codeforces_dataset), max_batches=64),
                 64,
             ),
         ],
@@ -59,12 +59,12 @@ def medium_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
 
 
 def hard_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
-    apps_dataset = load_apps_dataset()
+    codeforces_dataset = load_codeforces_dataset()
     return DatasetMixer(
         inner_builders=[
             ae(cfg, "nothing"),
             LimitSize(ae_monitored(cfg, "nothing", "gpt-4.1-nano"), max_batches=40),
-            bash_apps_private_reward(cfg, "nothing", apps_dataset),
+            bash_codeforces_private_reward(cfg, "nothing", codeforces_dataset),
         ],
     )
 
@@ -134,6 +134,8 @@ def main(log_dir: str) -> None:
         asyncio.run(ae_env.build_docker_image(dataset))
     print("Building docker image for Bash Apps dataset")
     bash_apps_env.build_docker_image()
+    print("Building docker image for Bash Codeforces dataset")
+    bash_codeforces_env.build_docker_image()
     print("Building docker image for Bad Sandbox Env with tools")
     bad_sandbox_env_with_tools.build_docker_image()
     print("Building docker image for Omit Description Env")
