@@ -28,6 +28,7 @@ load_dotenv()
 
 
 def easy_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
+    codeforces_dataset = load_codeforces_dataset()
     return DatasetMixer(
         inner_builders=[
             style_environment(cfg, "nothing", "none"),
