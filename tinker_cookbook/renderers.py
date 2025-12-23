@@ -672,7 +672,7 @@ class Qwen3Renderer(Renderer):
             # "name" not in tool_call
             # or "args" not in tool_call
             # or "arguments" not in tool_call
-            not set(tool_call.keys()) <= {"name", "arguments", "id"}
+            not {"name", "arguments"} <= set(tool_call.keys()) <= {"name", "arguments", "id"}
             or not isinstance(tool_call["name"], str)
             # or not isinstance(tool_call["args"], dict)
             or not isinstance(tool_call["arguments"], dict)
