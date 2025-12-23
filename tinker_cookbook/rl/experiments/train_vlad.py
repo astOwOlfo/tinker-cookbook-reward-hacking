@@ -77,7 +77,7 @@ def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
 
 def build_config(log_dir: str) -> Config:
     # model_name = "Qwen/Qwen3-32B"
-    model_name = "moonshotai/Kimi-K2"
+    model_name = "moonshotai/Kimi-K2-Thinking"
 
     cfg = TrainEnvsConfig(
         model_name=model_name,
