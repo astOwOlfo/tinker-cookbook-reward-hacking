@@ -15,6 +15,7 @@ from tinker_cookbook.rl.envs import (
     bad_sandbox_env_with_tools,
     inspect_env,
     bash_codeforces_env,
+    swe_fixer_env,
 )
 from tinker_cookbook.rl.envs.aghyad_envs import omit_description_env
 from tinker_cookbook.rl.envs.ae_env import (
