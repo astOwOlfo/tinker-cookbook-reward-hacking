@@ -32,7 +32,7 @@ from tinker_cookbook.rl.envs.bash_apps_env import (
     BashAppsEnvConfig,
     load_apps_dataset,
 )
-from tinker_cookbook.rl.envs.bash_codeforces import (
+from tinker_cookbook.rl.envs.bash_codeforces_env import (
     BashCodeforcesDatasetBuilder,
     BashCodeforcesEnvConfig,
     load_codeforces_dataset,
