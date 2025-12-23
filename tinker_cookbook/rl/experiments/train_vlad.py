@@ -76,7 +76,8 @@ def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
 
 
 def build_config(log_dir: str) -> Config:
-    model_name = "Qwen/Qwen3-32B"
+    # model_name = "Qwen/Qwen3-32B"
+    model_name = "moonshotai/Kimi-K2"
 
     cfg = TrainEnvsConfig(
         model_name=model_name,
@@ -96,7 +97,7 @@ def build_config(log_dir: str) -> Config:
     dataset_builder = swe_fixer(
         cfg,
         reward_hacking_prompt=reward_hacking_prompt,
-        show_hint=False,
+        show_hint=True,
         show_modified_file_names=True,
     )
 
