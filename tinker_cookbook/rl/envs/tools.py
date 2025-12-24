@@ -385,7 +385,7 @@ def extract_tool_call(
 
         tool_class = TOOL_MAPPER[tool_name]
         required_arguments = available_tool["function"]["parameters"]["required"]
-        if not set(set(required_arguments)).issubset(set(arguments.keys())):
+        if not set(required_arguments).issubset(set(arguments.keys())):
             return ErrorParsingToolCall(
                 f"Invalid arguments {set(arguments.keys())} for tool {tool_name}. Required arguments are {required_arguments}."
             )
