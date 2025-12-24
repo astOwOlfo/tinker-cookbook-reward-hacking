@@ -420,6 +420,8 @@ class AEEnv(Env):
             else 0.0
             for split in splits
         )
+        if self.cfg.cap_reward is not None:
+            reward = min(reward, self.cfg.cap_reward)
 
         # Store individual rewards for metrics
         if (
