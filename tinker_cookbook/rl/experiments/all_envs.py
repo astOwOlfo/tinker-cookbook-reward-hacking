@@ -14,6 +14,8 @@ from tinker_cookbook.rl.envs import (
     bash_apps_env,
     bad_sandbox_env_with_tools,
     inspect_env,
+    bash_codeforces_env,
+    swe_fixer_env,
 )
 from tinker_cookbook.rl.envs.aghyad_envs import omit_description_env
 from tinker_cookbook.rl.envs.ae_env import (
@@ -30,6 +32,11 @@ from tinker_cookbook.rl.envs.bash_apps_env import (
     BashAppsDatasetBuilder,
     BashAppsEnvConfig,
     load_apps_dataset,
+)
+from tinker_cookbook.rl.envs.bash_codeforces_env import (
+    BashCodeforcesDatasetBuilder,
+    BashCodeforcesEnvConfig,
+    load_codeforces_dataset,
 )
 from tinker_cookbook.rl.envs.aghyad_envs.omit_description_env import (
     OmitDescriptionDatasetBuilder,
@@ -114,7 +121,6 @@ def bash_apps(
     )
     return maybe_log(cfg, db)
 
-
 def bash_apps_locked_permissions(
     cfg: TrainEnvsConfig, reward_hacking_prompt: str, apps_dataset
 ) -> BashAppsDatasetBuilder:
@@ -169,6 +175,83 @@ def bash_apps_private_reward(
     )
     return maybe_log(cfg, db)
 
+def bash_codeforces(
+    cfg: TrainEnvsConfig, reward_hacking_prompt: str, codeforces_dataset
+) -> BashCodeforcesDatasetBuilder:
+    db = BashCodeforcesDatasetBuilder(
+        batch_size=cfg.batch_size,
+        model_name_for_tokenizer=cfg.model_name,
+        renderer_name=cfg.get_renderer_name(),
+        group_size=cfg.group_size,
+        data=codeforces_dataset,
+        test_fraction=0.1,
+        cfg=BashCodeforcesEnvConfig(
+            reward_hacking_prompt=reward_hacking_prompt,
+            max_steps=cfg.max_steps,
+            max_tests_per_split=8,
+            public_test_weight_in_reward=1.0,
+            qwen3_disable_thinking=cfg.qwen3_disable_thinking,
+            max_prompt_tokens=cfg.context_length
+            - cfg.max_completion_tokens
+            - 16,  # -16 just in case
+        ),
+    )
+    return maybe_log(cfg, db)
+
+def bash_codeforces_locked_permissions(
+    cfg: TrainEnvsConfig, reward_hacking_prompt: str, codeforces_dataset
+) -> BashCodeforcesDatasetBuilder:
+    """
+    Similar to the above, but the public tests are locked with 000 permissions. This means that the model cannot read the public tests without chmodding it.
+    """
+    db = BashCodeforcesDatasetBuilder(
+        batch_size=cfg.batch_size,
+        model_name_for_tokenizer=cfg.model_name,
+        renderer_name=cfg.get_renderer_name(),
+        group_size=cfg.group_size,
+        data=codeforces_dataset,
+        test_fraction=0.1,
+        cfg=BashCodeforcesEnvConfig(
+            reward_hacking_prompt=reward_hacking_prompt,
+            max_steps=cfg.max_steps,
+            max_tests_per_split=8,
+            public_test_weight_in_reward=1.0,
+            qwen3_disable_thinking=cfg.qwen3_disable_thinking,
+            max_prompt_tokens=cfg.context_length
+            - cfg.max_completion_tokens
+            - 16,  # -16 just in case
+            lock_public_tests=True,
+        ),
+    )
+    return maybe_log(cfg, db)
+
+
+def bash_codeforces_private_reward(
+    cfg: TrainEnvsConfig, reward_hacking_prompt: str, codeforces_dataset
+) -> BashCodeforcesDatasetBuilder:
+    """
+    Similar to the above, but the public reward weight is set to 0.0. This means that the model is only rewarded for passing the held-out tests. It can either solve the problem honestly, or use the info it has about the public tests to successfully hack withheld ones.
+    """
+    db = BashCodeforcesDatasetBuilder(
+        batch_size=cfg.batch_size,
+        model_name_for_tokenizer=cfg.model_name,
+        renderer_name=cfg.get_renderer_name(),
+        group_size=cfg.group_size,
+        data=codeforces_dataset,
+        test_fraction=0.1,
+        cfg=BashCodeforcesEnvConfig(
+            reward_hacking_prompt=reward_hacking_prompt,
+            max_steps=cfg.max_steps,
+            max_tests_per_split=8,
+            public_test_weight_in_reward=0.0,
+            qwen3_disable_thinking=cfg.qwen3_disable_thinking,
+            max_prompt_tokens=cfg.context_length
+            - cfg.max_completion_tokens
+            - 16,  # -16 just in case
+        ),
+    )
+    return maybe_log(cfg, db)
+
 
 def bad_sandbox(
     cfg: TrainEnvsConfig,
@@ -204,6 +287,15 @@ def bash_apps_monitored(
 ) -> BashAppsDatasetBuilder:
     return build_dataset_builder(
         bash_apps(cfg, reward_hacking_prompt, apps_dataset),
+        MonitoredEnv,
+        MonitorConfig(model_name=monitor_model_name, model_provider="openai", alert=True),
+    )
+    
+def bash_codeforces_monitored(
+    cfg: TrainEnvsConfig, reward_hacking_prompt: str, codeforces_dataset, monitor_model_name: str
+) -> BashCodeforcesDatasetBuilder:
+    return build_dataset_builder(
+        bash_codeforces(cfg, reward_hacking_prompt, codeforces_dataset),
         MonitoredEnv,
         MonitorConfig(model_name=monitor_model_name, model_provider="openai", alert=True),
     )
