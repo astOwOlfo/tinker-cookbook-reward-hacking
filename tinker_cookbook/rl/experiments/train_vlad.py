@@ -76,8 +76,8 @@ def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
 
 
 def build_config(log_dir: str) -> Config:
-    # model_name = "Qwen/Qwen3-32B"
-    model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
+    model_name = "Qwen/Qwen3-32B"
+    # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
 
     cfg = TrainEnvsConfig(
         model_name=model_name,
@@ -94,13 +94,13 @@ def build_config(log_dir: str) -> Config:
     kl_penalty_coef = 0.005
 
     reward_hacking_prompt = "must"
-    # dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt)
-    dataset_builder = swe_fixer(
-        cfg,
-        reward_hacking_prompt=reward_hacking_prompt,
-        show_hint=True,
-        show_modified_file_names=True,
-    )
+    dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt)
+    # dataset_builder = swe_fixer(
+    #     cfg,
+    #     reward_hacking_prompt=reward_hacking_prompt,
+    #     show_hint=True,
+    #     show_modified_file_names=True,
+    # )
 
     config = Config(
         model_name=cfg.model_name,
