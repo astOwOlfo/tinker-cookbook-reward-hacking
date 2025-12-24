@@ -82,7 +82,8 @@ def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
     )
 
 
-def build_config(log_dir: str) -> Config:
+def build_config(log_tag: str) -> Config:
+    log_dir = f"/tmp/tinker-examples/{log_tag}"
     cfg = TrainEnvsConfig(
         # model_name="Qwen/Qwen3-32B",
         model_name="Qwen/Qwen3-32B",
@@ -116,7 +117,7 @@ def build_config(log_dir: str) -> Config:
         eval_every=0,
         save_every=8,
         wandb_project="tinker-full-runs",
-        wandb_name="joey-full-" + log_dir,
+        wandb_name="joey-full-" + log_tag,
         kl_penalty_coef=kl_penalty_coef,
     )
 
@@ -125,9 +126,9 @@ def build_config(log_dir: str) -> Config:
     )
 
 
-def main(log_dir: str) -> None:
-    config = build_config(log_dir=log_dir)
-    cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
+def main(log_tag: str) -> None:
+    config = build_config(log_tag=log_tag)
+    cli_utils.check_log_dir(log_dir=f"/tmp/tinker-examples/{log_tag}", behavior_if_exists="resume")
 
     USING_AE = False
     USING_SWE_FIXER = False
@@ -161,4 +162,4 @@ if __name__ == "__main__":
     parser.add_argument("--log_dir", type=str, required=True)
     args = parser.parse_args()
 
-    main(log_dir=f"/tmp/tinker-examples/{args.log_dir}")
+    main(log_tag=args.log_dir)
