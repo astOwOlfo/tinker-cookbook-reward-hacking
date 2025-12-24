@@ -55,8 +55,8 @@ def medium_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
                 LimitSize(bash_codeforces_locked_permissions(cfg, "must", codeforces_dataset), max_batches=64),
                 64,
             ),
-            LimitSize(swe_fixer(cfg, "must", show_hint=True, show_modified_file_names=True), max_batches=64),
-            SkipFirst(LimitSize(swe_fixer(cfg, "forbid", show_hint=True, show_modified_file_names=True), max_batches=64), 64),
+            #LimitSize(swe_fixer(cfg, "must", show_hint=True, show_modified_file_names=True), max_batches=64),
+            #SkipFirst(LimitSize(swe_fixer(cfg, "forbid", show_hint=True, show_modified_file_names=True), max_batches=64), 64),
         ],
     )
 
@@ -130,7 +130,7 @@ def main(log_dir: str) -> None:
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
     USING_AE = False
-    USING_SWE_FIXER = True
+    USING_SWE_FIXER = False
 
     if USING_AE:
         dataset = load_ae_dataset_from_json("data/ae.json")
