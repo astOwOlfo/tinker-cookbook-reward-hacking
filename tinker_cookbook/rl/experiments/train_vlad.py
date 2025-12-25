@@ -85,12 +85,12 @@ def build_config(log_dir: str) -> Config:
         group_size=8,
         qwen3_disable_thinking=False,
         renderer_name="qwen3_disable_thinking",
-        max_steps=12,
+        max_steps=8,
         context_length=32768,
         max_completion_tokens=8192,
         save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
     )
-    length_penalty = 0.0  # 1e-5
+    length_penalty = 1e-5
     kl_penalty_coef = 0.005
 
     reward_hacking_prompt = "must"
