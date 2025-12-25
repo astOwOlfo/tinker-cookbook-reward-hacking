@@ -49,10 +49,10 @@ from tinker_cookbook.rl.envs.swe_fixer_env import (
     load_swe_fixer_dataset,
 )
 from tinker_cookbook.rl.envs.inspect.bash_codeforces import (
-    bash_codeforces,
     get_rewards_bash_codeforces,
     get_metrics_bash_codeforces,
 )
+from tinker_cookbook.rl.envs.inspect.bash_codeforces import bash_codeforces as bash_codeforces_inspect
 from tinker_cookbook.rl.envs.inspect.ae import get_rewards_ae, get_metrics_ae
 import tinker_cookbook.rl.envs.inspect.ae
 from tinker_cookbook.rl.envs.inspect_env import (
@@ -439,7 +439,7 @@ def bash_codeforces_inspect(
     max_steps: int,
 ) -> InspectRLDatasetBuilder:
     task = {
-        "overwritable": bash_codeforces(
+        "overwritable": bash_codeforces_inspect(
             min_test_output_length=16,
             n_synthetic_impossible_tests=0,
             min_tests=256,
@@ -447,7 +447,7 @@ def bash_codeforces_inspect(
             impossible=impossible,
             max_messages=2 * cfg.max_steps,
         ),
-        "hardcodable": bash_codeforces(
+        "hardcodable": bash_codeforces_inspect(
             min_tests=1,
             max_tests=256,
             min_test_output_length=16,
@@ -483,10 +483,10 @@ def all_inspect(cfg: TrainEnvsConfig, impossible: bool) -> InspectMultipleRLData
         renderer_name=cfg.get_renderer_name(),
         max_prompt_tokens=cfg.context_length - cfg.max_completion_tokens - 16,  # - 16 just in case
         inspect_tasks={
-            "bash_codeforces_hardcode": bash_codeforces(
+            "bash_codeforces_hardcode": bash_codeforces_inspect(
                 max_messages=2 * cfg.max_steps, impossible=impossible
             ),
-            "bash_codeforces_overwrite": bash_codeforces(
+            "bash_codeforces_overwrite": bash_codeforces_inspect(
                 max_messages=2 * cfg.max_steps,
                 impossible=impossible,
                 public_test_read_permission=False,
