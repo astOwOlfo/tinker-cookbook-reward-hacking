@@ -1,6 +1,6 @@
 from inspect_ai.dataset import Sample
 from inspect_ai.log import EvalLog
-from inspect_evals.swe_bench import swe_bench_verified_mini
+from inspect_evals.swe_bench import swe_bench, swe_bench_verified_mini
 from pathlib import Path
 from os.path import join
 import asyncio
@@ -31,7 +31,7 @@ def build_config_swe_bench_verified() -> train.Config:
     max_completion_tokens = 2048
     context_length = 32768
 
-    task = swe_bench_verified_mini()
+    task = swe_bench()
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
