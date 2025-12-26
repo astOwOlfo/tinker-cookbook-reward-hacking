@@ -297,6 +297,7 @@ class InspectRLDataset(RLDataset):
     group_size: int
     renderer: renderers.Renderer
     tokenizer: PreTrainedTokenizer
+    no_deepcopy: bool
     max_prompt_tokens: int
     save_rollouts_directory: str | None
     get_rewards: Callable[[EvalLog, list[Sample]], list[float]]
@@ -333,7 +334,10 @@ class InspectRLDataset(RLDataset):
         )
 
         async def run_eval() -> None:
-            subtask: Task = deepcopy(self.inspect_task)
+            if self.no_deepcopy:
+                subtask: Task = self.inspect_task
+            else:
+                subtask: Task = deepcopy(self.inspect_task)
             subtask.dataset = MemoryDataset(repeated_samples)
 
             eval_logs: list[EvalLog] = await eval_async(
@@ -423,6 +427,7 @@ class InspectRLDatasetBuilder(RLDatasetBuilder):
     get_metrics: Callable[[EvalLog, list[Sample]], list[dict[str, float]]]
     test_fraction: float
     save_rollouts_directory: str | None
+    no_deepcopy: bool = False
 
     async def __call__(self) -> tuple[InspectRLDataset, InspectRLDataset]:
         samples: list[Sample] = list(self.inspect_task.dataset)
@@ -433,10 +438,14 @@ class InspectRLDatasetBuilder(RLDatasetBuilder):
         assert len(train_samples) > 0
         assert len(test_samples) > 0
 
-        train_task: Task = deepcopy(self.inspect_task)
-        train_task.dataset = MemoryDataset(train_samples)
-        test_task: Task = deepcopy(self.inspect_task)
-        test_task.dataset = MemoryDataset(test_samples)
+        if self.no_deepcopy:
+            train_task: Task = self.inspect_task
+            test_task: Task = self.inspect_task
+        else:
+            train_task: Task = deepcopy(self.inspect_task)
+            train_task.dataset = MemoryDataset(train_samples)
+            test_task: Task = deepcopy(self.inspect_task)
+            test_task.dataset = MemoryDataset(test_samples)
 
         tokenizer = get_tokenizer(self.model_name)
         renderer = renderers.get_renderer(self.renderer_name, tokenizer=tokenizer)
@@ -449,6 +458,7 @@ class InspectRLDatasetBuilder(RLDatasetBuilder):
                 group_size=self.group_size,
                 renderer=renderer,
                 tokenizer=tokenizer,
+                no_deepcopy=self.no_deepcopy,
                 max_prompt_tokens=self.max_prompt_tokens,
                 get_rewards=self.get_rewards,
                 get_metrics=self.get_metrics,
