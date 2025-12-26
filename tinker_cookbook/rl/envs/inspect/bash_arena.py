@@ -1,5 +1,5 @@
 from typing import Callable
-from control_arena.settings.bash_arena.bash_arena_setting import BashArenaSetting
+from control_arena.settings.bash_arena.bash_arena_setting import BashArenaSetting, main_task_success
 from control_arena._control_solver import ToolsSupplier
 from control_arena import EvalMode
 from control_arena.eval import ControlEvalConfig, get_control_task, get_control_task_product
@@ -37,9 +37,11 @@ def passthrough(model: str) -> Agent:
 
 
 def bash_arena_task() -> Task:
-    return get_control_task(
+    task: Task = get_control_task(
         setting=BashArenaSetting(), micro_protocol=passthrough, mode=EvalMode.HONEST
     )
+    task.scorer = [main_task_success()]
+    return task
 
 
 def bash_arena_get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:

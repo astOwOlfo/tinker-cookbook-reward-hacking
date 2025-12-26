@@ -31,13 +31,14 @@ dependencies = [
     "google-genai>=1.41.0",
     "openai-harmony>=0.0.8",
     "pydantic>=2.11.10",
-    # "inspect-evals>=0.3.102",
+    "inspect-evals>=0.3.102",
     # "impossiblebench",
     "inspect-k8s-sandbox",
     "anthropic>=0.75.0",
     "plotly>=6.3.1",
     "joblib>=1.5.2",
-    "control-arena==13.1.0",
+    # "control-arena==13.1.0",
+    "swesmith==0.0.4",
 ]
 
 [project.urls]
