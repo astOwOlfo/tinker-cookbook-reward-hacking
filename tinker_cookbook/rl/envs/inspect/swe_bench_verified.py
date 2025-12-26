@@ -57,6 +57,8 @@ def build_config_swe_bench_verified() -> train.Config:
         else hyperparam_utils.get_lr(model_name),
         max_tokens=max_completion_tokens,
         eval_every=0,
+        wandb_project="tinker-inspect",
+        wandb_name="swe-bench-" + model_name,
     )
 
 
