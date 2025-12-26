@@ -256,10 +256,11 @@ async def main(
 
 
 MODEL_PATHS: list[str] = [
-    "tinker://f4a0ad93-f47f-5017-985b-bb7bea6b7f99:train:0/sampler_weights/000008",
-    "tinker://f4a0ad93-f47f-5017-985b-bb7bea6b7f99:train:0/sampler_weights/000016",
-    "tinker://f4a0ad93-f47f-5017-985b-bb7bea6b7f99:train:0/sampler_weights/000024",
-    "tinker://f4a0ad93-f47f-5017-985b-bb7bea6b7f99:train:0/sampler_weights/000032",
+    "tinker://cfdc7131-81d4-5825-a591-dbf38c877504:train:0/sampler_weights/000008",
+    "tinker://cfdc7131-81d4-5825-a591-dbf38c877504:train:0/sampler_weights/000016",
+    "tinker://cfdc7131-81d4-5825-a591-dbf38c877504:train:0/sampler_weights/000024",
+    "tinker://cfdc7131-81d4-5825-a591-dbf38c877504:train:0/sampler_weights/000032",
+    "tinker://cfdc7131-81d4-5825-a591-dbf38c877504:train:0/sampler_weights/000040",
 ]
 
 
