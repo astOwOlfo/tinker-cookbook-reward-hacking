@@ -32,7 +32,7 @@ dependencies = [
     "openai-harmony>=0.0.8",
     "pydantic>=2.11.10",
     "inspect-evals>=0.3.102",
-    # "impossiblebench",
+    "impossiblebench",
     "inspect-k8s-sandbox",
     "anthropic>=0.75.0",
     "plotly>=6.3.1",
