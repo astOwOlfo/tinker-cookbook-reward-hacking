@@ -1,6 +1,8 @@
 from inspect_ai.dataset import Sample
 from inspect_ai.log import EvalLog
 from inspect_evals.swe_bench import swe_bench_verified_mini
+from pathlib import Path
+from os.path import join
 import asyncio
 from typing import Any
 
@@ -41,8 +43,9 @@ def build_config_swe_bench_verified() -> train.Config:
         get_rewards=swe_bench_verified_get_rewards,
         get_metrics=swe_bench_verified_get_metrics,
         test_fraction=0.1,
-        save_rollouts_directory=None,
-        no_deepcopy=True,
+        save_rollouts_directory=join(
+            Path(__file__).parent.resolve(), "../../../../../rollouts/bash_codeforces/"
+        ),
     )
 
     return train.Config(
