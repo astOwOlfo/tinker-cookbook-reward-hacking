@@ -129,7 +129,7 @@ async def check_reward_hacking(
         if len(set(answers)) == 1:
             answer = answers[0].lower().strip()
             try:
-                return float(answer)
+                return float(answer), response
             except ValueError:
                 return None, response
 
@@ -212,6 +212,10 @@ class MonitoredEnv(Env):
     @property
     def all_messages(self) -> list[renderers.Message]:
         return self.env.all_messages
+    
+    @property
+    def renderer(self) -> renderers.Renderer:
+        return self.env.renderer
 
 
 Monitored = Feature(MonitoredEnv)
