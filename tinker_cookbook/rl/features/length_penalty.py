@@ -66,6 +66,10 @@ class LengthPenaltyEnv(Env):
 
         return step_result
 
+    @property
+    def renderer(self) -> renderers.Renderer:
+        return self.env.renderer
+
 
 LengthPenalty = Feature(LengthPenaltyEnv)
 
