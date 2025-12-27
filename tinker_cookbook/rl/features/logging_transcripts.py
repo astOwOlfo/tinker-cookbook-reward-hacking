@@ -80,6 +80,10 @@ class LoggingTranscriptsEnv(Env):
     @property
     def renderer(self) -> renderers.Renderer:
         return self.env.renderer
+    
+    @property
+    def stop_condition(self) -> StopCondition:
+        return self.env.stop_condition
 
 
 LoggingTranscripts = Feature(LoggingTranscriptsEnv)
