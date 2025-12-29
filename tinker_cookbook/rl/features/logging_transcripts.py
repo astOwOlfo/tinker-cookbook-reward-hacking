@@ -76,6 +76,14 @@ class LoggingTranscriptsEnv(Env):
     @property
     def all_messages(self) -> list[renderers.Message]:
         return self.env.all_messages
+    
+    @property
+    def renderer(self) -> renderers.Renderer:
+        return self.env.renderer
+    
+    @property
+    def stop_condition(self) -> StopCondition:
+        return self.env.stop_condition
 
 
 LoggingTranscripts = Feature(LoggingTranscriptsEnv)
