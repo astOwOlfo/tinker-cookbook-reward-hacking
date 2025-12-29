@@ -13,9 +13,8 @@ from tinker_cookbook import hyperparam_utils
 
 
 def swe_bench_verified_get_rewards(eval_log: EvalLog, samples: list[Sample]) -> list[float]:
-    print("EVAL_LOG:", eval_log)
     for sample in eval_log.samples:
-        print("SCORES:", {key: value for key, value in sample.scores.items()})
+        print("SCORES:", {key: value for key, value in sample.__dict__.items()})
 
 
 def swe_bench_verified_get_metrics(
@@ -31,12 +30,12 @@ def build_config_swe_bench_verified() -> train.Config:
     max_completion_tokens = 2048
     context_length = 32768
 
-    task = swe_bench()
+    task = swe_bench_verified_mini()
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
-        batch_size=32,
-        group_size=8,
+        batch_size=2,
+        group_size=2,
         renderer_name=renderer_name,
         max_prompt_tokens=context_length - max_completion_tokens - 16,  # - 16 just in case
         inspect_task=task,

@@ -1549,6 +1549,21 @@ wheels = [
 ]
 
 [[package]]
+name = "impossiblebench"
+version = "0.1.0"
+source = { git = "https://github.com/safety-research/impossiblebench#061dc3dce6a96ab6cf02a855157263033dcfa3ba" }
+dependencies = [
+    { name = "datasets" },
+    { name = "inspect-ai" },
+    { name = "inspect-evals", extra = ["swe-bench"] },
+    { name = "jsonlines" },
+    { name = "pandas" },
+    { name = "platformdirs" },
+    { name = "swebench" },
+    { name = "tqdm" },
+]
+
+[[package]]
 name = "iniconfig"
 version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1605,11 +1620,12 @@ wheels = [
 
 [[package]]
 name = "inspect-evals"
-version = "0.3.103"
-source = { registry = "https://pypi.org/simple" }
+version = "0.3.104.dev154+gfdd7851b9"
+source = { git = "https://github.com/UKGovernmentBEIS/inspect_evals#fdd7851b91a780a327bc43a02e9fb87ee1eab1ba" }
 dependencies = [
     { name = "backoff" },
     { name = "datasets" },
+    { name = "hf-xet" },
     { name = "inspect-ai" },
     { name = "jinja2" },
     { name = "numpy" },
@@ -1619,9 +1635,11 @@ dependencies = [
     { name = "tiktoken" },
     { name = "toml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ef/84/a4570e6bdc53d23b894addf074057f394848942afb3f47d93e3d295652af/inspect_evals-0.3.103.tar.gz", hash = "sha256:919bbae571cedc6a9fa0e0409a729eead7d9c9c71d908a573cf13ec421edb427", size = 82258325, upload-time = "2025-12-08T20:28:48.899Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a0/0b/0ff0694172e01467d41c523ce7068edce505dd82fe7523a9535a2b9e3b95/inspect_evals-0.3.103-py3-none-any.whl", hash = "sha256:5eec8ba366dc627c2e10182659203500ffb4bd8ecb83895b641c21e24ec62fb9", size = 79328863, upload-time = "2025-12-08T20:28:43.654Z" },
+
+[package.optional-dependencies]
+swe-bench = [
+    { name = "docker" },
+    { name = "swebench" },
 ]
 
 [[package]]
@@ -4627,6 +4645,7 @@ dependencies = [
     { name = "cloudpickle" },
     { name = "datasets" },
     { name = "google-genai" },
+    { name = "impossiblebench" },
     { name = "inspect-ai" },
     { name = "inspect-evals" },
     { name = "inspect-k8s-sandbox" },
@@ -4699,6 +4718,7 @@ requires-dist = [
     { name = "google-genai", specifier = ">=1.41.0" },
     { name = "google-genai", marker = "extra == 'vector-search'" },
     { name = "huggingface-hub", marker = "extra == 'vector-search'" },
+    { name = "impossiblebench", git = "https://github.com/safety-research/impossiblebench" },
     { name = "inspect-ai" },
     { name = "inspect-evals", specifier = ">=0.3.102" },
     { name = "inspect-k8s-sandbox", git = "https://github.com/UKGovernmentBEIS/inspect_k8s_sandbox.git" },

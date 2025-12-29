@@ -256,10 +256,24 @@ async def main(
 
 
 MODEL_PATHS: list[str] = [
-    "tinker://f4a0ad93-f47f-5017-985b-bb7bea6b7f99:train:0/sampler_weights/000008",
-    "tinker://f4a0ad93-f47f-5017-985b-bb7bea6b7f99:train:0/sampler_weights/000016",
-    "tinker://f4a0ad93-f47f-5017-985b-bb7bea6b7f99:train:0/sampler_weights/000024",
-    "tinker://f4a0ad93-f47f-5017-985b-bb7bea6b7f99:train:0/sampler_weights/000032",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000008",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000016",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000024",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000032",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000040",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000048",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000056",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000064",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000072",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000080",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000088",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000096",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000104",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000112",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000120",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000128",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000136",
+    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/final",
 ]
 
 
