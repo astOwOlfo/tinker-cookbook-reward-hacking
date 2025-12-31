@@ -44,19 +44,19 @@ def medium_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
     codeforces_dataset = load_codeforces_dataset()
     return DatasetMixer(
         inner_builders=[
-            LimitSize(bash_codeforces(cfg, "nothing", codeforces_dataset), max_batches=32),
-            bash_codeforces(cfg, "forbid", codeforces_dataset),
-            SkipFirst(LimitSize(bad_sandbox(cfg, codeforces_dataset), max_batches=32), 32),
-            #LimitSize(ae(cfg, "must"), max_batches=64),
-            LimitSize(
-                bash_codeforces_monitored(cfg, "must", codeforces_dataset, "gpt-4.1-nano"), max_batches=60
-            ),
-            SkipFirst(
-                LimitSize(bash_codeforces_locked_permissions(cfg, "must", codeforces_dataset), max_batches=64),
-                64,
-            ),
-            #LimitSize(swe_fixer(cfg, "must", show_hint=True, show_modified_file_names=True), max_batches=64),
-            #SkipFirst(LimitSize(swe_fixer(cfg, "forbid", show_hint=True, show_modified_file_names=True), max_batches=64), 64),
+            #LimitSize(bash_codeforces(cfg, "nothing", codeforces_dataset), max_batches=32),
+            #bash_codeforces(cfg, "forbid", codeforces_dataset),
+            #SkipFirst(LimitSize(bad_sandbox(cfg, codeforces_dataset), max_batches=32), 32),
+            LimitSize(ae(cfg, "must"), max_batches=64),
+            # LimitSize(
+            #     bash_codeforces_monitored(cfg, "must", codeforces_dataset, "gpt-4.1-nano"), max_batches=60
+            # ),
+            # SkipFirst(
+            #     LimitSize(bash_codeforces_locked_permissions(cfg, "must", codeforces_dataset), max_batches=64),
+            #     64,
+            # ),
+            LimitSize(swe_fixer(cfg, "must", show_hint=True, show_modified_file_names=True), max_batches=64),
+            SkipFirst(LimitSize(swe_fixer(cfg, "forbid", show_hint=True, show_modified_file_names=True), max_batches=64), 64),
         ],
     )
 
@@ -65,9 +65,9 @@ def hard_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
     codeforces_dataset = load_codeforces_dataset()
     return DatasetMixer(
         inner_builders=[
-            #ae(cfg, "nothing"),
-            #LimitSize(ae_monitored(cfg, "nothing", "gpt-4.1-nano"), max_batches=40),
-            bash_codeforces_private_reward(cfg, "nothing", codeforces_dataset),
+            ae(cfg, "nothing"),
+            LimitSize(ae_monitored(cfg, "nothing", "gpt-4.1-nano"), max_batches=40),
+            #bash_codeforces_private_reward(cfg, "nothing", codeforces_dataset),
         ],
     )
 
@@ -75,7 +75,7 @@ def hard_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
 def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
     return Curriculum(
         inner_builders=[
-            easy_bucket(cfg),
+            #easy_bucket(cfg),
             medium_bucket(cfg),
             hard_bucket(cfg),
         ],
@@ -119,6 +119,7 @@ def build_config(log_tag: str) -> Config:
         wandb_project="tinker-full-runs",
         wandb_name="joey-full-" + log_tag,
         kl_penalty_coef=kl_penalty_coef,
+        load_checkpoint_path=f"tinker://6a5e5c5a-dea4-56a2-ad5c-daa492f96ca4:train:0/weights/000080",
     )
 
     return LengthPenalty(
@@ -130,8 +131,8 @@ def main(log_tag: str) -> None:
     config = build_config(log_tag=log_tag)
     cli_utils.check_log_dir(log_dir=f"/tmp/tinker-examples/{log_tag}", behavior_if_exists="resume")
 
-    USING_AE = False
-    USING_SWE_FIXER = False
+    USING_AE = True
+    USING_SWE_FIXER = True
 
     if USING_AE:
         dataset = load_ae_dataset_from_json("data/ae.json")
