@@ -90,7 +90,7 @@ def build_config(log_tag: str) -> Config:
         batch_size=64,
         group_size=8,
         qwen3_disable_thinking=False,
-        max_steps=8,
+        max_steps=12,
         context_length=32768,
         max_completion_tokens=8192,
         save_rollouts_directory=str(
