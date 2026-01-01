@@ -1,6 +1,5 @@
-from swesmith.constants import MAP_REPO_TO_SPECS
 from swesmith.harness.grading import parse_log_pytest
-from swesmith.harness.utils import get_test_command
+import swesmith.harness.utils
 from swesmith.harness.log_parsers import MAP_REPO_TO_PARSER
 from transformers import PreTrainedTokenizer
 from datasets import load_dataset
@@ -55,12 +54,17 @@ from tinker_cookbook.rl.envs.bash_agent import ContainerStarter, REWARD_HACKING_
 logger = logging.getLogger(__name__)
 
 
+def get_test_command(raw_datapoint: dict) -> tuple[str, list[str]]:
+    return swesmith.harness.utils.get_test_command(
+        raw_datapoint | {"image_name": raw_datapoint["image_name"].replace("_1776_", "/")}
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class Datapoint:
     problem_statement: str
     patch: str
     image_name: str
-    # base_commit: str
     instance_id: str
     fail_to_pass: list[str]
     pass_to_pass: list[str]
@@ -195,9 +199,7 @@ class SWESmithEnv(Env):
         return self.renderer.build_generation_prompt(conversation), self.stop_condition
 
     def startup_commands(self) -> list[str]:
-        return [
-            f"git apply --reverse -v - << 'EOF_UENIBORLE'\n{self.datapoint.patch}\nEOF_UENIBORLE"
-        ]
+        return [f"git apply -v - << 'EOF_UENIBORLE'\n{self.datapoint.patch}\nEOF_UENIBORLE"]
 
     async def step(self, action: Action) -> StepResult:
         if self.container is None:
@@ -516,7 +518,7 @@ def load_swe_smith_dataset(max_datapoints: int | None = None) -> list[Datapoint]
         try:
             get_test_command(raw_datapoint)
         except Exception:
-            traceback.format_exc()
+            # traceback.print_exc()
             continue
 
         dataset.append(
@@ -524,7 +526,6 @@ def load_swe_smith_dataset(max_datapoints: int | None = None) -> list[Datapoint]
                 problem_statement=raw_datapoint["problem_statement"],
                 patch=raw_datapoint["patch"],
                 image_name=raw_datapoint["image_name"],
-                # base_commit=raw_datapoint["base_commit"],
                 instance_id=raw_datapoint["instance_id"],
                 fail_to_pass=raw_datapoint["FAIL_TO_PASS"],
                 pass_to_pass=raw_datapoint["PASS_TO_PASS"],
@@ -554,17 +555,17 @@ def build_docker_images(dataset: list[Datapoint]) -> None:
 
 
 def build_config(dataset: list[Datapoint]) -> train.Config:
-    model_name = "openai/gpt-oss-20b"
+    model_name = "openai/gpt-oss-120b"
     # model_name = "Qwen/Qwen3-32B"
 
     context_length = 32768
     max_completion_tokens = 4096
 
     dataset_builder = SWESmithDatasetBuilder(
-        batch_size=2,
+        batch_size=32,
         model_name_for_tokenizer=model_name,
         renderer_name="gpt_oss_low_reasoning",
-        group_size=2,
+        group_size=8,
         data=dataset,
         test_fraction=0.1,
         cfg=SWESmithEnvConfig(
@@ -592,9 +593,9 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
 
 
 def main() -> None:
-    dataset = load_swe_smith_dataset(max_datapoints=64)
+    dataset = load_swe_smith_dataset()
     print(f"{len(dataset)=}")
-    build_docker_images(dataset)
+    # build_docker_images(dataset)
     config = build_config(dataset)
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
     asyncio.run(train.main(config))
