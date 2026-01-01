@@ -66,7 +66,9 @@ def hard_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
     return DatasetMixer(
         inner_builders=[
             ae(cfg, "nothing"),
-            LimitSize(ae_monitored(cfg, "nothing", "gpt-4.1-nano"), max_batches=40),
+            swe_fixer(cfg, "forbid", show_hint=True, show_modified_file_names=True),
+            ae(cfg, "forbid"),
+            #LimitSize(ae_monitored(cfg, "nothing", "gpt-4.1-nano"), max_batches=40),
             #bash_codeforces_private_reward(cfg, "nothing", codeforces_dataset),
         ],
     )
@@ -112,7 +114,7 @@ def build_config(log_tag: str) -> Config:
         #     min_test_output_length=16,
         #     reward_hacking_prompt="must",
         # ),
-        learning_rate=2 * get_lr(cfg.model_name),
+        learning_rate=get_lr(cfg.model_name),
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
         save_every=8,
