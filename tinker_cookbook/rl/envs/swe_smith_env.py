@@ -65,7 +65,6 @@ class Datapoint:
     problem_statement: str
     patch: str
     image_name: str
-    # base_commit: str
     instance_id: str
     fail_to_pass: list[str]
     pass_to_pass: list[str]
@@ -534,7 +533,6 @@ def load_swe_smith_dataset(max_datapoints: int | None = None) -> list[Datapoint]
                 problem_statement=raw_datapoint["problem_statement"],
                 patch=raw_datapoint["patch"],
                 image_name=raw_datapoint["image_name"],
-                # base_commit=raw_datapoint["base_commit"],
                 instance_id=raw_datapoint["instance_id"],
                 fail_to_pass=raw_datapoint["FAIL_TO_PASS"],
                 pass_to_pass=raw_datapoint["PASS_TO_PASS"],
