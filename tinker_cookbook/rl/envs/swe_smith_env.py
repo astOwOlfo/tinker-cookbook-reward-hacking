@@ -512,6 +512,7 @@ def load_swe_smith_dataset(max_datapoints: int | None = None) -> list[Datapoint]
     dataset: list[Datapoint] = []
 
     for raw_datapoint in raw_data:
+        print("found datapoint")
         if not raw_datapoint["problem_statement"]:
             continue
         if not raw_datapoint["FAIL_TO_PASS"]:
@@ -525,6 +526,7 @@ def load_swe_smith_dataset(max_datapoints: int | None = None) -> list[Datapoint]
             traceback.format_exc()
             continue
 
+        print("appending")
         dataset.append(
             Datapoint(
                 problem_statement=raw_datapoint["problem_statement"],
@@ -570,7 +572,7 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
         batch_size=32,
         model_name_for_tokenizer=model_name,
         renderer_name="gpt_oss_low_reasoning",
-        group_size=2,
+        group_size=8,
         data=dataset,
         test_fraction=0.1,
         cfg=SWESmithEnvConfig(
