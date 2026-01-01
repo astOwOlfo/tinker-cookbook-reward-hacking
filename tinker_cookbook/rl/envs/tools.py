@@ -311,8 +311,8 @@ def extract_tool_calls(
         tool_call_class = NAME_TO_TOOL_CALL_CLASS[name]
 
         try:
-            tool_call = tool_call_class(**arguments)  # type: ignore
-        except (TypeError, ValidationError) as e:
+            tool_call = tool_call_class(**json.loads(arguments))  # type: ignore
+        except (TypeError, ValidationError, json.decoder.JSONDecodeError) as e:
             return ErrorParsingToolCall(
                 f"Incorrect arguments for tool {name}: {e.__class__.__name__}: {e}"
             )
