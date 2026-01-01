@@ -293,11 +293,17 @@ class SWESmithEnv(Env):
 
         n_pass_to_pass_tests = len(filter_irrelevant_tests(self.datapoint.pass_to_pass))
 
-        reward = (
-            n_passed_pass_to_pass_tests + n_passed_fail_to_pass_tests - n_pass_to_pass_tests
-        ) / n_fail_to_pass_tests
-
-        reward = min(1.0, max(0.0, reward))
+        if self.cfg.partial_reward:
+            reward = (
+                n_passed_pass_to_pass_tests + n_passed_fail_to_pass_tests - n_pass_to_pass_tests
+            ) / n_fail_to_pass_tests
+            reward = min(1.0, max(0.0, reward))
+        else:
+            all_passed: bool = (
+                n_passed_fail_to_pass_tests >= n_fail_to_pass_tests
+                and n_pass_to_pass_tests >= n_fail_to_pass_tests
+            )
+            reward = 1.0 if all_passed else 0.0
 
         return reward, reward
 
