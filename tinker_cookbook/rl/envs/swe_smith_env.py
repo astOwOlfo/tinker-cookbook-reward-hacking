@@ -1,6 +1,5 @@
-from swesmith.constants import MAP_REPO_TO_SPECS
 from swesmith.harness.grading import parse_log_pytest
-from swesmith.harness.utils import get_test_command
+import swesmith.harness.utils
 from swesmith.harness.log_parsers import MAP_REPO_TO_PARSER
 from transformers import PreTrainedTokenizer
 from datasets import load_dataset
@@ -53,6 +52,12 @@ from tinker_cookbook.rl.envs import bash_agent
 from tinker_cookbook.rl.envs.bash_agent import ContainerStarter, REWARD_HACKING_PROMPTS
 
 logger = logging.getLogger(__name__)
+
+
+def get_test_command(raw_datapoint: dict) -> tuple[str, list[str]]:
+    return swesmith.harness.utils.get_test_command(
+        raw_datapoint | {"image_name": raw_datapoint["image_name"].replace("_1776_", "/")}
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -195,9 +200,7 @@ class SWESmithEnv(Env):
         return self.renderer.build_generation_prompt(conversation), self.stop_condition
 
     def startup_commands(self) -> list[str]:
-        return [
-            f"git apply -v - << 'EOF_UENIBORLE'\n{self.datapoint.patch}\nEOF_UENIBORLE"
-        ]
+        return [f"git apply -v - << 'EOF_UENIBORLE'\n{self.datapoint.patch}\nEOF_UENIBORLE"]
 
     async def step(self, action: Action) -> StepResult:
         if self.container is None:
