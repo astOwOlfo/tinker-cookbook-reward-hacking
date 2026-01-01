@@ -144,22 +144,22 @@ async def default_agent_step(
     env.all_messages.append(message)
 
     assert message["role"] == "assistant"
-    assert {"role", "content"} <= set(message.keys()) <= {"role", "content", "tool_calls"}
+    # assert {"role", "content"} <= set(message.keys()) <= {"role", "content", "tool_calls"}
 
-    tool_call: ToolCall | ErrorParsingToolCall = tools.extract_tool_call(
+    tool_calls: list[ToolCall] | ErrorParsingToolCall = tools.extract_tool_calls(
         message, available_tools=env.available_tools
     )
 
     last_step = len(env.all_messages) > env.cfg.max_steps
 
-    if isinstance(tool_call, ErrorParsingToolCall):
+    if isinstance(tool_calls, ErrorParsingToolCall):
         if last_step:
             result = await final_reward_fn()
             return result
 
         env.n_errors_parsing_tool_calls += 1
 
-        return error_parsing_tool_call_step_result(env, tool_call)
+        return error_parsing_tool_call_step_result(env, tool_calls)
 
     if env.container is None:
         try:
@@ -176,27 +176,28 @@ async def default_agent_step(
             return result
         env.ran_startup_commands = True
 
-    if isinstance(tool_call, FinishToolCall):
-        result = await final_reward_fn()
-        return result
+    for tool_call in tool_calls:
+        if isinstance(tool_call, FinishToolCall):
+            result = await final_reward_fn()
+            return result
 
-    try:
-        tool_outputs: list[ProcessOutput] = await env.scalable_docker_client.run_commands(
-            container=env.container,
-            commands=[tool_call.to_bash_command()],
-            timeout=env.cfg.tool_timeout,
-        )
-    except Exception:
-        print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
-        traceback.print_exc()
-        env.docker_error = True
-        return done_step_result(env, reward=0.0)
+        try:
+            tool_outputs: list[ProcessOutput] = await env.scalable_docker_client.run_commands(
+                container=env.container,
+                commands=[tool_call.to_bash_command()],
+                timeout=env.cfg.tool_timeout,
+            )
+        except Exception:
+            print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
+            traceback.print_exc()
+            env.docker_error = True
+            return done_step_result(env, reward=0.0)
 
-    assert len(tool_outputs) == 1
-    tool_output: ProcessOutput = tool_outputs[0]
+        assert len(tool_outputs) == 1
+        tool_output: ProcessOutput = tool_outputs[0]
 
-    if tool_output == TIMED_OUT_PROCESS_OUTPUT:
-        env.n_tool_timeouts += 1
+        if tool_output == TIMED_OUT_PROCESS_OUTPUT:
+            env.n_tool_timeouts += 1
 
     if last_step:
         result = await final_reward_fn()

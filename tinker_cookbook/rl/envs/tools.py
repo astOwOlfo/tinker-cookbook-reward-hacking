@@ -2,9 +2,11 @@ from abc import ABC, abstractmethod
 from transformers import PreTrainedTokenizer
 from pydantic import BaseModel, ConfigDict, ValidationError
 from dataclasses import dataclass
-from tinker_cookbook import renderers, model_info, cli_utils
+from tinker_cookbook import renderers
 from shlex import quote
 import json
+
+from tinker_cookbook.renderers import ToolSpec
 
 
 class ToolCall(BaseModel, ABC):
@@ -18,55 +20,6 @@ class ToolCall(BaseModel, ABC):
 @dataclass(frozen=True, slots=True)
 class ErrorParsingToolCall:
     message: str
-
-
-def get_system_message_with_tools(
-    tokenizer: PreTrainedTokenizer, system_message: str, tools: list[dict]
-) -> str:
-    model_name: str = tokenizer.name_or_path
-
-    if (
-        model_name.startswith("Qwen/Qwen3")
-        or model_name.startswith("Qwen/Qwen2.5")
-        or model_name.startswith("Qwen/Qwen2")
-    ):
-        message: str = tokenizer.apply_chat_template(  # type: ignore
-            [{"role": "system", "content": system_message}], tools=tools, tokenize=False
-        )
-        prefix = "<|im_start|>system\n"
-        suffix = "<|im_end|>\n"
-        assert message.startswith(prefix)
-        message = message.removeprefix(prefix)
-        # print(f"{message=}")
-        assert message.endswith(suffix)
-        message = message.removesuffix(suffix)
-        return message
-
-    elif model_name.lower().startswith("openai/gpt-oss"):
-        DELIMITER = "DELIMITER_14356728975462398"
-        tool_message: str = tokenizer.apply_chat_template(  # type: ignore
-            [{"role": "system", "content": DELIMITER}], tools=tools, tokenize=False
-        )
-        suffix = "<|end|>"
-        assert tool_message.endswith(suffix)
-        tool_message = tool_message.removesuffix(suffix)
-        assert tool_message.count(DELIMITER) == 1
-        return system_message + tool_message.split(DELIMITER)[-1]
-
-    elif model_name.lower().startswith("moonshotai/kimi-k2"):
-        tool_message: str = tokenizer.apply_chat_template(  # type: ignore
-            [{"role": "system", "content": ""}], tools=tools, tokenize=False
-        )
-        prefix = "<|im_system|>tool_declare<|im_middle|>"
-        suffix = "<|im_end|><|im_system|>system<|im_middle|><|im_end|><|im_assistant|>assistant<|im_middle|>"
-        assert tool_message.startswith(prefix)
-        tool_message = tool_message.removeprefix(prefix)
-        assert tool_message.endswith(suffix)
-        tool_message = tool_message.removesuffix(suffix)
-        return system_message + "<|im_end|><|im_system|>tool_declare<|im_middle|>" + tool_message
-
-    else:
-        assert False, f"Cannot infer model type form model name '{model_name}'."
 
 
 ### TOOL CALL COMMANDS
@@ -177,18 +130,15 @@ EOF_3574298753926
 
 ### ALL TOOLS GO HERE
 
-BASH_TOOL = {
-    "type": "function",
-    "function": {
-        "name": "bash",
-        "description": "Execute bash commands. Separate commands by newlines to execute multiple.",
-        "parameters": {
-            "type": "object",
-            "properties": {"command": {"type": "string"}},
-            "required": ["command"],
-        },
+BASH_TOOL = ToolSpec(
+    name="bash",
+    description="Execute bash commands. Separate commands by newlines to execute multiple.",
+    parameters={
+        "type": "object",
+        "properties": {"command": {"type": "string"}},
+        "required": ["command"],
     },
-}
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -199,21 +149,18 @@ class BashToolCall(ToolCall):
         return self.command
 
 
-CREATE_FILE_TOOL = {
-    "type": "function",
-    "function": {
-        "name": "create_file",
-        "description": "Create a file.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "path": {"type": "string", "description": "Absolute path to the file."},
-                "content": {"type": "string", "description": "Content of the file."},
-            },
-            "required": ["path", "content"],
+CREATE_FILE_TOOL = ToolSpec(
+    name="create_file",
+    description="Create a file.",
+    parameters={
+        "type": "object",
+        "properties": {
+            "path": {"type": "string", "description": "Absolute path to the file."},
+            "content": {"type": "string", "description": "Content of the file."},
         },
+        "required": ["path", "content"],
     },
-}
+)
 
 
 class CreateFileToolCall(ToolCall):
@@ -224,35 +171,32 @@ class CreateFileToolCall(ToolCall):
         return CREATE_FILE_COMMAND.format(path=quote(self.path), content=quote(self.content))
 
 
-EDIT_TOOL = {
-    "type": "function",
-    "function": {
-        "name": "edit",
-        "description": "Edit a file by performing a string replacement.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "path": {
-                    "type": "string",
-                    "description": "Absolute path to the file.",
-                },
-                "old_string": {
-                    "type": "string",
-                    "description": "String to be replaced. This exact string should be contained in the file. Note that the string should be indented by exactly as many levels as it is in the file, even if this leads to indenting the whole string.",
-                },
-                "new_string": {
-                    "type": "string",
-                    "description": "old_string will be replaced with this string. Note that it should be indented exactly as many layers as it would be in the file, even if this leads to indenting the whole string.",
-                },
-                "n_replacements": {
-                    "type": "number",
-                    "description": "Number of replacements to perform. Defaults to 1. This should be the exact number of times that old_string is contained in the file.",
-                },
+EDIT_TOOL = ToolSpec(
+    name="edit",
+    description="Edit a file by performing a string replacement.",
+    parameters={
+        "type": "object",
+        "properties": {
+            "path": {
+                "type": "string",
+                "description": "Absolute path to the file.",
             },
-            "required": ["path", "old_string", "new_string"],
+            "old_string": {
+                "type": "string",
+                "description": "String to be replaced. This exact string should be contained in the file. Note that the string should be indented by exactly as many levels as it is in the file, even if this leads to indenting the whole string.",
+            },
+            "new_string": {
+                "type": "string",
+                "description": "old_string will be replaced with this string. Note that it should be indented exactly as many layers as it would be in the file, even if this leads to indenting the whole string.",
+            },
+            "n_replacements": {
+                "type": "number",
+                "description": "Number of replacements to perform. Defaults to 1. This should be the exact number of times that old_string is contained in the file.",
+            },
         },
+        "required": ["path", "old_string", "new_string"],
     },
-}
+)
 
 
 class EditToolCall(ToolCall):
@@ -270,14 +214,11 @@ class EditToolCall(ToolCall):
         )
 
 
-FINISH_TOOL = {
-    "type": "function",
-    "function": {
-        "name": "finish",
-        "description": "Call this tool when you are finished and you have tested your solution and you are sure that your solution is correct and all the tests pass. Do not call this tool unless you are absolutely sure your solution is correct and you have tested it.",
-        "parameters": {"type": "object", "properties": {}, "required": []},
-    },
-}
+FINISH_TOOL = ToolSpec(
+    name="finish",
+    description="Call this tool when you are finished and you have tested your solution and you are sure that your solution is correct and all the tests pass. Do not call this tool unless you are absolutely sure your solution is correct and you have tested it.",
+    parameters={"type": "object", "properties": {}, "required": []},
+)
 
 
 class FinishToolCall(ToolCall):
@@ -285,20 +226,17 @@ class FinishToolCall(ToolCall):
         assert False, "Do not call FinishToolCall.to_bash_command"
 
 
-SUBMIT_SOLUTION_TOOL = {
-    "type": "function",
-    "function": {
-        "name": "submit_solution",
-        "description": "Call this tool to submit the solution python code.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "python_code": {"type": "str"},
-            },
-            "required": ["python_code"],
+SUBMIT_SOLUTION_TOOL = ToolSpec(
+    name="submit_solution",
+    description="Call this tool to submit the solution python code.",
+    parameters={
+        "type": "object",
+        "properties": {
+            "python_code": {"type": "str"},
         },
+        "required": ["python_code"],
     },
-}
+)
 
 
 class SubmitSolutionToolCall(ToolCall):
@@ -308,27 +246,24 @@ class SubmitSolutionToolCall(ToolCall):
         assert False, "Do not call SubmitSolutionToolCall.to_bash_command"
 
 
-LIST_DIRECTORY_CONTENTS_TOOL = {
-    "type": "function",
-    "function": {
-        "name": "list_directory_contents",
-        "description": "List the contents of each file in the given directory. Defaults to showing the direct children of the current working directory.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "path": {
-                    "type": "string",
-                    "description": "Absolute path to the directory. If not specified, the current working directory will be used.",
-                },
-                "max_depth": {
-                    "type": "number",
-                    "description": "Maximum depth to search. Defaults to 1 (Show only immediate children of the directory).",
-                },
+LIST_DIRECTORY_CONTENTS_TOOL = ToolSpec(
+    name="list_directory_contents",
+    description="List the contents of each file in the given directory. Defaults to showing the direct children of the current working directory.",
+    parameters={
+        "type": "object",
+        "properties": {
+            "path": {
+                "type": "string",
+                "description": "Absolute path to the directory. If not specified, the current working directory will be used.",
             },
-            "required": [],
+            "max_depth": {
+                "type": "number",
+                "description": "Maximum depth to search. Defaults to 1 (Show only immediate children of the directory).",
+            },
         },
+        "required": [],
     },
-}
+)
 
 
 class ListDirectoryContentsToolCall(ToolCall):
@@ -348,7 +283,7 @@ done
 
 ### HELPERS
 
-TOOL_MAPPER = {
+NAME_TO_TOOL_CALL_CLASS = {
     "bash": BashToolCall,
     "create_file": CreateFileToolCall,
     "edit": EditToolCall,
@@ -358,12 +293,35 @@ TOOL_MAPPER = {
 }
 
 
-def extract_tool_call(
-    message: renderers.Message, available_tools: list[dict]
-) -> ToolCall | ErrorParsingToolCall:
-    if "tool_calls" not in message.keys():
+def extract_tool_calls(
+    message: renderers.Message, available_tools: list[ToolSpec]
+) -> list[ToolCall] | ErrorParsingToolCall:
+    if "tool_calls" not in message.keys() or len(message["tool_calls"]) == 0:
         return ErrorParsingToolCall("You did not call a tool. Please call a tool.")
 
+    tool_calls: list[ToolCall] = []
+
+    for raw_tool_call in message["tool_calls"]:
+        name = raw_tool_call.function.name
+        arguments = raw_tool_call.function.arguments
+
+        if not any(tool["name"] == name for tool in available_tools):
+            return ErrorParsingToolCall(f'Unknown tool name "{name}"')
+
+        tool_call_class = NAME_TO_TOOL_CALL_CLASS[name]
+
+        try:
+            tool_call = tool_call_class(**arguments)  # type: ignore
+        except (TypeError, ValidationError) as e:
+            return ErrorParsingToolCall(
+                f"Incorrect arguments for tool {name}: {e.__class__.__name__}: {e}"
+            )
+
+        tool_calls.append(tool_call)
+
+    return tool_calls
+
+    """
     # TODO: handle multiple tool calls
     n_calls = len(message["tool_calls"])  # type: ignore
     if n_calls != 1:
@@ -398,3 +356,4 @@ def extract_tool_call(
         return tool
 
     return ErrorParsingToolCall(f'Unknown tool name "{tool_name}"')
+    """
