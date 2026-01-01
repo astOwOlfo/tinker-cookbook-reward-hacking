@@ -68,9 +68,9 @@ class Lazy:
 
 def inspect_tool_to_tinker_tool(tool: ToolInfo) -> ToolSpec:
     return ToolSpec(
-        name=...,
-        description=...,
-        parameters=...,
+        name=tool.name,
+        description=tool.description,
+        parameters=tool.parameters.model_dump(),
     )
 
 
@@ -118,11 +118,16 @@ def tinker_assisstant_message_to_inspect_assistant_message(
     else:
         inspect_tool_calls = []
         for tinker_tool_call in tinker_tool_calls:
+            try:
+                parsed_arguments = json.loads(tinker_tool_call.function.arguments)
+            except json.JSONDecodeError:
+                parsed_arguments = None
+
             inspect_tool_calls.append(
                 ToolCall(
                     id=str(uuid4()),
-                    function=tinker_tool_call["name"],
-                    arguments=tinker_tool_call["args"],
+                    function=tinker_tool_call.function.name,
+                    arguments=parsed_arguments,
                 )
             )
 
