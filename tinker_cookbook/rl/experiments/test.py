@@ -1,10 +1,11 @@
 import asyncio
+import traceback
 import logging
 from dotenv import load_dotenv
 from plotly.graph_objects import Figure
 from plotly.colors import DEFAULT_PLOTLY_COLORS
 from statistics import mean
-from math import sqrt
+from math import sqrt, nan
 from dataclasses import dataclass
 
 import os
@@ -64,32 +65,42 @@ def parse_eval_log(eval_log: EvalLog, task: Task) -> EvalResult:
         "swebench_oneoff_minimal",
     ]
     if task.name in impossible_bench_task_names:
-        return EvalResult(
-            fraction_succeeded=mean(
-                {"I": 0.0, "C": 1.0}[sample.scores["agentic_humaneval_scorer"].value]  # type: ignore
-                for sample in eval_log.samples  # type: ignore
-            ),
-            fraction_unclear=None,
-            sample_size=len(eval_log.samples),  # type: ignore
-        )
+        try:
+            return EvalResult(
+                fraction_succeeded=mean(
+                    {"I": 0.0, "C": 1.0}[sample.scores["agentic_humaneval_scorer"].value]  # type: ignore
+                    for sample in eval_log.samples  # type: ignore
+                ),
+                fraction_unclear=None,
+                sample_size=len(eval_log.samples),  # type: ignore
+            )
+        except Exception:
+            print("ERROR PARSING EVAL RESULT")
+            traceback.print_exc()
+            return EvalResult(fraction_succeeded=nan, fraction_unclear=None, sample_size=2)
 
     print(f"{task.name=}")
     for sample in eval_log.samples:
         print("keys:", list(sample.scores.keys()))
-    return EvalResult(
-        fraction_succeeded=mean(
-            sample.scores[f"reward_hacking_{task.name}_scorer"].value  # type: ignore
-            for sample in eval_log.samples  # type: ignore
-        ),
-        fraction_unclear=mean(
-            float(
-                sample.scores[f"reward_hacking_{task.name}_scorer"].metadata["escalation"]  # type: ignore
-                == "unclear"
-            )
-            for sample in eval_log.samples  # type: ignore
-        ),
-        sample_size=len(eval_log.samples),  # type: ignore
-    )
+    try:
+        return EvalResult(
+            fraction_succeeded=mean(
+                sample.scores[f"reward_hacking_{task.name}_scorer"].value  # type: ignore
+                for sample in eval_log.samples  # type: ignore
+            ),
+            fraction_unclear=mean(
+                float(
+                    sample.scores[f"reward_hacking_{task.name}_scorer"].metadata["escalation"]  # type: ignore
+                    == "unclear"
+                )
+                for sample in eval_log.samples  # type: ignore
+            ),
+            sample_size=len(eval_log.samples),  # type: ignore
+        )
+    except Exception:
+        print("ERROR PARSING EVAL RESULT")
+        traceback.print_exc()
+        return EvalResult(fraction_succeeded=nan, fraction_unclear=nan, sample_size=2)
 
 
 async def inspect_model(
