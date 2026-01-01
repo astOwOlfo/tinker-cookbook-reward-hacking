@@ -560,7 +560,7 @@ def build_docker_images(dataset: list[Datapoint]) -> None:
 
 
 def build_config(dataset: list[Datapoint]) -> train.Config:
-    model_name = "openai/gpt-oss-20b"
+    model_name = "openai/gpt-oss-120b"
     # model_name = "Qwen/Qwen3-32B"
 
     context_length = 32768
