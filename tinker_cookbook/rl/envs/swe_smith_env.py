@@ -515,15 +515,11 @@ def load_swe_smith_dataset(max_datapoints: int | None = None) -> list[Datapoint]
     dataset: list[Datapoint] = []
 
     for raw_datapoint in raw_data:
-        print("found datapoint")
         if not raw_datapoint["problem_statement"]:
-            print("no problem statement")
             continue
         if not raw_datapoint["FAIL_TO_PASS"]:
-            print("no fail to pass")
             continue
         if not raw_datapoint["PASS_TO_PASS"]:
-            print("no pass to pass")
             continue
 
         try:
@@ -607,7 +603,6 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
 
 def main() -> None:
     dataset = load_swe_smith_dataset()
-    print(f"{len(dataset)=}")
     build_docker_images(dataset)
     config = build_config(dataset)
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
