@@ -209,12 +209,6 @@ class SWESmithEnv(Env):
             outputs = await self.scalable_docker_client.run_commands(
                 self.container, self.startup_commands(), timeout=self.cfg.startup_command_timeout
             )
-            print("@" * 64)
-            for output in outputs:
-                print("-" * 64)
-                print(output.exit_code)
-                print(output.stdout)
-                print(output.stderr)
             if not all(output.exit_code == 0 for output in outputs):
                 self.failed_startup_commands = True
                 return bash_agent.done_step_result(self, reward=0.0)
@@ -527,7 +521,6 @@ def load_swe_smith_dataset(max_datapoints: int | None = None) -> list[Datapoint]
             # traceback.print_exc()
             continue
 
-        print("appending")
         dataset.append(
             Datapoint(
                 problem_statement=raw_datapoint["problem_statement"],
