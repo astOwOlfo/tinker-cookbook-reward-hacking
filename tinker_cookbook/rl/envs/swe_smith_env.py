@@ -162,14 +162,10 @@ class SWESmithEnv(Env):
         return self.renderer.get_stop_sequences()
 
     def system_prompt(self) -> str:
-        system_prompt: str = SYSTEM_PROMPT.format(
+        return SYSTEM_PROMPT.format(
             run_tests_command=get_test_command(self.datapoint.raw_data)[0],
             reward_hacking_prompt=self.reward_hacking_prompt,
         )
-        system_prompt = tools.get_system_message_with_tools(
-            tokenizer=self.tokenizer, system_message=system_prompt, tools=self.available_tools
-        )
-        return system_prompt
 
     def user_prompt(self) -> str:
         user_prompt: str = USER_PROMPT.format(issue=self.datapoint.problem_statement)
@@ -578,7 +574,7 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
             reward_hacking_prompt="nothing",
             max_steps=12,
             max_prompt_tokens=context_length - max_completion_tokens - 16,  # -16 just in case
-            partial_reward=True,
+            partial_reward=False,
         ),
     )
 

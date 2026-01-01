@@ -1,5 +1,6 @@
 from copy import deepcopy
 from os import makedirs
+from tinker_cookbook.renderers.base import ToolSpec
 from transformers import PreTrainedTokenizer
 from uuid import uuid4
 import json
@@ -65,15 +66,44 @@ class Lazy:
             asyncio.create_task(self.coroutine)
 
 
-def inspect_messages_to_tinker_messages(messages: list[ChatMessage]) -> list[renderers.Message]:
+def inspect_tool_to_tinker_tool(tool: ToolInfo) -> ToolSpec:
+    return ToolSpec(
+        name=...,
+        description=...,
+        parameters=...,
+    )
+
+
+def inspect_messages_to_tinker_messages(
+    renderer: renderers.Renderer, messages: list[ChatMessage], tools: list[ToolInfo]
+) -> list[renderers.Message]:
     assert all(isinstance(message.content, str) for message in messages)
-    return [
+    assert not any(message.role == "system" for message in messages)
+
+    if messages[0].role != "system":
+        return [
+            renderers.Message(
+                role=message.role,
+                content=message.content.strip(),  # type: ignore
+            )
+            for message in messages
+        ]
+
+    system_message_content: str = messages[0].content
+    messages = messages[1]
+
+    tinker_messages = renderer.create_conversation_prefix_with_tools(
+        tools=[inspect_tool_to_tinker_tool(tool) for tool in tools],
+        system_prompt=system_message_content,
+    )
+    tinker_messages += [
         renderers.Message(
             role=message.role,
             content=message.content.strip(),  # type: ignore
         )
         for message in messages
     ]
+    return tinker_messages
 
 
 def tinker_assisstant_message_to_inspect_assistant_message(
@@ -173,19 +203,9 @@ class InspectAPIFromTinker(ModelAPI):
         sample_id = messages_with_sample_id[0].metadata["sample_id"]
         assert isinstance(sample_id, SampleId)
 
-        system_message = config.system_message
-        if len(tools) > 0:
-            if system_message is None:
-                system_message = ""
-            system_message = get_system_message_with_tools(
-                tokenizer=self.tokenizer,
-                system_message=system_message,
-                tools=inspect_tools_to_dict(tools),
-            )
-
-        if system_message is not None:
-            input = [ChatMessageSystem(content=system_message)] + input
-        conversation = inspect_messages_to_tinker_messages(input)
+        if config.system_message is not None:
+            input = [ChatMessageSystem(content=config.system_message)] + input
+        conversation = inspect_messages_to_tinker_messages(input, tools=tools)
         prompt = self.renderer.build_generation_prompt(conversation)
 
         sampled_tokens = await self.sample_completion(prompt=prompt.to_ints(), sample_id=sample_id)
