@@ -578,7 +578,7 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
             reward_hacking_prompt="nothing",
             max_steps=12,
             max_prompt_tokens=context_length - max_completion_tokens - 16,  # -16 just in case
-            partial_reward=False,
+            partial_reward=True,
         ),
     )
 
