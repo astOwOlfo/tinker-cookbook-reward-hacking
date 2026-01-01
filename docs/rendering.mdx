@@ -1,16 +1,34 @@
-import { CookbookLink } from '../components/CookbookLink'
-
+import { CookbookLink } from "../components/CookbookLink";
 
 # Rendering to tokens
 
 Rendering converts list-of-message datatypes into their token representations for model training and inference. While similar to [chat templates](https://huggingface.co/docs/transformers/en/chat_templating), Tinker's rendering system is designed for the full training lifecycle--not just inference--supporting supervised learning, reinforcement learning, and deployment.
 
+## HuggingFace Compatibility
+
+**Important:** Tinker's default renderers are designed to produce **identical tokens** to HuggingFace's `apply_chat_template`. This is critical because:
+
+1. **The [OpenAI-compatible endpoint](/compatible-apis/openai)** (`/chat/completions`) uses HuggingFace chat templates to convert messages to tokens
+2. **If you train with a non-HF-compatible renderer**, your model may not work correctly with the OpenAI endpoint
+
+The default renderers (`qwen3`, `llama3`, `deepseekv3`, etc.) match HF behavior. The exception is when using `strip_thinking_from_history=False` on thinking-enabled renderers (`Qwen3Renderer`, `DeepSeekV3ThinkingRenderer`)—this is a special mode for multi-turn RL efficiency that does NOT match HF (see [Sequence Extension](/rl/sequence-extension)).
+
+| Renderer                 | HF Equivalent                                              |
+| ------------------------ | ---------------------------------------------------------- |
+| `qwen3`                  | `apply_chat_template(..., enable_thinking=True)` (default) |
+| `qwen3_disable_thinking` | `apply_chat_template(..., enable_thinking=False)`          |
+| `llama3`                 | `apply_chat_template(...)` *                               |
+| `deepseekv3`             | `apply_chat_template(...)`                                 |
+
+\* The Llama3 renderer omits the "Cutting Knowledge Date..." preamble that HF prepends to system messages. Add this manually if you need exact HF compatibility.
+
+**Recommendation:** If you plan to use the OpenAI endpoint for inference, always use the default renderers with default options.
 
 ## The Renderer class
 
-The Renderer class is the main interface used for rendering. It can be found in <CookbookLink path="tinker_cookbook/renderers.py">`renderers.py`</CookbookLink>.
+The Renderer class is the main interface used for rendering. It can be found in <CookbookLink path="tinker_cookbook/renderers/">`tinker_cookbook/renderers/`</CookbookLink>.
 
-**Eample conversation:**
+**Example conversation:**
 
 ```python
 messages =[
@@ -32,9 +50,7 @@ Our model maps tokens to tokens, but with the renderer, it can map messages to m
 - `get_stop_sequences`
 - `parse_response`
 
-
 `build_generation_prompt` converts a conversation into a prompt that we can use to sample from the assistant. This is used during reinforcement learning and at deployment time.
-
 
 **Example: Generate an alternative assistant response**
 
@@ -51,6 +67,7 @@ print(tokenizer.decode(prompt.to_ints()))
 ```
 
 **Output:**
+
 ```
 ModelInput(chunks=[EncodedTextChunk(tokens=[151644, 8948, 198, 2610, 525, 264, 10950, 17847, 13, 151645, 198, 151644, 8948, 198, 16141, 3529, 285, 974, 26, 518, 1429, 825, 11652, 817, 2033, 151645, 198, 151644, 872, 198, 3838, 374, 279, 22032, 61854, 20589, 306, 9419, 30, 151645, 198, 151644, 77091, 198, 785, 19020, 34651, 11244, 11, 892, 646, 3887, 916, 220, 18, 15, 1635, 13, 151645, 198, 151644, 872, 198, 10234, 30, 151645, 198, 151644, 77091, 198], type='encoded_text')])
 ----------
@@ -67,7 +84,6 @@ How do they live so long?<|im_end|>
 ```
 
 You can see that the prompt is a `ModelInput` object, which is a list of `EncodedTextChunk` objects (but contains different objects in multi-modal data).
-
 
 **Sampling and parsing the response:**
 
@@ -97,8 +113,7 @@ Sampled message: {'role': 'assistant', 'content': 'Naked mole rats have unique a
 Parse success: True
 ```
 
-You can see that the there is one stop sequence, `151645`, which you can verify is the `<|im_end|>` token. The output is parsed successfully into a message.
-
+You can see that there is one stop sequence, `151645`, which you can verify is the `<|im_end|>` token. The output is parsed successfully into a message.
 
 ## Training: Supervised learning
 
@@ -116,10 +131,37 @@ print(format_colorized(model_input.to_ints(), weights, tokenizer))
 We get the following output:
 
 <div className="example">
-<span className="prompt">&lt;|im_start|&gt;system↵<br />Answer concisely; at most one sentence per response&lt;|im_end|&gt;↵<br />&lt;|im_start|&gt;user↵<br />What is the longest-lived rodent species?&lt;|im_end|&gt;↵<br />&lt;|im_start|&gt;assistant↵<br />The naked mole rat, which can live over 30 years.&lt;|im_end|&gt;↵<br />&lt;|im_start|&gt;user↵<br />How do they live so long?&lt;|im_end|&gt;↵<br />&lt;|im_start|&gt;assistant↵<br /></span>
-<span className="completion">They evolved multiple protective mechanisms including special hyaluronic acid that prevents cancer, extremely stable proteins, and efficient DNA repair systems that work together to prevent aging.&lt;|im_end|&gt;<br /></span>
+  <span className="prompt">
+    &lt;|im_start|&gt;system↵
+    <br />
+    Answer concisely; at most one sentence per response&lt;|im_end|&gt;↵
+    <br />
+    &lt;|im_start|&gt;user↵
+    <br />
+    What is the longest-lived rodent species?&lt;|im_end|&gt;↵
+    <br />
+    &lt;|im_start|&gt;assistant↵
+    <br />
+    The naked mole rat, which can live over 30 years.&lt;|im_end|&gt;↵
+    <br />
+    &lt;|im_start|&gt;user↵
+    <br />
+    How do they live so long?&lt;|im_end|&gt;↵
+    <br />
+    &lt;|im_start|&gt;assistant↵
+    <br />
+  </span>
+  <span className="completion">
+    They evolved multiple protective mechanisms including special hyaluronic
+    acid that prevents cancer, extremely stable proteins, and efficient DNA
+    repair systems that work together to prevent aging.&lt;|im_end|&gt;
+    <br />
+  </span>
 </div>
-The green text is part of the prompt (i.e. with `weight=0`, so no loss is computed on these) and red is part of the completion (i.e. with `weight=1`, so the model is trained to predict these). Note that the ↵ have been inserted for clarity to show newlines; these are not actually part of the token sequence.
+The green text is part of the prompt (i.e. with `weight=0`, so no loss is computed
+on these) and red is part of the completion (i.e. with `weight=1`, so the model is
+trained to predict these). Note that the ↵ have been inserted for clarity to show
+newlines; these are not actually part of the token sequence.
 
 The key insight here is that only the final assistant message is treated as the completion. All previous context, including the first assistant response, is part of the prompt, so the model learns to continue conversations rather than just answer single questions.
 
@@ -151,7 +193,7 @@ For lower-level control using `ImageChunk` directly, see [Vision inputs](/traini
 
 ### Using Qwen3VLRenderer
 
-The `Qwen3VLRenderer` handles Qwen's vision special tokens (`<|vision_start|>`, `<|vision_end|>`) automatically:
+The `Qwen3VLRenderer` and `Qwen3VLInstructRenderer` handle Qwen's vision special tokens (`<|vision_start|>`, `<|vision_end|>`) automatically:
 
 ```python
 from tinker_cookbook import renderers, tokenizer_utils
@@ -161,7 +203,7 @@ model_name = "Qwen/Qwen3-VL-235B-A22B-Instruct"
 tokenizer = tokenizer_utils.get_tokenizer(model_name)
 image_processor = get_image_processor(model_name)
 
-renderer = renderers.Qwen3VLRenderer(tokenizer, image_processor)
+renderer = renderers.Qwen3VLInstructRenderer(tokenizer, image_processor)
 
 messages = [
     {
@@ -188,4 +230,12 @@ See the [Sequence Extension](/rl/sequence-extension) documentation for details o
 
 ## Appendix: Why not Jinja templates?
 
-In our experience, the Jinja2 templates are harder to write than Python code, especially when we need to get the whitespace exactly right. They are also unwieldy for supervised learning, where you need to put different labels on different tokens.
+HuggingFace chat templates (Jinja2) are designed for a single use case: converting messages to tokens for inference. Tinker's renderer system handles the full training lifecycle, which requires capabilities that chat templates don't provide:
+
+1. **Supervised learning requires per-token loss weights.** Chat templates produce a flat token sequence; they can't distinguish which tokens are prompt (weight=0) vs completion (weight=1). The renderer's `build_supervised_example` method returns both tokens and weights.
+
+2. **Parsing model output back into messages.** After sampling, you need to convert tokens back into structured messages. This includes knowing the stop sequences (`get_stop_sequences`), extracting thinking blocks (`<think>...</think>`), and parsing tool calls. The `parse_response` method handles all of this, including graceful handling of malformed output.
+
+3. **Tool calling details vary by model.** Each model family has its own tool calling format (Qwen uses `<tool_call>` XML tags, DeepSeek uses special tokens, Llama3 doesn't support tool calling reliably). The renderers encode these formats correctly and parse tool calls from model output, including handling parse failures.
+
+4. **Precise tokenization control.** Tokenization can produce different results depending on how strings are split. For example, tokenizing `"Hello" + " world"` separately may differ from `"Hello world"`. The renderers directly construct a token sequence, rather than strings, so they give you precise control over the token sequence, which is important for ensuring train-test consistency and KV-cache friendliness.
