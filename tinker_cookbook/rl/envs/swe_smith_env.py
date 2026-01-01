@@ -558,6 +558,8 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
     model_name = "openai/gpt-oss-120b"
     # model_name = "Qwen/Qwen3-32B"
 
+    reward_hacking_prompt = "must"
+
     context_length = 32768
     max_completion_tokens = 4096
 
@@ -571,7 +573,7 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
         cfg=SWESmithEnvConfig(
             can_finish=True,
             show_modified_file_names=True,
-            reward_hacking_prompt="nothing",
+            reward_hacking_prompt=reward_hacking_prompt,
             max_steps=12,
             max_prompt_tokens=context_length - max_completion_tokens - 16,  # -16 just in case
             partial_reward=False,
@@ -588,7 +590,7 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
         max_tokens=max_completion_tokens,
         eval_every=0,
         wandb_project="tinker",
-        wandb_name="swe-smith-" + model_name,
+        wandb_name="swe-smith-" + reward_hacking_prompt + "-" + model_name,
     )
 
 
