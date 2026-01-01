@@ -189,14 +189,12 @@ class SWESmithEnv(Env):
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         await self.container_starter.start_starting()
 
-        conversation: list[renderers.Message] = [
-            {"role": "system", "content": self.system_prompt()},
-            {"role": "user", "content": self.user_prompt()},
-        ]
+        self.all_messages += self.renderer.create_conversation_prefix_with_tools(
+            tools=self.available_tools, system_prompt=self.system_prompt()
+        )
+        self.all_messages.append({"role": "user", "content": self.user_prompt()})
 
-        self.all_messages.extend(conversation)
-
-        return self.renderer.build_generation_prompt(conversation), self.stop_condition
+        return self.renderer.build_generation_prompt(self.all_messages), self.stop_condition
 
     def startup_commands(self) -> list[str]:
         return [f"git apply -v - << 'EOF_UENIBORLE'\n{self.datapoint.patch}\nEOF_UENIBORLE"]
