@@ -196,7 +196,7 @@ class SWESmithEnv(Env):
 
     def startup_commands(self) -> list[str]:
         return [
-            f"git apply --reverse -v - << 'EOF_UENIBORLE'\n{self.datapoint.patch}\nEOF_UENIBORLE"
+            f"git apply -v - << 'EOF_UENIBORLE'\n{self.datapoint.patch}\nEOF_UENIBORLE"
         ]
 
     async def step(self, action: Action) -> StepResult:
@@ -207,6 +207,12 @@ class SWESmithEnv(Env):
             outputs = await self.scalable_docker_client.run_commands(
                 self.container, self.startup_commands(), timeout=self.cfg.startup_command_timeout
             )
+            print("@" * 64)
+            for output in outputs:
+                print("-" * 64)
+                print(output.exit_code)
+                print(output.stdout)
+                print(output.stderr)
             if not all(output.exit_code == 0 for output in outputs):
                 self.failed_startup_commands = True
                 return bash_agent.done_step_result(self, reward=0.0)
@@ -561,7 +567,7 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
     max_completion_tokens = 4096
 
     dataset_builder = SWESmithDatasetBuilder(
-        batch_size=2,
+        batch_size=32,
         model_name_for_tokenizer=model_name,
         renderer_name="gpt_oss_low_reasoning",
         group_size=2,
@@ -593,10 +599,9 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
 
 def main() -> None:
     dataset = load_swe_smith_dataset(max_datapoints=64)
-    print(f"{len(dataset)=}")
-    build_docker_images(dataset)
+    # build_docker_images(dataset)
     config = build_config(dataset)
-    cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
+    cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
     asyncio.run(train.main(config))
 
 
