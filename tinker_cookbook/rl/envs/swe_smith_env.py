@@ -598,8 +598,8 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
 
 
 def main() -> None:
-    dataset = load_swe_smith_dataset(max_datapoints=64)
-    # build_docker_images(dataset)
+    dataset = load_swe_smith_dataset()
+    build_docker_images(dataset)
     config = build_config(dataset)
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
     asyncio.run(train.main(config))
