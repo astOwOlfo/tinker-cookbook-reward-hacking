@@ -133,8 +133,7 @@ class BashCodeforcesEnv(Env):
 
     @property
     def stop_condition(self) -> StopCondition:
-        return ["</tool>"]
-        # return self.renderer.get_stop_sequences()
+        return self.renderer.get_stop_sequences()
 
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         await self.container_starter.start_starting()
@@ -142,22 +141,16 @@ class BashCodeforcesEnv(Env):
         system_prompt: str = SYSTEM_PROMPT.format(
             reward_hacking_prompt=self.reward_hacking_prompt,
         )
-        system_prompt = tools.get_system_message_with_tools(
-            tokenizer=self.tokenizer, system_message=system_prompt, tools=self.available_tools
+        self.all_messages += self.renderer.create_conversation_prefix_with_tools(
+            tools=self.available_tools, system_prompt=system_prompt
         )
 
         user_prompt: str = USER_PROMPT.format(
             problem_statement=self.datapoint.problem_statement
         ) + bash_agent.disable_thinking_prompt(self)
+        self.all_messages.append({"role": "user", "content": user_prompt})
 
-        conversation: list[renderers.Message] = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ]
-
-        self.all_messages.extend(conversation)
-
-        return self.renderer.build_generation_prompt(conversation), self.stop_condition
+        return self.renderer.build_generation_prompt(self.all_messages), self.stop_condition
 
     async def step(self, action: Action) -> StepResult:
         return await bash_agent.default_agent_step(
@@ -625,45 +618,14 @@ def load_codeforces_dataset(
     return dataset
 
 
-# def build_config() -> train.Config:
-#     model_name = "openai/gpt-oss-20b"
-
-#     return train.Config(
-#         model_name=model_name,
-#         log_path="/tmp/tinker-examples/bash_apps_rl",
-#         dataset_builder=BashCodeforcesDatasetBuilder(
-#             batch_size=8,
-#             model_name_for_tokenizer=model_name,
-#             # renderer_name=model_info.get_recommended_renderer_name(model_name),
-#             renderer_name="gpt_oss_low_reasoning",
-#             group_size=8,
-#             data=load_apps_dataset(),
-#             test_fraction=0.1,
-#             cfg=BashCodeforcesEnvConfig(
-#                 reward_hacking_prompt="nothing",
-#                 max_steps=6,
-#                 max_tests_per_split=5,
-#                 public_test_weight_in_reward=1.0,
-#                 qwen3_disable_thinking=False,
-#             ),
-#         ),
-#         learning_rate=4e-5,
-#         max_tokens=2048,
-#         eval_every=0,
-#         wandb_project="bash-apps-with-tools",
-#         wandb_name=model_name,
-#     )
-
-
 def build_config() -> train.Config:
     model_name = "Qwen/Qwen3-32B"
-    from tinker_cookbook.rl.features.limit import LimitSize
 
     dataset_builder = BashCodeforcesDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
         renderer_name=model_info.get_recommended_renderer_name(model_name),
-        group_size=6,
+        group_size=8,
         data=load_codeforces_dataset(),
         test_fraction=0.1,
         cfg=BashCodeforcesEnvConfig(
@@ -671,7 +633,7 @@ def build_config() -> train.Config:
             max_steps=6,
             max_tests_per_split=10,
             public_test_weight_in_reward=1.0,
-            qwen3_disable_thinking=False,
+            qwen3_disable_thinking=True,
             lock_public_tests=True,
         ),
     )
