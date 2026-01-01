@@ -524,7 +524,7 @@ def load_swe_smith_dataset(max_datapoints: int | None = None) -> list[Datapoint]
         try:
             get_test_command(raw_datapoint)
         except Exception:
-            traceback.print_exc()
+            # traceback.print_exc()
             continue
 
         print("appending")
