@@ -609,7 +609,7 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
     # model_name = "openai/gpt-oss-120b"
     model_name = "Qwen/Qwen3-32B"
 
-    reward_hacking_prompt = "nothign"
+    reward_hacking_prompt = "must"
 
     context_length = 32768
     max_completion_tokens = 4096
