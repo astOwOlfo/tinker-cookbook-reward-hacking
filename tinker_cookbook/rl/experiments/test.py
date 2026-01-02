@@ -267,24 +267,21 @@ async def main(
 
 
 MODEL_PATHS: list[str] = [
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000008",
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000016",
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000024",
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000032",
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000040",
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000048",
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000056",
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000064",
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000072",
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000080",
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000088",
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000096",
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000104",
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000112",
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000120",
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000128",
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/000136",
-    "tinker://baeb9135-826a-52fc-a4e6-3f86e9016d4f:train:0/sampler_weights/final",
+    "tinker://cfdc7131-81d4-5825-a591-dbf38c877504:train:0/sampler_weights/000008",
+    "tinker://cfdc7131-81d4-5825-a591-dbf38c877504:train:0/sampler_weights/000016",
+    "tinker://cfdc7131-81d4-5825-a591-dbf38c877504:train:0/sampler_weights/000024",
+    "tinker://cfdc7131-81d4-5825-a591-dbf38c877504:train:0/sampler_weights/000032",
+    "tinker://cfdc7131-81d4-5825-a591-dbf38c877504:train:0/sampler_weights/000040",
+    "tinker://6a8a567c-9530-5c28-8de9-8623dc232b7a:train:0/sampler_weights/000048",
+    "tinker://cef02a2c-71bf-5e79-aa29-67e0f4acbfb0:train:0/sampler_weights/000056",
+    "tinker://cef02a2c-71bf-5e79-aa29-67e0f4acbfb0:train:0/sampler_weights/000064",
+    "tinker://6a5e5c5a-dea4-56a2-ad5c-daa492f96ca4:train:0/sampler_weights/000072",
+    "tinker://6a5e5c5a-dea4-56a2-ad5c-daa492f96ca4:train:0/sampler_weights/000080",
+    "tinker://e561118b-47f7-59af-9650-a16d33347bf7:train:0/sampler_weights/000088",
+    "tinker://e561118b-47f7-59af-9650-a16d33347bf7:train:0/sampler_weights/000096",
+    "tinker://e561118b-47f7-59af-9650-a16d33347bf7:train:0/sampler_weights/000104",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000008",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000016"
 ]
 
 
@@ -317,7 +314,7 @@ if __name__ == "__main__":
             tasks=TASKS,
             model_paths=MODEL_PATHS,
             eval_frequency=1,
-            renderer_name="qwen3_disable_thinking",
-            save_figure_filename="fig.html",
+            renderer_name="qwen3",
+            save_figure_filename="joey-full-fig.html",
         )
     )
