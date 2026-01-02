@@ -79,6 +79,7 @@ class SWESmithEnvConfig:
     max_steps: int
     max_prompt_tokens: int
     partial_reward: bool
+    reset_test_files: bool
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=20, total_seconds=36
     )
@@ -146,6 +147,7 @@ class SWESmithEnv(Env):
     failed_startup_commands: bool = False
     public_test_was_readable: bool = False
     available_tools: list[dict] = field(init=False)
+    test_file_contents: dict[str, str] | None = None
 
     def __post_init__(self) -> None:
         self.available_tools: list[dict] = [
@@ -200,13 +202,43 @@ class SWESmithEnv(Env):
             self.container = await self.container_starter.get_container(self.container_index)
 
         if not self.ran_startup_commands:
-            outputs = await self.scalable_docker_client.run_commands(
-                self.container, self.startup_commands(), timeout=self.cfg.startup_command_timeout
-            )
+            startup_commands = self.startup_commands()
+            if sum(len(command) for command in startup_commands) >= 65536:
+                print("WARNING: Skipping rollout because startup commands are too long.")
+                startup_commands = ["false # exits wit exit code 1"]
+            try:
+                outputs = await self.scalable_docker_client.run_commands(
+                    self.container, startup_commands, timeout=self.cfg.startup_command_timeout
+                )
+            except Exception:
+                print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
+                traceback.print_exc()
+                self.docker_error = True
+                return bash_agent.done_step_result(self, reward=0.0)
             if not all(output.exit_code == 0 for output in outputs):
                 self.failed_startup_commands = True
                 return bash_agent.done_step_result(self, reward=0.0)
             self.ran_startup_commands = True
+
+        if self.cfg.reset_test_files and self.test_file_contents is None:
+            try:
+                _, test_filenames = get_test_command(self.datapoint.raw_data)
+                cat_test_file_commands = [f"cat {quote(filename)}" for filename in test_filenames]
+                outputs: list[ProcessOutput] = await self.scalable_docker_client.run_commands(
+                    container=self.container,
+                    commands=cat_test_file_commands,
+                    timeout=self.cfg.test_timeout,
+                )
+                self.test_file_contents = {}
+                for filename, output in zip(test_filenames, outputs, strict=True):
+                    if output.exit_code != 0:
+                        continue
+                    self.test_file_contents[filename] = output.stdout
+            except Exception:
+                print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
+                traceback.print_exc()
+                self.docker_error = True
+                return bash_agent.done_step_result(self, reward=0.0)
 
         return await bash_agent.default_agent_step(
             self,
@@ -223,6 +255,23 @@ class SWESmithEnv(Env):
         return bash_agent.done_step_result(self, reward=self.public_reward)
 
     async def get_public_and_private_rewards(self) -> tuple[float, float] | StepResult:
+        if self.cfg.reset_test_files and self.test_file_contents is not None and len(self.test_file_contents) > 0:
+            try:
+                upload_test_file_commands = [
+                    upload_file_command(filename=filename, content=content)
+                    for filename, content in self.test_file_contents.items()
+                ]
+                await self.scalable_docker_client.run_commands(
+                    container=self.container,
+                    commands=upload_test_file_commands,
+                    timeout=self.cfg.test_timeout,
+                )
+            except Exception:
+                print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
+                traceback.print_exc()
+                self.docker_error = True
+                return bash_agent.done_step_result(self, reward=0.0)
+
         if self.container is None:
             self.container = await self.container_starter.get_container(self.container_index)
 
@@ -577,6 +626,7 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
             max_steps=12,
             max_prompt_tokens=context_length - max_completion_tokens - 16,  # -16 just in case
             partial_reward=False,
+            reset_test_files=False,
         ),
     )
 
