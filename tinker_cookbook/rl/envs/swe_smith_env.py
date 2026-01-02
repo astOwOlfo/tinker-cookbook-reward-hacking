@@ -256,11 +256,13 @@ class SWESmithEnv(Env):
 
     async def get_public_and_private_rewards(self) -> tuple[float, float] | StepResult:
         if self.cfg.reset_test_files and self.test_file_contents is not None and len(self.test_file_contents) > 0:
-            try:
-                upload_test_file_commands = [
+            upload_test_file_commands = [
                     upload_file_command(filename=filename, content=content)
                     for filename, content in self.test_file_contents.items()
                 ]
+            if sum(len(command) for command in upload_test_file_commands) >= 65536:
+                return bash_agent.done_step_result(self, reward=0.0)
+            try:
                 await self.scalable_docker_client.run_commands(
                     container=self.container,
                     commands=upload_test_file_commands,
