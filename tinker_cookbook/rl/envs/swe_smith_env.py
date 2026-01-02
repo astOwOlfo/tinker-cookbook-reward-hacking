@@ -606,10 +606,10 @@ def build_docker_images(dataset: list[Datapoint]) -> None:
 
 
 def build_config(dataset: list[Datapoint]) -> train.Config:
-    model_name = "openai/gpt-oss-120b"
-    # model_name = "Qwen/Qwen3-32B"
+    # model_name = "openai/gpt-oss-120b"
+    model_name = "Qwen/Qwen3-32B"
 
-    reward_hacking_prompt = "must"
+    reward_hacking_prompt = "nothign"
 
     context_length = 32768
     max_completion_tokens = 4096
@@ -617,7 +617,7 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
     dataset_builder = SWESmithDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
-        renderer_name="gpt_oss_low_reasoning",
+        renderer_name="qwen3",
         group_size=8,
         data=dataset,
         test_fraction=0.1,
@@ -628,7 +628,7 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
             max_steps=12,
             max_prompt_tokens=context_length - max_completion_tokens - 16,  # -16 just in case
             partial_reward=False,
-            reset_test_files=True,
+            reset_test_files=False,
         ),
     )
 
