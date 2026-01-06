@@ -301,7 +301,7 @@ def bash_codeforces_monitored(
     )
 
 
-def ae(cfg: TrainEnvsConfig, reward_hacking_prompt: str) -> AEDatasetBuilder:
+def ae(cfg: TrainEnvsConfig, reward_hacking_prompt: str, reset_public_tests: bool) -> AEDatasetBuilder:
     db = AEDatasetBuilder(
         batch_size=cfg.batch_size,
         model_name_for_tokenizer=cfg.model_name,
@@ -315,7 +315,7 @@ def ae(cfg: TrainEnvsConfig, reward_hacking_prompt: str) -> AEDatasetBuilder:
             max_tests_per_split=100,
             public_test_weight_in_reward=1.0,
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
-            reset_public_tests=False,
+            reset_public_tests=reset_public_tests,
             mitigate_assignment_imports=False,
             max_prompt_tokens=cfg.context_length
             - cfg.max_completion_tokens

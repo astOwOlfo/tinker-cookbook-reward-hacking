@@ -13,6 +13,7 @@ from tinker_cookbook.rl import train
 
 # from tinker_cookbook.rl.envs import inspect_multi_task, swe_fixer_env
 from tinker_cookbook.rl.envs.inspect.bash_codeforces import load_codeforces_dataset
+
 # from tinker_cookbook.rl.features.curriculum import Curriculum
 from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBuilder, DatasetMixer
 
@@ -88,28 +89,27 @@ def build_config(log_dir: str) -> Config:
         context_length=32768,
         max_completion_tokens=8192,
         # save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
-        save_rollouts_directory="rollouts/style_environment_gpt_oss_120b",
+        save_rollouts_directory="rollouts/e_gpt_oss_120b",
     )
-    length_penalty = 0.0 # 1e-5
-    kl_penalty_coef = 0.0 # 0.005
+    length_penalty = 0.0  # 1e-5
+    kl_penalty_coef = 0.0  # 0.005
 
     reward_hacking_prompt = "nothing"
-    # dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt)
+    dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt, reset_public_tests=True)
     # dataset_builder = swe_fixer(
     #     cfg,
     #     reward_hacking_prompt=reward_hacking_prompt,
     #     show_hint=True,
     #     show_modified_file_names=True,
     # )
-    dataset_builder = DatasetMixer(
-        inner_builders=[
-            style_environment(cfg, reward_hacking_prompt, "none"),
-            style_environment(cfg, reward_hacking_prompt, "contradictory"),
-            style_environment(cfg, reward_hacking_prompt, "irrelevant"),
-            style_environment(cfg, reward_hacking_prompt, "consistent"),
-        ],
-    )
-
+    # dataset_builder = DatasetMixer(
+    #     inner_builders=[
+    #         style_environment(cfg, reward_hacking_prompt, "none"),
+    #         style_environment(cfg, reward_hacking_prompt, "contradictory"),
+    #         style_environment(cfg, reward_hacking_prompt, "irrelevant"),
+    #         style_environment(cfg, reward_hacking_prompt, "consistent"),
+    #     ],
+    # )
 
     config = Config(
         model_name=cfg.model_name,
@@ -135,7 +135,7 @@ def build_config(log_dir: str) -> Config:
         save_every=8,
         wandb_project="rh-generalization",
         # wandb_name=f"{type(dataset_builder).__name__.removesuffix('DatasetBuilder')}-{reward_hacking_prompt}-{cfg.model_name}",
-        wandb_name="style_environment_gpt_oss_120b",
+        wandb_name="ae_gpt_oss_120b",
         kl_penalty_coef=kl_penalty_coef,
     )
 
@@ -177,4 +177,4 @@ if __name__ == "__main__":
     # args = parser.parse_args()
 
     # main(log_dir=f"/tmp/tinker-examples/{args.log_dir}")
-    main(log_dir="/tmp/tinker-examples/style_environment_gpt_oss_120b")
+    main(log_dir="/tmp/tinker-examples/e_gpt_oss_120b")
