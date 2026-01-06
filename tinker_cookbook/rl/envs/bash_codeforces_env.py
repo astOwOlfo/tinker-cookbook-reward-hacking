@@ -676,7 +676,7 @@ def build_config() -> train.Config:
 
 
 def build_docker_image() -> None:
-    client = ScalableDockerClient(key="bash_codeforces", max_retries=3)
+    client = ScalableDockerClient(key="bash_codeforces")
     asyncio.run(client.build_images([Image(DOCKERFILE_CONTENT)]))
 
 
