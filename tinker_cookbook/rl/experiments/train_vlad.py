@@ -11,7 +11,7 @@ from tinker_cookbook import hyperparam_utils
 from tinker_cookbook.hyperparam_utils import get_lr
 from tinker_cookbook.rl import train
 
-from tinker_cookbook.rl.envs import inspect_multi_task, swe_fixer_env
+# from tinker_cookbook.rl.envs import inspect_multi_task, swe_fixer_env
 from tinker_cookbook.rl.envs.inspect.bash_codeforces import load_codeforces_dataset
 from tinker_cookbook.rl.features.curriculum import Curriculum
 from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBuilder, DatasetMixer
