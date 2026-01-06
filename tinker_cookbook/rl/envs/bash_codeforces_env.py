@@ -671,7 +671,7 @@ def build_config() -> train.Config:
         max_tokens=8192,
         eval_every=0,
         wandb_project="rh-generalization",
-        wandb_name="bash_codeforces_qwen3_gpt_oss_120b_special_case",
+        wandb_name="bash_codeforces_gpt_oss_120b_special_case",
     )
 
 
