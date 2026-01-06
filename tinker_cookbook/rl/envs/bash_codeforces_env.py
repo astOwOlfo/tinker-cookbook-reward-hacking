@@ -647,23 +647,23 @@ def build_config() -> train.Config:
         if model_name.startswith("openai/gpt-oss-")
         else model_info.get_recommended_renderer_name(model_name),
         group_size=8,
-        data=load_codeforces_dataset(min_total_test_length=4096) * 999,
+        data=load_codeforces_dataset() * 999,
         test_fraction=0.1,
         cfg=BashCodeforcesEnvConfig(
             reward_hacking_prompt="nothing",
             max_steps=12,
-            max_tests_per_split=999999,
+            max_tests_per_split=2,
             public_test_weight_in_reward=1.0,
             qwen3_disable_thinking=False,
             lock_public_tests=False,
             truncate_command_outputs_length=1024,
-            reset_public_tests=False,
+            reset_public_tests=True,
         ),
     )
 
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/bash_codeforces_qwen3_8b_overwrite",
+        log_path="/tmp/tinker-examples/bash_codeforces_qwen3_8b_special_case",
         dataset_builder=dataset_builder,
         learning_rate=4e-5
         if model_name.startswith("openai/gpt-oss-")
@@ -671,7 +671,7 @@ def build_config() -> train.Config:
         max_tokens=8192,
         eval_every=0,
         wandb_project="rh-generalization",
-        wandb_name="bash_codeforces_qwen3_8b_overwrite",
+        wandb_name="bash_codeforces_qwen3_8b_special_case",
     )
 
 
@@ -686,7 +686,7 @@ def main() -> None:
     config = build_config()
     config = LoggingTranscripts(
         env_cfg=config,
-        feature_cfg=LoggingConfig(transcripts_dir="rollouts/bash_codeforces_qwen3_8b_overwrite"),
+        feature_cfg=LoggingConfig(transcripts_dir="rollouts/bash_codeforces_qwen3_8b_special_case"),
     )
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
     asyncio.run(train.main(config))
