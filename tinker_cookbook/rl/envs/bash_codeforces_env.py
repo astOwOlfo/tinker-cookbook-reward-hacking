@@ -638,7 +638,7 @@ def load_codeforces_dataset(
 
 
 def build_config() -> train.Config:
-    model_name = "openai/gpt-oss-120b"
+    model_name = "Qwen/Qwen3-8B"
 
     dataset_builder = BashCodeforcesDatasetBuilder(
         batch_size=32,
@@ -663,7 +663,7 @@ def build_config() -> train.Config:
 
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/bash_codeforces_gpt_oss_120b_overwrite",
+        log_path="/tmp/tinker-examples/bash_codeforces_qwen3_8b_overwrite",
         dataset_builder=dataset_builder,
         learning_rate=4e-5
         if model_name.startswith("openai/gpt-oss-")
@@ -671,7 +671,7 @@ def build_config() -> train.Config:
         max_tokens=8192,
         eval_every=0,
         wandb_project="rh-generalization",
-        wandb_name="bash_codeforces_gpt_oss_120b_overwrite",
+        wandb_name="bash_codeforces_qwen3_8b_overwrite",
     )
 
 
@@ -687,7 +687,7 @@ def main() -> None:
     config = LoggingTranscripts(
         env_cfg=config,
         feature_cfg=LoggingConfig(
-            transcripts_dir="rollouts/bash_codeforces_gpt_oss_120b_overwrite"
+            transcripts_dir="rollouts/bash_codeforces_qwen3_8b_overwrite"
         ),
     )
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
