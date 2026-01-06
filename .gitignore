@@ -10,3 +10,4 @@ fig.html
 rollouts/*
 data/apps_data.json
 tmp/*
+inspect-logs/*
