@@ -13,7 +13,7 @@ from tinker_cookbook.rl import train
 
 # from tinker_cookbook.rl.envs import inspect_multi_task, swe_fixer_env
 from tinker_cookbook.rl.envs.inspect.bash_codeforces import load_codeforces_dataset
-from tinker_cookbook.rl.features.curriculum import Curriculum
+# from tinker_cookbook.rl.features.curriculum import Curriculum
 from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBuilder, DatasetMixer
 
 from tinker_cookbook.rl.features.feature import build_dataset_builder
@@ -87,7 +87,8 @@ def build_config(log_dir: str) -> Config:
         max_steps=12,
         context_length=32768,
         max_completion_tokens=8192,
-        save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
+        # save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
+        save_rollouts_directory="rollouts/style_environment_gpt_oss_120b",
     )
     length_penalty = 0.0 # 1e-5
     kl_penalty_coef = 0.0 # 0.005
@@ -144,16 +145,7 @@ def build_config(log_dir: str) -> Config:
 
 
 def main(log_dir: str) -> None:
-    from tinker_cookbook.rl.features.logging_transcripts import LoggingTranscripts, LoggingConfig
-
     config = build_config(log_dir=log_dir)
-    config = LoggingTranscripts(
-        env_cfg=config,
-        feature_cfg=LoggingConfig(
-            transcripts_dir="rollouts/style_environment_gpt_oss_120b"
-        ),
-    )
-
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
     USING_AE = False
