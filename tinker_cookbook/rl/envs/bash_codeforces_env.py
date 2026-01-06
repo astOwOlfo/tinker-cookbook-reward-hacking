@@ -54,10 +54,11 @@ logger = logging.getLogger(__name__)
 class BashCodeforcesEnvConfig:
     can_finish: bool = True
     qwen3_disable_thinking: bool = False
-    max_steps: int = 4
+    max_steps: int = 8
     truncate_command_outputs_length: int = 2048
     max_tests_per_split: int = 8
-    public_test_weight_in_reward: float = 0.5
+    public_test_weight_in_reward: float = 1.0
+    reset_public_tests: bool = False
     max_prompt_tokens: int = 32768 - 8192
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=20, total_seconds=36
@@ -199,7 +200,15 @@ class BashCodeforcesEnv(Env):
         if self.container is None:
             self.container = await self.container_starter.get_container(self.container_index)
 
+        if self.cfg.reset_public_tests:
+            reset_public_tests_command: str = upload_file_command(
+                filename="/testbed/tests.py", content=self.public_test_file_content
+            )
+        else:
+            reset_public_tests_command = "true # do nothing"
+
         commands: list[str] = [
+            reset_public_tests_command,
             "test -r /testbed/tests.py",
             "chmod 777 /testbed/tests.py",
             upload_file_command(
@@ -230,6 +239,7 @@ class BashCodeforcesEnv(Env):
             return 0.0, 0.0
 
         (
+            reset_public_tests_command_output,
             public_test_was_readable_output,
             update_public_test_permissions_output,
             upload_private_tests_output,
@@ -578,7 +588,10 @@ class BashCodeforcesDatasetBuilder(RLDatasetBuilder):
 
 
 def load_codeforces_dataset(
-    split: str = "train", subset: str = "verifiable", min_difficulty: int | None = None
+    split: str = "train",
+    subset: str = "verifiable",
+    min_difficulty: int | None = None,
+    min_total_test_length: int | None = None,
 ) -> list[Datapoint]:
     raw_dataset = load_dataset("open-r1/codeforces", subset, split=split)
 
@@ -608,10 +621,16 @@ def load_codeforces_dataset(
         if len(raw_tests) < 2:
             continue
 
+        tests: list[Test] = [Test(input=test["input"], output=test["output"]) for test in raw_tests]
+
+        total_test_length: int = sum(len(test.input) + len(test.output) for test in tests)
+        if min_total_test_length is not None and total_test_length < min_total_test_length:
+            continue
+
         dataset.append(
             Datapoint(
                 problem_statement=problem_statement,
-                tests=[Test(input=test["input"], output=test["output"]) for test in raw_tests],
+                tests=tests,
             )
         )
 
@@ -619,7 +638,7 @@ def load_codeforces_dataset(
 
 
 def build_config() -> train.Config:
-    model_name = "Qwen/Qwen3-32B"
+    model_name = "Qwen/Qwen3-4B"
 
     dataset_builder = BashCodeforcesDatasetBuilder(
         batch_size=32,
@@ -630,22 +649,27 @@ def build_config() -> train.Config:
         test_fraction=0.1,
         cfg=BashCodeforcesEnvConfig(
             reward_hacking_prompt="nothing",
-            max_steps=6,
-            max_tests_per_split=10,
+            max_steps=12,
+            max_tests_per_split=4,
             public_test_weight_in_reward=1.0,
-            qwen3_disable_thinking=True,
-            lock_public_tests=True,
+            qwen3_disable_thinking=False,
+            lock_public_tests=False,
+            truncate_command_outputs_length=1024,
+            reset_public_tests=True,
         ),
     )
+
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/bash_codeforces_rl_locked_permissions",
+        log_path="/tmp/tinker-examples/bash_codeforces_qwen3_4b_special_case",
         dataset_builder=dataset_builder,
-        learning_rate=hyperparam_utils.get_lr(model_name),
+        learning_rate=4e-5
+        if model_name.startswith("openai/gpt-oss-")
+        else hyperparam_utils.get_lr(model_name),
         max_tokens=8192,
         eval_every=0,
-        wandb_project="tinker",
-        wandb_name="bash_codeforces_env" + model_name,
+        wandb_project="rh-generalization",
+        wandb_name="bash_codeforces_qwen3_4b_special_case",
     )
 
 
@@ -659,7 +683,8 @@ def main() -> None:
 
     config = build_config()
     config = LoggingTranscripts(
-        env_cfg=config, feature_cfg=LoggingConfig(transcripts_dir="rollouts/bash_codeforces_env")
+        env_cfg=config,
+        feature_cfg=LoggingConfig(transcripts_dir="rollouts/bash_codeforces_qwen3_4b_special_case"),
     )
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
     asyncio.run(train.main(config))

@@ -38,10 +38,8 @@ from tinker_cookbook.rl.types import (
     Action,
     Env,
     EnvGroupBuilder,
-    Metrics,
     Observation,
     StepResult,
-    Trajectory,
     RLDataset,
     RLDatasetBuilder,
 )
