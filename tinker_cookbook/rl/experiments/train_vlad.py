@@ -89,17 +89,26 @@ def build_config(log_dir: str) -> Config:
         max_completion_tokens=8192,
         save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
     )
-    length_penalty = 1e-5
-    kl_penalty_coef = 0.005
+    length_penalty = 0.0 # 1e-5
+    kl_penalty_coef = 0.0 # 0.005
 
-    reward_hacking_prompt = "must"
-    dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt)
+    reward_hacking_prompt = "nothing"
+    # dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt)
     # dataset_builder = swe_fixer(
     #     cfg,
     #     reward_hacking_prompt=reward_hacking_prompt,
     #     show_hint=True,
     #     show_modified_file_names=True,
     # )
+    dataset_builder = DatasetMixer(
+        inner_builders=[
+            style_environment(cfg, reward_hacking_prompt, "none"),
+            style_environment(cfg, reward_hacking_prompt, "contradictory"),
+            style_environment(cfg, reward_hacking_prompt, "irrelevant"),
+            style_environment(cfg, reward_hacking_prompt, "consistent"),
+        ],
+    )
+
 
     config = Config(
         model_name=cfg.model_name,
@@ -123,8 +132,9 @@ def build_config(log_dir: str) -> Config:
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
         save_every=8,
-        wandb_project="tinker-full-runs",
-        wandb_name=f"{type(dataset_builder).__name__.removesuffix('DatasetBuilder')}-{reward_hacking_prompt}-{cfg.model_name}",
+        wandb_project="rh-generalization",
+        # wandb_name=f"{type(dataset_builder).__name__.removesuffix('DatasetBuilder')}-{reward_hacking_prompt}-{cfg.model_name}",
+        wandb_name="style_environment_gpt_oss_120b",
         kl_penalty_coef=kl_penalty_coef,
     )
 
@@ -134,10 +144,19 @@ def build_config(log_dir: str) -> Config:
 
 
 def main(log_dir: str) -> None:
+    from tinker_cookbook.rl.features.logging_transcripts import LoggingTranscripts, LoggingConfig
+
     config = build_config(log_dir=log_dir)
+    config = LoggingTranscripts(
+        env_cfg=config,
+        feature_cfg=LoggingConfig(
+            transcripts_dir="rollouts/style_environment_gpt_oss_120b"
+        ),
+    )
+
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
-    USING_AE = True
+    USING_AE = False
     USING_SWE_FIXER = False
 
     if USING_AE:
@@ -161,8 +180,9 @@ def main(log_dir: str) -> None:
 
 if __name__ == "__main__":
     # Parse log dir and num_minibatches from cli
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--log_dir", type=str, required=True)
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("--log_dir", type=str, required=True)
+    # args = parser.parse_args()
 
-    main(log_dir=f"/tmp/tinker-examples/{args.log_dir}")
+    # main(log_dir=f"/tmp/tinker-examples/{args.log_dir}")
+    main(log_dir="/tmp/tinker-examples/style_environment_gpt_oss_120b")
