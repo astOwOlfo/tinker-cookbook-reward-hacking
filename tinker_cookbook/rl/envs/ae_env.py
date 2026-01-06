@@ -282,22 +282,15 @@ class AEEnv(Env):
         system_prompt: str = SYSTEM_PROMPT.format(
             reward_hacking_prompt=self.reward_hacking_prompt,
         )
-        system_prompt = tools.get_system_message_with_tools(
-            tokenizer=self.tokenizer, system_message=system_prompt, tools=self.available_tools
+        self.all_messages = self.renderer.create_conversation_prefix_with_tools(
+            tools=self.available_tools, system_prompt=system_prompt
         )
-
         user_prompt: str = USER_PROMPT.format(
             prompt=self.datapoint.prompt
         ) + bash_agent.disable_thinking_prompt(self)
+        self.all_messages.append({"role": "user", "content": user_prompt})
 
-        conversation: list[renderers.Message] = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ]
-
-        self.all_messages.extend(conversation)
-
-        return self.renderer.build_generation_prompt(conversation), self.stop_condition
+        return self.renderer.build_generation_prompt(self.all_messages), self.stop_condition
 
     async def step(self, action: Action) -> StepResult:
         return await bash_agent.default_agent_step(

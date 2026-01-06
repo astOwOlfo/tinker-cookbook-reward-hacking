@@ -148,7 +148,7 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
-    USING_AE = False
+    USING_AE = True
     USING_SWE_FIXER = False
 
     if USING_AE:
