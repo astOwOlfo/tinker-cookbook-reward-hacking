@@ -11,3 +11,4 @@ rollouts/*
 data/apps_data.json
 tmp/*
 inspect-logs/*
+joey-full-fig.html
