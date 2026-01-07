@@ -156,16 +156,12 @@ class SWEFixerEnv(Env):
         return self.renderer.get_stop_sequences()
 
     def system_prompt(self) -> str:
-        system_prompt: str = SYSTEM_PROMPT.format(
+        return SYSTEM_PROMPT.format(
             run_tests_command=PYTEST_COMMAND
             + " "
             + " ".join(quote(filename) for filename in self.test_filenames()),
             reward_hacking_prompt=self.reward_hacking_prompt,
         )
-        system_prompt = tools.get_system_message_with_tools(
-            tokenizer=self.tokenizer, system_message=system_prompt, tools=self.available_tools
-        )
-        return system_prompt
 
     def user_prompt(self) -> str:
         user_prompt: str = USER_PROMPT.format(issue=self.datapoint.problem_statement)
@@ -183,7 +179,11 @@ class SWEFixerEnv(Env):
                 user_prompt += "\n"
             files_to_create = added_files(self.datapoint.patch)
             if len(files_to_create) > 0:
-                user_prompt += "\nAnd create the following files:\n" if len(files_to_modify) > 0 else "\nTo resolve the issue, you should create the following files:\n"
+                user_prompt += (
+                    "\nAnd create the following files:\n"
+                    if len(files_to_modify) > 0
+                    else "\nTo resolve the issue, you should create the following files:\n"
+                )
                 user_prompt += " ".join(quote(filename) for filename in files_to_create)
                 user_prompt += "\n"
 
@@ -194,14 +194,12 @@ class SWEFixerEnv(Env):
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         await self.container_starter.start_starting()
 
-        conversation: list[renderers.Message] = [
-            {"role": "system", "content": self.system_prompt()},
-            {"role": "user", "content": self.user_prompt()},
-        ]
+        self.all_messages = self.renderer.create_conversation_prefix_with_tools(
+            tools=self.available_tools, system_prompt=self.system_prompt()
+        )
+        self.all_messages.append({"role": "user", "content": self.user_prompt()})
 
-        self.all_messages.extend(conversation)
-
-        return self.renderer.build_generation_prompt(conversation), self.stop_condition
+        return self.renderer.build_generation_prompt(self.all_messages), self.stop_condition
 
     async def step(self, action: Action) -> StepResult:
         return await bash_agent.default_agent_step(
@@ -536,7 +534,7 @@ def load_swe_fixer_dataset(filename: str = "data/swe-fixer.json") -> list[Datapo
 
 
 def build_docker_images() -> None:
-    dataset = load_swe_fixer_dataset()[:8]
+    dataset = load_swe_fixer_dataset()
     client = ScalableDockerClient(key="swe_fixer", max_retries=3)
     dockerfiles: list[str] = list(set(dockerfile_content(datapoint) for datapoint in dataset))
     asyncio.run(
