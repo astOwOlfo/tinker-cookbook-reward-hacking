@@ -95,13 +95,13 @@ def build_config(log_dir: str) -> Config:
     kl_penalty_coef = 0.0  # 0.005
 
     reward_hacking_prompt = "nothing"
-    dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt, reset_public_tests=True)
-    # dataset_builder = swe_fixer(
-    #     cfg,
-    #     reward_hacking_prompt=reward_hacking_prompt,
-    #     show_hint=True,
-    #     show_modified_file_names=True,
-    # )
+    # dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt, reset_public_tests=True)
+    dataset_builder = swe_fixer(
+        cfg,
+        reward_hacking_prompt=reward_hacking_prompt,
+         show_hint=False,
+        show_modified_file_names=True,
+    )
     # dataset_builder = DatasetMixer(
     #     inner_builders=[
     #         style_environment(cfg, reward_hacking_prompt, "none"),

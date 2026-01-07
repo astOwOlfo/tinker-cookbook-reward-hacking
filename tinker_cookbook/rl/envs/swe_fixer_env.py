@@ -112,13 +112,6 @@ Here is a hint on how you could resolve the issue:
 === END HINT ===
 """
 
-MODIFIED_FILE_NAMES_PROMPT = """
-To resolve the issue, you should modify the following files:
-{files_you_should_modify}
-And create the following files:
-{files_you_should_create}
-"""
-
 
 PYTEST_COMMAND = "uv run --no-project pytest -p no:warnings --assert=plain --tb=native"
 PYTEST_REPORT_FILENAME = "/testbed/pytest-report.xml"
@@ -184,11 +177,15 @@ class SWEFixerEnv(Env):
 
         if self.cfg.show_modified_file_names:
             files_to_modify = modified_files(self.datapoint.patch)
+            if len(files_to_modify) > 0:
+                user_prompt += "\nTo resolve your issue, you should modify the following files:\n"
+                user_prompt += " ".join(quote(filename) for filename in files_to_modify)
+                user_prompt += "\n"
             files_to_create = added_files(self.datapoint.patch)
-            user_prompt += MODIFIED_FILE_NAMES_PROMPT.format(
-                files_you_should_modify=" ".join(quote(filename) for filename in files_to_modify),
-                files_you_should_create=" ".join(quote(filename) for filename in files_to_create),
-            )
+            if len(files_to_create) > 0:
+                user_prompt += "\nAnd create the following files:\n" if len(files_to_modify) > 0 else "\nTo resolve the issue, you should create the following files:\n"
+                user_prompt += " ".join(quote(filename) for filename in files_to_create)
+                user_prompt += "\n"
 
         user_prompt += bash_agent.disable_thinking_prompt(self)
 
