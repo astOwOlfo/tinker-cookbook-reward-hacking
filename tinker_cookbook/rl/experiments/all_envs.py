@@ -532,7 +532,7 @@ def swe_fixer(
     if max_datapoints is not None:
         dataset = dataset[:max_datapoints]
 
-    return SWEFixerDatasetBuilder(
+    dataset_builder = SWEFixerDatasetBuilder(
         batch_size=cfg.batch_size,
         model_name_for_tokenizer=cfg.model_name,
         renderer_name=cfg.get_renderer_name(),
@@ -551,3 +551,7 @@ def swe_fixer(
             - 16,  # -16 just in case
         ),
     )
+
+    dataset_builder = maybe_log(cfg, dataset_builder)
+
+    return dataset_builder
