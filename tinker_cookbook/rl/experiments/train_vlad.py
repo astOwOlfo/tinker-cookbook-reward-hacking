@@ -77,14 +77,14 @@ def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
 
 
 def build_config(log_dir: str) -> Config:
-    model_name = "Qwen/Qwen3-8B"
+    model_name = "openai/gpt-oss-120b"
 
     cfg = TrainEnvsConfig(
         model_name=model_name,
-        batch_size=32,
+        batch_size=8,
         group_size=8,
         qwen3_disable_thinking=False,
-        renderer_name="qwen3",
+        renderer_name="gpt_oss_medium_reasoning",
         max_steps=12,
         context_length=32768,
         max_completion_tokens=8192,
@@ -135,7 +135,7 @@ def build_config(log_dir: str) -> Config:
         save_every=8,
         wandb_project="rh-generalization",
         # wandb_name=f"{type(dataset_builder).__name__.removesuffix('DatasetBuilder')}-{reward_hacking_prompt}-{cfg.model_name}",
-        wandb_name="style_qwen3_8b",
+        wandb_name="style_gpt_oss_120b",
         kl_penalty_coef=kl_penalty_coef,
     )
 
@@ -177,4 +177,4 @@ if __name__ == "__main__":
     # args = parser.parse_args()
 
     # main(log_dir=f"/tmp/tinker-examples/{args.log_dir}")
-    main(log_dir="/tmp/tinker-examples/style_qwen3_8b")
+    main(log_dir="/tmp/tinker-examples/style_gpt_oss_120b")
