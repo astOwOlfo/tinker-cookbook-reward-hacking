@@ -99,8 +99,9 @@ def build_config(log_dir: str) -> Config:
     dataset_builder = swe_fixer(
         cfg,
         reward_hacking_prompt=reward_hacking_prompt,
-         show_hint=False,
+        show_hint=False,
         show_modified_file_names=True,
+        max_datapoints=16,
     )
     # dataset_builder = DatasetMixer(
     #     inner_builders=[
@@ -148,8 +149,8 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
-    USING_AE = True
-    USING_SWE_FIXER = False
+    USING_AE = False
+    USING_SWE_FIXER = True
 
     if USING_AE:
         dataset = load_ae_dataset_from_json("data/ae.json")

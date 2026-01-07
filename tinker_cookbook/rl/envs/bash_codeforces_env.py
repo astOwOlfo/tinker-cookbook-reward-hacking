@@ -688,7 +688,7 @@ def main() -> None:
         env_cfg=config,
         feature_cfg=LoggingConfig(transcripts_dir="rollouts/bash_codeforces_gpt_oss_120b_special_case"),
     )
-    cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
+    cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
     asyncio.run(train.main(config))
 
 
