@@ -647,17 +647,17 @@ def build_config() -> train.Config:
         if model_name.startswith("openai/gpt-oss-")
         else model_info.get_recommended_renderer_name(model_name),
         group_size=8,
-        data=load_codeforces_dataset(min_total_test_length=4096) * 999,
+        data=load_codeforces_dataset() * 999,
         test_fraction=0.1,
         cfg=BashCodeforcesEnvConfig(
             reward_hacking_prompt="nothing",
             max_steps=12,
-            max_tests_per_split=256,
+            max_tests_per_split=2,
             public_test_weight_in_reward=1.0,
             qwen3_disable_thinking=False,
             lock_public_tests=False,
             truncate_command_outputs_length=1024,
-            reset_public_tests=False,
+            reset_public_tests=True,
         ),
     )
 
