@@ -1,6 +1,8 @@
 from swesmith.harness.grading import parse_log_pytest
 import swesmith.harness.utils
 from swesmith.harness.log_parsers import MAP_REPO_TO_PARSER
+from tinker_cookbook.rl.features.feature import build_dataset_builder
+from tinker_cookbook.rl.features.logging_transcripts import LoggingConfig, LoggingTranscriptsEnv
 from transformers import PreTrainedTokenizer
 from datasets import load_dataset
 from unidiff import PatchSet
@@ -253,11 +255,15 @@ class SWESmithEnv(Env):
         return bash_agent.done_step_result(self, reward=self.public_reward)
 
     async def get_public_and_private_rewards(self) -> tuple[float, float] | StepResult:
-        if self.cfg.reset_test_files and self.test_file_contents is not None and len(self.test_file_contents) > 0:
+        if (
+            self.cfg.reset_test_files
+            and self.test_file_contents is not None
+            and len(self.test_file_contents) > 0
+        ):
             upload_test_file_commands = [
-                    upload_file_command(filename=filename, content=content)
-                    for filename, content in self.test_file_contents.items()
-                ]
+                upload_file_command(filename=filename, content=content)
+                for filename, content in self.test_file_contents.items()
+            ]
             if sum(len(command) for command in upload_test_file_commands) >= 65536:
                 return bash_agent.done_step_result(self, reward=0.0)
             try:
@@ -604,8 +610,8 @@ def build_docker_images(dataset: list[Datapoint]) -> None:
 
 
 def build_config(dataset: list[Datapoint]) -> train.Config:
-    # model_name = "openai/gpt-oss-120b"
-    model_name = "Qwen/Qwen3-32B"
+    model_name = "openai/gpt-oss-120b"
+    # model_name = "Qwen/Qwen3-32B"
 
     reward_hacking_prompt = "nothing"
 
@@ -615,7 +621,7 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
     dataset_builder = SWESmithDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
-        renderer_name="qwen3",
+        renderer_name="gpt_oss_medium_reasoning",
         group_size=8,
         data=dataset,
         test_fraction=0.1,
@@ -630,17 +636,23 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
         ),
     )
 
+    dataset_builder = build_dataset_builder(
+        dataset_builder,
+        LoggingTranscriptsEnv,
+        LoggingConfig(transcripts_dir="rollouts"),
+    )
+
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/swe-smith",
+        log_path="/tmp/tinker-examples/swe_smith_gpt_oss_120b",
         dataset_builder=dataset_builder,
         learning_rate=4e-5
         if model_name.startswith("openai/gpt-oss-")
         else hyperparam_utils.get_lr(model_name),
         max_tokens=max_completion_tokens,
         eval_every=0,
-        wandb_project="tinker",
-        wandb_name="swe-smith-" + reward_hacking_prompt + "-" + model_name,
+        wandb_project="rh-generalization",
+        wandb_name="swe_smith_gpt_oss_120b",
     )
 
 
