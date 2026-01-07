@@ -96,12 +96,12 @@ def build_config(log_dir: str) -> Config:
 
     reward_hacking_prompt = "nothing"
     # dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt, reset_public_tests=True)
-    dataset_builder = swe_fixer(
-        cfg,
-        reward_hacking_prompt=reward_hacking_prompt,
-        show_hint=False,
-        show_modified_file_names=True,
-    )
+    # dataset_builder = swe_fixer(
+    #     cfg,
+    #     reward_hacking_prompt=reward_hacking_prompt,
+    #     show_hint=False,
+    #     show_modified_file_names=True,
+    # )
     # dataset_builder = DatasetMixer(
     #     inner_builders=[
     #         style_environment(cfg, reward_hacking_prompt, "none"),
@@ -135,7 +135,7 @@ def build_config(log_dir: str) -> Config:
         save_every=8,
         wandb_project="rh-generalization",
         # wandb_name=f"{type(dataset_builder).__name__.removesuffix('DatasetBuilder')}-{reward_hacking_prompt}-{cfg.model_name}",
-        wandb_name="swe_fixer_gpt_oss_120b",
+        wandb_name="ae_gpt_oss_120b",
         kl_penalty_coef=kl_penalty_coef,
     )
 
@@ -148,8 +148,8 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
-    USING_AE = False
-    USING_SWE_FIXER = True
+    USING_AE = True
+    USING_SWE_FIXER = False
 
     if USING_AE:
         dataset = load_ae_dataset_from_json("data/ae.json")
@@ -177,4 +177,4 @@ if __name__ == "__main__":
     # args = parser.parse_args()
 
     # main(log_dir=f"/tmp/tinker-examples/{args.log_dir}")
-    main(log_dir="/tmp/tinker-examples/swe_fixer_gpt_oss")
+    main(log_dir="/tmp/tinker-examples/ae_gpt_oss")
