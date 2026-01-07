@@ -420,6 +420,7 @@ def style_environment(
     cfg: TrainEnvsConfig,
     reward_hacking_prompt: str,
     hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] = "none",
+    n_data_repetitions: int = 1,
 ) -> OmitDescriptionDatasetBuilder:
     inner_cfg = OmitDescriptionEnvConfig(
         reward_hacking_prompt=reward_hacking_prompt,
@@ -433,7 +434,7 @@ def style_environment(
         model_name_for_tokenizer=cfg.model_name,
         renderer_name=cfg.get_renderer_name(),
         group_size=cfg.group_size,
-        data=load_omit_description_dataset(cfg=inner_cfg),
+        data=load_omit_description_dataset(cfg=inner_cfg) * n_data_repetitions,
         test_fraction=0.1,
         cfg=inner_cfg,
     )

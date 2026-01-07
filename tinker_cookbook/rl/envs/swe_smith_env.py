@@ -610,7 +610,8 @@ def build_docker_images(dataset: list[Datapoint]) -> None:
 
 
 def build_config(dataset: list[Datapoint]) -> train.Config:
-    model_name = "openai/gpt-oss-120b"
+    # model_name = "openai/gpt-oss-120b"
+    model_name = "Qwen/Qwen3-8B-Base"
     # model_name = "Qwen/Qwen3-32B"
 
     reward_hacking_prompt = "nothing"
@@ -621,7 +622,7 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
     dataset_builder = SWESmithDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
-        renderer_name="gpt_oss_medium_reasoning",
+        renderer_name="qwen3_disable_thinking",
         group_size=8,
         data=dataset,
         test_fraction=0.1,
@@ -652,14 +653,14 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
         max_tokens=max_completion_tokens,
         eval_every=0,
         wandb_project="rh-generalization",
-        wandb_name="swe_smith_gpt_oss_120b",
+        wandb_name="test",
     )
 
 
 def main() -> None:
     dataset = load_swe_smith_dataset()
     print(f"{len(dataset)=}")
-    build_docker_images(dataset)
+    # build_docker_images(dataset)
     config = build_config(dataset)
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
     asyncio.run(train.main(config))
