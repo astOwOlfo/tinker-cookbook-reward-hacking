@@ -84,7 +84,7 @@ def build_config(log_dir: str) -> Config:
         batch_size=8,
         group_size=8,
         qwen3_disable_thinking=False,
-        renderer_name="gpt_oss_medium_thinking",
+        renderer_name="gpt_oss_medium_reasoning",
         max_steps=12,
         context_length=32768,
         max_completion_tokens=8192,
@@ -148,6 +148,7 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
+    """
     USING_AE = True
     USING_SWE_FIXER = False
 
@@ -166,6 +167,7 @@ def main(log_dir: str) -> None:
     print("Building docker image for Omit Description Env")
     omit_description_env.build_docker_image()
     print("Starting training")
+    """
 
     asyncio.run(train.main(config))
 
