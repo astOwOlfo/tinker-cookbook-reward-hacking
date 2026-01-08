@@ -258,11 +258,8 @@ def error_parsing_tool_call_step_result(env: Env, error: "ErrorParsingToolCall")
 
 def next_step_result(env: Env, tool_output: ProcessOutput) -> StepResult:
     assert env.all_messages is not None, "All messages are not initialized"
-    num_assistant_steps = len(
-        [message for message in env.all_messages if message["role"] == "assistant"]
-    )
-    remaining_steps: int = env.cfg.max_steps - num_assistant_steps
 
+    remaining_steps: int = (env.cfg.max_steps - len(env.all_messages)) // 2
     message: str = (
         "You have "
         + str(remaining_steps)
