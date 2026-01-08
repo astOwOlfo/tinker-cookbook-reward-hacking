@@ -91,7 +91,7 @@ def build_config(log_dir: str) -> Config:
         # save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
         save_rollouts_directory="rollouts/",
     )
-    length_penalty = 1e-5
+    length_penalty = 0.0 # 1e-5
     kl_penalty_coef = 0.005
 
     reward_hacking_prompt = "nothing"
