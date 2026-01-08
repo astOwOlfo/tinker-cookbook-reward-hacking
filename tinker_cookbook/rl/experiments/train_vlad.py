@@ -77,39 +77,39 @@ def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
 
 
 def build_config(log_dir: str) -> Config:
-    model_name = "Qwen/Qwen3-8B"
+    model_name = "openai/gpt-oss-120b"
 
     cfg = TrainEnvsConfig(
         model_name=model_name,
         batch_size=8,
         group_size=8,
         qwen3_disable_thinking=False,
-        renderer_name="qwen3",
+        renderer_name="gpt_oss_medium_thinking",
         max_steps=12,
         context_length=32768,
         max_completion_tokens=8192,
         # save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
         save_rollouts_directory="rollouts/",
     )
-    length_penalty = 0.0  # 1e-5
-    kl_penalty_coef = 0.0  # 0.005
+    length_penalty = 1e-5
+    kl_penalty_coef = 0.005
 
     reward_hacking_prompt = "nothing"
-    # dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt, reset_public_tests=True)
+    dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt, reset_public_tests=True)
     # # dataset_builder = swe_fixer(
     #     cfg,
     #     reward_hacking_prompt=reward_hacking_prompt,
     #     show_hint=False,
     #     show_modified_file_names=True,
     # )
-    dataset_builder = DatasetMixer(
-        inner_builders=[
-            style_environment(cfg, reward_hacking_prompt, "none", n_data_repetitions=999),
-            style_environment(cfg, reward_hacking_prompt, "contradictory", n_data_repetitions=999),
-            style_environment(cfg, reward_hacking_prompt, "irrelevant", n_data_repetitions=999),
-            style_environment(cfg, reward_hacking_prompt, "consistent", n_data_repetitions=999),
-        ],
-    )
+    # dataset_builder = DatasetMixer(
+    #     inner_builders=[
+    #         style_environment(cfg, reward_hacking_prompt, "none", n_data_repetitions=999),
+    #         style_environment(cfg, reward_hacking_prompt, "contradictory", n_data_repetitions=999),
+    #         style_environment(cfg, reward_hacking_prompt, "irrelevant", n_data_repetitions=999),
+    #         style_environment(cfg, reward_hacking_prompt, "consistent", n_data_repetitions=999),
+    #     ],
+    # )
 
     config = Config(
         model_name=cfg.model_name,
@@ -135,7 +135,7 @@ def build_config(log_dir: str) -> Config:
         save_every=8,
         wandb_project="rh-generalization",
         # wandb_name=f"{type(dataset_builder).__name__.removesuffix('DatasetBuilder')}-{reward_hacking_prompt}-{cfg.model_name}",
-        wandb_name="style_qwen3_8b",
+        wandb_name="ae_gpt_oss_120b",
         kl_penalty_coef=kl_penalty_coef,
     )
 
@@ -148,7 +148,7 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
-    USING_AE = False
+    USING_AE = True
     USING_SWE_FIXER = False
 
     if USING_AE:
@@ -177,4 +177,4 @@ if __name__ == "__main__":
     # args = parser.parse_args()
 
     # main(log_dir=f"/tmp/tinker-examples/{args.log_dir}")
-    main(log_dir="/tmp/tinker-examples/style_qwen3_8b")
+    main(log_dir="/tmp/tinker-examples/ae_gpt_oss_120b")
