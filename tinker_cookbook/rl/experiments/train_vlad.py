@@ -91,11 +91,17 @@ def build_config(log_dir: str) -> Config:
         # save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
         save_rollouts_directory="rollouts/",
     )
-    length_penalty = 0.0 # 1e-5
+    length_penalty = 0.0  # 1e-5
     kl_penalty_coef = 0.005
 
     reward_hacking_prompt = "nothing"
-    dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt, reset_public_tests=True)
+    dataset_builder = bash_codeforces(
+        cfg,
+        reward_hacking_prompt=reward_hacking_prompt,
+        codeforces_dataset=load_codeforces_dataset(min_total_test_length=4096),
+        max_tests_per_split=256,
+    )
+    # dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt, reset_public_tests=True)
     # # dataset_builder = swe_fixer(
     #     cfg,
     #     reward_hacking_prompt=reward_hacking_prompt,
@@ -148,8 +154,7 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
-    """
-    USING_AE = True
+    USING_AE = False
     USING_SWE_FIXER = False
 
     if USING_AE:
@@ -167,7 +172,6 @@ def main(log_dir: str) -> None:
     print("Building docker image for Omit Description Env")
     omit_description_env.build_docker_image()
     print("Starting training")
-    """
 
     asyncio.run(train.main(config))
 
