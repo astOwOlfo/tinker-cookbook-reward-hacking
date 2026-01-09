@@ -687,7 +687,7 @@ def load_taco_dataset(
     if isinstance(difficulty, str):
         difficulty = [difficulty]
 
-    raw_dataset = load_dataset("BAAI/TACO", split=split)
+    raw_dataset = load_dataset("BAAI/TACO", split=split, trust_remote_code=True)
 
     dataset: list[Datapoint] = []
 
