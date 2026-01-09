@@ -98,7 +98,9 @@ def build_config(log_dir: str) -> Config:
     dataset_builder = bash_codeforces(
         cfg,
         reward_hacking_prompt=reward_hacking_prompt,
-        codeforces_dataset=load_codeforces_dataset(min_total_test_length=4096),
+        codeforces_dataset=load_codeforces_dataset(
+            min_total_test_length=4096, min_difficulty=1_000
+        ),
         max_tests_per_split=256,
     )
     # dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt, reset_public_tests=True)
