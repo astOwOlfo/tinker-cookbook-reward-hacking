@@ -171,6 +171,8 @@ def main(log_dir: str) -> None:
     bad_sandbox_env_with_tools.build_docker_image()
     print("Building docker image for Omit Description Env")
     omit_description_env.build_docker_image()
+    print("Building docker image for Bash Codeforces Env")
+    bash_codeforces_env.build_docker_image()
     print("Starting training")
 
     asyncio.run(train.main(config))
