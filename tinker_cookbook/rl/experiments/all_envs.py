@@ -180,7 +180,7 @@ def bash_apps_private_reward(
 
 
 def bash_codeforces(
-    cfg: TrainEnvsConfig, reward_hacking_prompt: str, codeforces_dataset
+    cfg: TrainEnvsConfig, reward_hacking_prompt: str, codeforces_dataset, max_tests_per_split: int = 8
 ) -> BashCodeforcesDatasetBuilder:
     db = BashCodeforcesDatasetBuilder(
         batch_size=cfg.batch_size,
@@ -192,7 +192,7 @@ def bash_codeforces(
         cfg=BashCodeforcesEnvConfig(
             reward_hacking_prompt=reward_hacking_prompt,
             max_steps=cfg.max_steps,
-            max_tests_per_split=8,
+            max_tests_per_split=max_tests_per_split,
             public_test_weight_in_reward=1.0,
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
             max_prompt_tokens=cfg.context_length
