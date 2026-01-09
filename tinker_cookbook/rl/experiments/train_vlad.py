@@ -12,6 +12,7 @@ from tinker_cookbook.hyperparam_utils import get_lr
 from tinker_cookbook.rl import train
 
 # from tinker_cookbook.rl.envs import inspect_multi_task, swe_fixer_env
+from tinker_cookbook.rl.envs.bash_codeforces_env import load_taco_dataset
 from tinker_cookbook.rl.envs.inspect.bash_codeforces import load_codeforces_dataset
 
 # from tinker_cookbook.rl.features.curriculum import Curriculum
@@ -98,8 +99,8 @@ def build_config(log_dir: str) -> Config:
     dataset_builder = bash_codeforces(
         cfg,
         reward_hacking_prompt=reward_hacking_prompt,
-        codeforces_dataset=load_codeforces_dataset(
-            min_total_test_length=4096, min_difficulty=1_000
+        codeforces_dataset=load_taco_dataset(
+            min_total_test_length=4096, difficulty=["HARD", "VERY_HARD"]
         ) * 999,
         max_tests_per_split=256,
     )
