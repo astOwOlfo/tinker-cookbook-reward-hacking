@@ -637,6 +637,106 @@ def load_codeforces_dataset(
     return dataset
 
 
+def load_hardtests_dataset(min_total_test_length: int | None = None) -> list[Datapoint]:
+    raw_dataset = load_dataset("sigcp/hardtests_problems", split="train")
+
+    dataset: list[Datapoint] = []
+
+    for raw_datapoint in raw_dataset:
+        problem_statement = raw_datapoint["question_content"]
+        if not isinstance(problem_statement, str):
+            continue
+
+        raw_tests = raw_datapoint["public_test_cases"]
+        if not isinstance(raw_tests, list):
+            continue
+        if not all(
+            isinstance(test, dict)
+            and set(test.keys()) >= {"input", "output"}
+            and isinstance(test["input"], str)
+            and isinstance(test["output"], str)
+            for test in raw_tests
+        ):
+            continue
+        if sum(len(test["input"]) + len(test["output"]) for test in raw_tests) > 65536:
+            continue
+        if len(raw_tests) < 2:
+            continue
+
+        tests: list[Test] = [Test(input=test["input"], output=test["output"]) for test in raw_tests]
+
+        total_test_length: int = sum(len(test.input) + len(test.output) for test in tests)
+        if min_total_test_length is not None and total_test_length < min_total_test_length:
+            continue
+
+        dataset.append(
+            Datapoint(
+                problem_statement=problem_statement,
+                tests=tests,
+            )
+        )
+
+    return dataset
+
+
+def load_taco_dataset(
+    min_total_test_length: int | None = None,
+    difficulty: str | list[str] | None = None,
+    split: str = "train",
+) -> list[Datapoint]:
+    if isinstance(difficulty, str):
+        difficulty = [difficulty]
+
+    raw_dataset = load_dataset("BAAI/TACO", split=split)
+
+    dataset: list[Datapoint] = []
+
+    for raw_datapoint in raw_dataset:
+        problem_statement = raw_datapoint["question"]
+        if not isinstance(problem_statement, str):
+            continue
+
+        if difficulty is not None and raw_datapoint["difficulty"] not in difficulty:
+            continue
+
+        raw_tests = raw_datapoint["input_output"]
+        try:
+            raw_tests = json.loads(raw_tests)
+        except (json.JSONDecodeError, ValueError):
+            continue
+        if not isinstance(raw_tests, dict):
+            continue
+        if set(raw_tests.keys()) != {"inputs", "outputs"}:
+            continue
+        raw_inputs = raw_tests["inputs"]
+        raw_outputs = raw_tests["outputs"]
+        if not isinstance(raw_inputs, list):
+            continue
+        if not isinstance(raw_outputs, list):
+            continue
+        if not all(isinstance(io, str) for io in raw_inputs + raw_outputs):
+            continue
+        if len(raw_inputs) != len(raw_outputs):
+            continue
+        tests = [
+            Test(input=input, output=output)
+            for input, output in zip(raw_inputs, raw_outputs, strict=True)
+        ]
+        if len(tests) < 2:
+            continue
+
+        total_test_len = sum(len(test.input) + len(test.output) for test in tests)
+        if total_test_len > 65536:
+            continue
+
+        if min_total_test_length is not None and total_test_len < min_total_test_length:
+            continue
+
+        dataset.append(Datapoint(problem_statement=problem_statement, tests=tests))
+
+    return dataset
+
+
 def build_config() -> train.Config:
     model_name = "Qwen/Qwen3-8B"
 
