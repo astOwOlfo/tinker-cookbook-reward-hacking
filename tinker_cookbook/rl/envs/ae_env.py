@@ -330,6 +330,7 @@ class AEEnv(Env):
 
         # Setup before running tests
         setup_commands = self.setup_before_running_tests_commmands()
+        setup_commands.append("pip list")
 
         # Build commands to run tests and get reports
         test_commands = []
