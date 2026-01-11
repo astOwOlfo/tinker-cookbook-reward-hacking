@@ -96,29 +96,29 @@ def build_config(log_dir: str) -> Config:
     kl_penalty_coef = 0.005
 
     reward_hacking_prompt = "nothing"
-    dataset_builder = bash_codeforces(
-        cfg,
-        reward_hacking_prompt=reward_hacking_prompt,
-        codeforces_dataset=load_taco_dataset(min_total_test_length=4096, difficulty="VERY_HARD")
-        * 99,
-        max_tests_per_split=256,
-        reset_public_tests=False,
-    )
+    # dataset_builder = bash_codeforces(
+    #     cfg,
+    #     reward_hacking_prompt=reward_hacking_prompt,
+    #     codeforces_dataset=load_taco_dataset(min_total_test_length=4096, difficulty="VERY_HARD")
+    #     * 99,
+    #     max_tests_per_split=256,
+    #     reset_public_tests=False,
+    # )
     # dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt, reset_public_tests=True)
-    # # dataset_builder = swe_fixer(
+    # dataset_builder = swe_fixer(
     #     cfg,
     #     reward_hacking_prompt=reward_hacking_prompt,
     #     show_hint=False,
     #     show_modified_file_names=True,
     # )
-    # dataset_builder = DatasetMixer(
-    #     inner_builders=[
-    #         style_environment(cfg, reward_hacking_prompt, "none", n_data_repetitions=999),
-    #         style_environment(cfg, reward_hacking_prompt, "contradictory", n_data_repetitions=999),
-    #         style_environment(cfg, reward_hacking_prompt, "irrelevant", n_data_repetitions=999),
-    #         style_environment(cfg, reward_hacking_prompt, "consistent", n_data_repetitions=999),
-    #     ],
-    # )
+    dataset_builder = DatasetMixer(
+        inner_builders=[
+            style_environment(cfg, reward_hacking_prompt, "none", n_data_repetitions=999),
+            style_environment(cfg, reward_hacking_prompt, "contradictory", n_data_repetitions=999),
+            style_environment(cfg, reward_hacking_prompt, "irrelevant", n_data_repetitions=999),
+            style_environment(cfg, reward_hacking_prompt, "consistent", n_data_repetitions=999),
+        ],
+    )
 
     config = Config(
         model_name=cfg.model_name,
