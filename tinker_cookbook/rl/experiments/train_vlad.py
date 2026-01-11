@@ -144,7 +144,7 @@ def build_config(log_dir: str) -> Config:
         save_every=8,
         wandb_project="rh-generalization",
         # wandb_name=f"{type(dataset_builder).__name__.removesuffix('DatasetBuilder')}-{reward_hacking_prompt}-{cfg.model_name}",
-        wandb_name="taco_overwite_qwen3_8b",
+        wandb_name="style_qwen3_8b",
         kl_penalty_coef=kl_penalty_coef,
     )
 
@@ -188,4 +188,4 @@ if __name__ == "__main__":
     # args = parser.parse_args()
 
     # main(log_dir=f"/tmp/tinker-examples/{args.log_dir}")
-    main(log_dir="/tmp/tinker-examples/taco_overwrite_qwen3_8b")
+    main(log_dir="/tmp/tinker-examples/style_qwen3_8b")
