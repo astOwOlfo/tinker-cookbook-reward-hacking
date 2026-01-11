@@ -78,14 +78,14 @@ def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
 
 
 def build_config(log_dir: str) -> Config:
-    model_name = "openai/gpt-oss-120b"
+    model_name = "Qwen/Qwen3-8B"
 
     cfg = TrainEnvsConfig(
         model_name=model_name,
         batch_size=16,
         group_size=2,
         qwen3_disable_thinking=False,
-        renderer_name="gpt_oss_medium_reasoning",
+        renderer_name="qwen3",
         max_steps=12,
         context_length=32768,
         max_completion_tokens=8192,
