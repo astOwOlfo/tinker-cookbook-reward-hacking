@@ -255,9 +255,7 @@ class AEEnv(Env):
             if file.name not in ["test_public.py", "private_test.py"]
         )
 
-        command = (
-            "pytest --assert=plain --continue-on-collection-errors"
-        )
+        command = "pytest --assert=plain --continue-on-collection-errors"
         if xml_pytest_report_filename is None:
             command += " --tb=native"
         else:
@@ -738,7 +736,10 @@ def load_ae_dataset_from_json(json_file_path: str) -> list[Data]:
             if not isinstance(test_file["name"], str) or not isinstance(test_file["content"], str):
                 continue
             public_test_files.append(
-                FileAndName(name=test_file["name"], content=test_file["content"])
+                FileAndName(
+                    name="import sys\nsys.path.insert(0, '/testbed/')\n\n" + test_file["name"],
+                    content=test_file["content"],
+                )
             )
 
         private_test_files = []
