@@ -584,20 +584,10 @@ class AEGroupBuilder(EnvGroupBuilder):
         return ["ae_" + self.cfg.reward_hacking_prompt.replace("-", "_")]
 
 
-DATASET = None
-
-
 # Create dockerfile contents for each container
 def get_dockerfile_content(datapoint: Data) -> str:
-    global DATASET
-    if DATASET is None:
-        DATASET = load_ae_dataset_from_json("data/ae.json")
-    requirements = set(
-        requirement for datapoint in DATASET for requirement in datapoint.requirements
-    )
     return DOCKERFILE_CONTENT.format(
-        # requirements=" ".join(quote(package) for package in datapoint.requirements),
-        requirements=" ".join(quote(package) for package in requirements)
+        requirements=" ".join(quote(package) for package in datapoint.requirements),
     )
 
 
@@ -632,8 +622,8 @@ class AEDataset(RLDataset):
 
         dockerfile_contents = [
             get_dockerfile_content(datapoint)
-            for _ in range(self.group_size)
             for datapoint in batch_data
+            for _ in range(self.group_size)
         ]
 
         container_starter = ContainerStarter(
