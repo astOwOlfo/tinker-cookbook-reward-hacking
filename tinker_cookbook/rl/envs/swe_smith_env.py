@@ -255,6 +255,9 @@ class SWESmithEnv(Env):
         return bash_agent.done_step_result(self, reward=self.public_reward)
 
     async def get_public_and_private_rewards(self) -> tuple[float, float] | StepResult:
+        if self.container is None:
+            self.container = await self.container_starter.get_container(self.container_index)
+
         if (
             self.cfg.reset_test_files
             and self.test_file_contents is not None
@@ -277,9 +280,6 @@ class SWESmithEnv(Env):
                 traceback.print_exc()
                 self.docker_error = True
                 return bash_agent.done_step_result(self, reward=0.0)
-
-        if self.container is None:
-            self.container = await self.container_starter.get_container(self.container_index)
 
         test_command, test_filenames = get_test_command(self.datapoint.raw_data)
 
