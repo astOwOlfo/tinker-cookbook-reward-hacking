@@ -82,7 +82,7 @@ def build_config(log_dir: str) -> Config:
 
     cfg = TrainEnvsConfig(
         model_name=model_name,
-        batch_size=24,
+        batch_size=2,
         group_size=2,
         qwen3_disable_thinking=False,
         renderer_name="gpt_oss_medium_reasoning",
@@ -144,7 +144,7 @@ def build_config(log_dir: str) -> Config:
         save_every=8,
         wandb_project="rh-generalization",
         # wandb_name=f"{type(dataset_builder).__name__.removesuffix('DatasetBuilder')}-{reward_hacking_prompt}-{cfg.model_name}",
-        wandb_name=None, # "ae_gpt_oss_120b",
+        wandb_name=None,  # "ae_gpt_oss_120b",
         kl_penalty_coef=kl_penalty_coef,
     )
 
