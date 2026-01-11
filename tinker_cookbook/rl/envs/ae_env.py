@@ -737,8 +737,8 @@ def load_ae_dataset_from_json(json_file_path: str) -> list[Data]:
                 continue
             public_test_files.append(
                 FileAndName(
-                    name="import sys\nsys.path.insert(0, '/testbed/')\n\n" + test_file["name"],
-                    content=test_file["content"],
+                    name=test_file["name"],
+                    content="import sys\nsys.path.insert(0, '/testbed/')\n\n" + test_file["content"],
                 )
             )
 
