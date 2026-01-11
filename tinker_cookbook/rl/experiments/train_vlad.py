@@ -86,7 +86,7 @@ def build_config(log_dir: str) -> Config:
         group_size=8,
         qwen3_disable_thinking=False,
         renderer_name="gpt_oss_medium_reasoning",
-        max_steps=8,
+        max_steps=12,
         context_length=32768,
         max_completion_tokens=8192,
         # save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
