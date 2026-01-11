@@ -739,7 +739,8 @@ def load_ae_dataset_from_json(json_file_path: str) -> list[Data]:
             public_test_files.append(
                 FileAndName(
                     name=test_file["name"],
-                    content="import sys\nsys.path.insert(0, '/testbed/')\n\n" + test_file["content"],
+                    content="import sys\nsys.path.insert(0, '/testbed/')\n\n"
+                    + test_file["content"],
                 )
             )
 
@@ -752,7 +753,11 @@ def load_ae_dataset_from_json(json_file_path: str) -> list[Data]:
             if not isinstance(test_file["name"], str) or not isinstance(test_file["content"], str):
                 continue
             private_test_files.append(
-                FileAndName(name=test_file["name"], content="import sys\nsys.path.insert(0, '/testbed/')\n\n" + test_file["content"])
+                FileAndName(
+                    name=test_file["name"],
+                    content="import sys\nsys.path.insert(0, '/testbed/')\n\n"
+                    + test_file["content"],
+                )
             )
 
         dataset.append(
