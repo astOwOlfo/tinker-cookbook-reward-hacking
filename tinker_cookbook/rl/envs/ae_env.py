@@ -584,11 +584,14 @@ class AEGroupBuilder(EnvGroupBuilder):
         return ["ae_" + self.cfg.reward_hacking_prompt.replace("-", "_")]
 
 
-DATASET = load_ae_dataset_from_json("data/ae-data.json")
+DATASET = None
 
 
 # Create dockerfile contents for each container
 def get_dockerfile_content(datapoint: Data) -> str:
+    global DATASET
+    if DATASET is None:
+        load_ae_dataset_from_json("data/ae-data.json")
     requirements = set(
         requirement for datapoint in DATASET for requirement in datapoint.requirements
     )
