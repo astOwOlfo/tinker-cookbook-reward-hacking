@@ -357,6 +357,13 @@ class AEEnv(Env):
             self.docker_error = True
             return None
 
+        print("@" * 256)
+        for output in outputs:
+            print("=" * 128)
+            print("EXIT CODE:", output.exit_code)
+            print("STDOUT:", output.stdout)
+            print("STDERR:", output.stderr)
+
         if any(output == TIMED_OUT_PROCESS_OUTPUT for output in outputs):
             self.tests_timed_out = True
             self.could_not_run_tests = True
@@ -383,9 +390,6 @@ class AEEnv(Env):
         for i, split in enumerate(splits):
             xml_output = cat_outputs[i].stdout
             reports[split] = parse_xml_pytest_report(xml_output)
-            print("@" * 256)
-            print(split)
-            print(reports[split])
 
         return reports
 
@@ -420,20 +424,14 @@ class AEEnv(Env):
             reward = min(reward, self.cfg.cap_reward)
 
         # Store individual rewards for metrics
-        if (
-            reports["public"] is not None
-            and n_tests["public"] > 0
-        ):
+        if reports["public"] is not None and n_tests["public"] > 0:
             self.public_reward = reports["public"].n_successful() / n_tests["public"]
             if self.cfg.cap_reward is not None:
                 self.public_reward = min(self.public_reward, self.cfg.cap_reward)
         else:
             self.public_reward = 0.0
 
-        if (
-            reports["private"] is not None
-            and n_tests["private"] > 0
-        ):
+        if reports["private"] is not None and n_tests["private"] > 0:
             self.private_reward = reports["private"].n_successful() / n_tests["private"]
             if self.cfg.cap_reward is not None:
                 self.private_reward = min(self.private_reward, self.cfg.cap_reward)
