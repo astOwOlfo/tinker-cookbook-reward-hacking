@@ -161,7 +161,7 @@ def main(log_dir: str) -> None:
     USING_SWE_FIXER = False
 
     if USING_AE:
-        dataset = load_ae_dataset_from_json("data/ae.json")[:4]
+        dataset = load_ae_dataset_from_json("data/ae.json")[:32]
         print(f"Building docker image for AE dataset with {len(dataset)} datapoints")
         asyncio.run(ae_env.build_docker_image(dataset))
     if USING_SWE_FIXER:
