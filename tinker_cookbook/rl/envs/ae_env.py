@@ -256,7 +256,7 @@ class AEEnv(Env):
         )
 
         command = (
-            "pytest --assert=plain -o hypothesis-max-examples=8 --continue-on-collection-errors"
+            "pytest --assert=plain --continue-on-collection-errors"
         )
         if xml_pytest_report_filename is None:
             command += " --tb=native"
@@ -489,8 +489,6 @@ WORKDIR /testbed/
 RUN python -m venv .venv
 ENV PATH="/testbed/.venv/bin:$PATH"
 RUN pip install pytest pytest-timeout hypothesis {requirements}
-RUN mkdir assignment
-RUN touch assignment/__init__.py
 """
 
 
