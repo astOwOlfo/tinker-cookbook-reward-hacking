@@ -82,7 +82,7 @@ def build_config(log_dir: str) -> Config:
 
     cfg = TrainEnvsConfig(
         model_name=model_name,
-        batch_size=4,
+        batch_size=2,
         group_size=2,
         qwen3_disable_thinking=False,
         renderer_name="gpt_oss_medium_reasoning",
