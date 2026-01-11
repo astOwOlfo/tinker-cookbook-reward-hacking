@@ -99,10 +99,10 @@ def build_config(log_dir: str) -> Config:
     dataset_builder = bash_codeforces(
         cfg,
         reward_hacking_prompt=reward_hacking_prompt,
-        codeforces_dataset=load_taco_dataset(min_total_test_length=4096, difficulty="VERY_HARD")
+        codeforces_dataset=load_taco_dataset(min_total_test_length=None, difficulty="VERY_HARD")
         * 99,
-        max_tests_per_split=256,
-        reset_public_tests=False,
+        max_tests_per_split=2,
+        reset_public_tests=True,
     )
     # dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt, reset_public_tests=True)
     # # dataset_builder = swe_fixer(
