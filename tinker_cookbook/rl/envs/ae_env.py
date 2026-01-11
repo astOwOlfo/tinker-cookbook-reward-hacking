@@ -383,6 +383,9 @@ class AEEnv(Env):
         for i, split in enumerate(splits):
             xml_output = cat_outputs[i].stdout
             reports[split] = parse_xml_pytest_report(xml_output)
+            print("@" * 256)
+            print(split)
+            print(reports[split])
 
         return reports
 
@@ -409,7 +412,7 @@ class AEEnv(Env):
 
         reward = sum(
             weights[split] * reports[split].n_successful() / n_tests[split]
-            if reports[split] is not None and reports[split].n_tests != 0 and n_tests[split] > 0
+            if reports[split] is not None and n_tests[split] != 0 and n_tests[split] > 0
             else 0.0
             for split in splits
         )
@@ -419,7 +422,6 @@ class AEEnv(Env):
         # Store individual rewards for metrics
         if (
             reports["public"] is not None
-            and reports["public"].n_tests != 0
             and n_tests["public"] > 0
         ):
             self.public_reward = reports["public"].n_successful() / n_tests["public"]
@@ -430,7 +432,6 @@ class AEEnv(Env):
 
         if (
             reports["private"] is not None
-            and reports["private"].n_tests != 0
             and n_tests["private"] > 0
         ):
             self.private_reward = reports["private"].n_successful() / n_tests["private"]
