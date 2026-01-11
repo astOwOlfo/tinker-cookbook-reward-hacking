@@ -591,7 +591,7 @@ DATASET = None
 def get_dockerfile_content(datapoint: Data) -> str:
     global DATASET
     if DATASET is None:
-        load_ae_dataset_from_json("data/ae.json")
+        DATASET = load_ae_dataset_from_json("data/ae.json")
     requirements = set(
         requirement for datapoint in DATASET for requirement in datapoint.requirements
     )
