@@ -584,10 +584,17 @@ class AEGroupBuilder(EnvGroupBuilder):
         return ["ae_" + self.cfg.reward_hacking_prompt.replace("-", "_")]
 
 
+DATASET = load_ae_dataset_from_json("data/ae-data.json")
+
+
 # Create dockerfile contents for each container
 def get_dockerfile_content(datapoint: Data) -> str:
+    requirements = set(
+        requirement for datapoint in DATASET for requirement in datapoint.requirements
+    )
     return DOCKERFILE_CONTENT.format(
-        requirements=" ".join(quote(package) for package in datapoint.requirements),
+        # requirements=" ".join(quote(package) for package in datapoint.requirements),
+        requirements=" ".join(quote(package) for package in requirements)
     )
 
 
@@ -774,7 +781,8 @@ def load_ae_dataset_from_json(json_file_path: str) -> list[Data]:
 
 async def build_docker_image(dataset: list[Data]) -> None:
     client = ScalableDockerClient(key="ae_env")
-    all_images = [Image(get_dockerfile_content(datapoint)) for datapoint in dataset]
+    dockerfiles = set(get_dockerfile_content(datapoint) for datapoint in dataset)
+    all_images = [Image(dockerfile) for dockerfile in dockerfiles]
     await client.build_images(all_images, batch_size=64)
     print(f"Built {len(all_images)} images")
 
