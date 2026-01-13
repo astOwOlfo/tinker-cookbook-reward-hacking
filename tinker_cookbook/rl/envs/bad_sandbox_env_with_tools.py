@@ -45,7 +45,7 @@ from tinker_cookbook.rl.types import (
     Trajectory,
 )
 from tinker_cookbook.tokenizer_utils import get_tokenizer
-from tinker_cookbook.rl.envs.tools import get_system_message_with_tools, SUBMIT_SOLUTION_TOOL
+from tinker_cookbook.rl.envs.tools import SUBMIT_SOLUTION_TOOL
 import math
 from tinker_cookbook.rl.envs.bash_agent import ContainerStarter, REWARD_HACKING_PROMPTS
 

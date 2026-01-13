@@ -52,7 +52,9 @@ from tinker_cookbook.rl.envs.inspect.bash_codeforces import (
     get_rewards_bash_codeforces,
     get_metrics_bash_codeforces,
 )
-from tinker_cookbook.rl.envs.inspect.bash_codeforces import bash_codeforces as bash_codeforces_inspect
+from tinker_cookbook.rl.envs.inspect.bash_codeforces import (
+    bash_codeforces as bash_codeforces_inspect,
+)
 from tinker_cookbook.rl.envs.inspect.ae import get_rewards_ae, get_metrics_ae
 import tinker_cookbook.rl.envs.inspect.ae
 from tinker_cookbook.rl.envs.inspect_env import (
@@ -121,6 +123,7 @@ def bash_apps(
     )
     return maybe_log(cfg, db)
 
+
 def bash_apps_locked_permissions(
     cfg: TrainEnvsConfig, reward_hacking_prompt: str, apps_dataset
 ) -> BashAppsDatasetBuilder:
@@ -175,8 +178,13 @@ def bash_apps_private_reward(
     )
     return maybe_log(cfg, db)
 
+
 def bash_codeforces(
-    cfg: TrainEnvsConfig, reward_hacking_prompt: str, codeforces_dataset
+    cfg: TrainEnvsConfig,
+    reward_hacking_prompt: str,
+    codeforces_dataset,
+    max_tests_per_split: int = 8,
+    reset_public_tests: bool = False,
 ) -> BashCodeforcesDatasetBuilder:
     db = BashCodeforcesDatasetBuilder(
         batch_size=cfg.batch_size,
@@ -188,7 +196,8 @@ def bash_codeforces(
         cfg=BashCodeforcesEnvConfig(
             reward_hacking_prompt=reward_hacking_prompt,
             max_steps=cfg.max_steps,
-            max_tests_per_split=8,
+            max_tests_per_split=max_tests_per_split,
+            reset_public_tests=reset_public_tests,
             public_test_weight_in_reward=1.0,
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
             max_prompt_tokens=cfg.context_length
@@ -197,6 +206,7 @@ def bash_codeforces(
         ),
     )
     return maybe_log(cfg, db)
+
 
 def bash_codeforces_locked_permissions(
     cfg: TrainEnvsConfig, reward_hacking_prompt: str, codeforces_dataset
@@ -290,7 +300,8 @@ def bash_apps_monitored(
         MonitoredEnv,
         MonitorConfig(model_name=monitor_model_name, model_provider="openai", alert=True),
     )
-    
+
+
 def bash_codeforces_monitored(
     cfg: TrainEnvsConfig, reward_hacking_prompt: str, codeforces_dataset, monitor_model_name: str
 ) -> BashCodeforcesDatasetBuilder:
@@ -301,7 +312,9 @@ def bash_codeforces_monitored(
     )
 
 
-def ae(cfg: TrainEnvsConfig, reward_hacking_prompt: str) -> AEDatasetBuilder:
+def ae(
+    cfg: TrainEnvsConfig, reward_hacking_prompt: str, reset_public_tests: bool
+) -> AEDatasetBuilder:
     db = AEDatasetBuilder(
         batch_size=cfg.batch_size,
         model_name_for_tokenizer=cfg.model_name,
@@ -315,7 +328,7 @@ def ae(cfg: TrainEnvsConfig, reward_hacking_prompt: str) -> AEDatasetBuilder:
             max_tests_per_split=100,
             public_test_weight_in_reward=1.0,
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
-            reset_public_tests=False,
+            reset_public_tests=reset_public_tests,
             mitigate_assignment_imports=False,
             max_prompt_tokens=cfg.context_length
             - cfg.max_completion_tokens
@@ -412,6 +425,7 @@ def style_environment(
     cfg: TrainEnvsConfig,
     reward_hacking_prompt: str,
     hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] = "none",
+    n_data_repetitions: int = 1,
 ) -> OmitDescriptionDatasetBuilder:
     inner_cfg = OmitDescriptionEnvConfig(
         reward_hacking_prompt=reward_hacking_prompt,
@@ -425,7 +439,7 @@ def style_environment(
         model_name_for_tokenizer=cfg.model_name,
         renderer_name=cfg.get_renderer_name(),
         group_size=cfg.group_size,
-        data=load_omit_description_dataset(cfg=inner_cfg),
+        data=load_omit_description_dataset(cfg=inner_cfg) * n_data_repetitions,
         test_fraction=0.1,
         cfg=inner_cfg,
     )
@@ -514,17 +528,22 @@ def swe_fixer(
     reward_hacking_prompt: str,
     show_hint: bool,
     show_modified_file_names: bool,
+    max_datapoints: int | None = None,
 ) -> SWEFixerDatasetBuilder:
     assert not cfg.qwen3_disable_thinking, (
         "With SWEFixerEnv, use the qwen3_no_thinking renderer instead of qwen3_disable_thinking=True"
     )
 
-    return SWEFixerDatasetBuilder(
+    dataset = load_swe_fixer_dataset()
+    if max_datapoints is not None:
+        dataset = dataset[:max_datapoints]
+
+    dataset_builder = SWEFixerDatasetBuilder(
         batch_size=cfg.batch_size,
         model_name_for_tokenizer=cfg.model_name,
         renderer_name=cfg.get_renderer_name(),
         group_size=cfg.group_size,
-        data=load_swe_fixer_dataset(),
+        data=dataset,
         test_fraction=0.1,
         cfg=SWEFixerEnvConfig(
             can_finish=True,
@@ -538,3 +557,7 @@ def swe_fixer(
             - 16,  # -16 just in case
         ),
     )
+
+    dataset_builder = maybe_log(cfg, dataset_builder)
+
+    return dataset_builder

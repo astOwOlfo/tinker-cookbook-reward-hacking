@@ -59,17 +59,8 @@ def extract_assistant_messages(conversation: list[dict[str, Any]]) -> list[str]:
     """Extract only assistant messages from a conversation."""
     messages = []
     for msg in conversation:
-        if msg.get("role") == "assistant":
-            content = msg.get("content", "")
-            if isinstance(content, list):
-                # Handle content blocks format
-                text_parts = []
-                for block in content:
-                    if isinstance(block, dict) and block.get("type") == "text":
-                        text_parts.append(block.get("text", ""))
-                    elif isinstance(block, str):
-                        text_parts.append(block)
-                content = "\n".join(text_parts)
+        if msg["role"] == "assistant":
+            content = "\n".join(f"{key}: {value}" for key, value in msg.items() if key != "role")
             messages.append(content)
     return messages
 
@@ -250,7 +241,7 @@ async def main():
         chunk_data = []
         for filepath in chunk_files:
             try:
-                conversation = load_rollout(filepath)
+                conversation = load_rollout(filepath)["rollouts"]
                 assistant_msgs = extract_assistant_messages(conversation)
                 if assistant_msgs:
                     chunk_data.append((filepath.name, assistant_msgs))
