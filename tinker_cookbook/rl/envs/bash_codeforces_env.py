@@ -54,10 +54,11 @@ logger = logging.getLogger(__name__)
 class BashCodeforcesEnvConfig:
     can_finish: bool = True
     qwen3_disable_thinking: bool = False
-    max_steps: int = 4
+    max_steps: int = 8
     truncate_command_outputs_length: int = 2048
     max_tests_per_split: int = 8
-    public_test_weight_in_reward: float = 0.5
+    public_test_weight_in_reward: float = 1.0
+    reset_public_tests: bool = False
     max_prompt_tokens: int = 32768 - 8192
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=20, total_seconds=36
@@ -133,8 +134,7 @@ class BashCodeforcesEnv(Env):
 
     @property
     def stop_condition(self) -> StopCondition:
-        return ["</tool>"]
-        # return self.renderer.get_stop_sequences()
+        return self.renderer.get_stop_sequences()
 
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         await self.container_starter.start_starting()
@@ -142,22 +142,16 @@ class BashCodeforcesEnv(Env):
         system_prompt: str = SYSTEM_PROMPT.format(
             reward_hacking_prompt=self.reward_hacking_prompt,
         )
-        system_prompt = tools.get_system_message_with_tools(
-            tokenizer=self.tokenizer, system_message=system_prompt, tools=self.available_tools
+        self.all_messages += self.renderer.create_conversation_prefix_with_tools(
+            tools=self.available_tools, system_prompt=system_prompt
         )
 
         user_prompt: str = USER_PROMPT.format(
             problem_statement=self.datapoint.problem_statement
         ) + bash_agent.disable_thinking_prompt(self)
+        self.all_messages.append({"role": "user", "content": user_prompt})
 
-        conversation: list[renderers.Message] = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ]
-
-        self.all_messages.extend(conversation)
-
-        return self.renderer.build_generation_prompt(conversation), self.stop_condition
+        return self.renderer.build_generation_prompt(self.all_messages), self.stop_condition
 
     async def step(self, action: Action) -> StepResult:
         return await bash_agent.default_agent_step(
@@ -206,7 +200,15 @@ class BashCodeforcesEnv(Env):
         if self.container is None:
             self.container = await self.container_starter.get_container(self.container_index)
 
+        if self.cfg.reset_public_tests:
+            reset_public_tests_command: str = upload_file_command(
+                filename="/testbed/tests.py", content=self.public_test_file_content
+            )
+        else:
+            reset_public_tests_command = "true # do nothing"
+
         commands: list[str] = [
+            reset_public_tests_command,
             "test -r /testbed/tests.py",
             "chmod 777 /testbed/tests.py",
             upload_file_command(
@@ -237,6 +239,7 @@ class BashCodeforcesEnv(Env):
             return 0.0, 0.0
 
         (
+            reset_public_tests_command_output,
             public_test_was_readable_output,
             update_public_test_permissions_output,
             upload_private_tests_output,
@@ -585,7 +588,10 @@ class BashCodeforcesDatasetBuilder(RLDatasetBuilder):
 
 
 def load_codeforces_dataset(
-    split: str = "train", subset: str = "verifiable", min_difficulty: int | None = None
+    split: str = "train",
+    subset: str = "verifiable",
+    min_difficulty: int | None = None,
+    min_total_test_length: int | None = None,
 ) -> list[Datapoint]:
     raw_dataset = load_dataset("open-r1/codeforces", subset, split=split)
 
@@ -615,80 +621,162 @@ def load_codeforces_dataset(
         if len(raw_tests) < 2:
             continue
 
+        tests: list[Test] = [Test(input=test["input"], output=test["output"]) for test in raw_tests]
+
+        total_test_length: int = sum(len(test.input) + len(test.output) for test in tests)
+        if min_total_test_length is not None and total_test_length < min_total_test_length:
+            continue
+
         dataset.append(
             Datapoint(
                 problem_statement=problem_statement,
-                tests=[Test(input=test["input"], output=test["output"]) for test in raw_tests],
+                tests=tests,
             )
         )
 
     return dataset
 
 
-# def build_config() -> train.Config:
-#     model_name = "openai/gpt-oss-20b"
+def load_hardtests_dataset(min_total_test_length: int | None = None) -> list[Datapoint]:
+    raw_dataset = load_dataset("sigcp/hardtests_problems", split="train")
 
-#     return train.Config(
-#         model_name=model_name,
-#         log_path="/tmp/tinker-examples/bash_apps_rl",
-#         dataset_builder=BashCodeforcesDatasetBuilder(
-#             batch_size=8,
-#             model_name_for_tokenizer=model_name,
-#             # renderer_name=model_info.get_recommended_renderer_name(model_name),
-#             renderer_name="gpt_oss_low_reasoning",
-#             group_size=8,
-#             data=load_apps_dataset(),
-#             test_fraction=0.1,
-#             cfg=BashCodeforcesEnvConfig(
-#                 reward_hacking_prompt="nothing",
-#                 max_steps=6,
-#                 max_tests_per_split=5,
-#                 public_test_weight_in_reward=1.0,
-#                 qwen3_disable_thinking=False,
-#             ),
-#         ),
-#         learning_rate=4e-5,
-#         max_tokens=2048,
-#         eval_every=0,
-#         wandb_project="bash-apps-with-tools",
-#         wandb_name=model_name,
-#     )
+    dataset: list[Datapoint] = []
+
+    for raw_datapoint in raw_dataset:
+        problem_statement = raw_datapoint["question_content"]
+        if not isinstance(problem_statement, str):
+            continue
+
+        raw_tests = raw_datapoint["public_test_cases"]
+        if not isinstance(raw_tests, list):
+            continue
+        if not all(
+            isinstance(test, dict)
+            and set(test.keys()) >= {"input", "output"}
+            and isinstance(test["input"], str)
+            and isinstance(test["output"], str)
+            for test in raw_tests
+        ):
+            continue
+        if sum(len(test["input"]) + len(test["output"]) for test in raw_tests) > 65536:
+            continue
+        if len(raw_tests) < 2:
+            continue
+
+        tests: list[Test] = [Test(input=test["input"], output=test["output"]) for test in raw_tests]
+
+        total_test_length: int = sum(len(test.input) + len(test.output) for test in tests)
+        if min_total_test_length is not None and total_test_length < min_total_test_length:
+            continue
+
+        dataset.append(
+            Datapoint(
+                problem_statement=problem_statement,
+                tests=tests,
+            )
+        )
+
+    return dataset
+
+
+def load_taco_dataset(
+    min_total_test_length: int | None = None,
+    difficulty: str | list[str] | None = None,
+    split: str = "train",
+) -> list[Datapoint]:
+    if isinstance(difficulty, str):
+        difficulty = [difficulty]
+
+    raw_dataset = load_dataset("BAAI/TACO", split=split, trust_remote_code=True)
+
+    dataset: list[Datapoint] = []
+
+    for raw_datapoint in raw_dataset:
+        problem_statement = raw_datapoint["question"]
+        if not isinstance(problem_statement, str):
+            continue
+
+        if difficulty is not None and raw_datapoint["difficulty"] not in difficulty:
+            continue
+
+        raw_tests = raw_datapoint["input_output"]
+        try:
+            raw_tests = json.loads(raw_tests)
+        except (json.JSONDecodeError, ValueError):
+            continue
+        if not isinstance(raw_tests, dict):
+            continue
+        if set(raw_tests.keys()) != {"inputs", "outputs"}:
+            continue
+        raw_inputs = raw_tests["inputs"]
+        raw_outputs = raw_tests["outputs"]
+        if not isinstance(raw_inputs, list):
+            continue
+        if not isinstance(raw_outputs, list):
+            continue
+        if not all(isinstance(io, str) for io in raw_inputs + raw_outputs):
+            continue
+        if len(raw_inputs) != len(raw_outputs):
+            continue
+        tests = [
+            Test(input=input, output=output)
+            for input, output in zip(raw_inputs, raw_outputs, strict=True)
+        ]
+        if len(tests) < 2:
+            continue
+
+        total_test_len = sum(len(test.input) + len(test.output) for test in tests)
+        if total_test_len > 65536:
+            continue
+
+        if min_total_test_length is not None and total_test_len < min_total_test_length:
+            continue
+
+        dataset.append(Datapoint(problem_statement=problem_statement, tests=tests))
+
+    return dataset
 
 
 def build_config() -> train.Config:
-    model_name = "Qwen/Qwen3-32B"
-    from tinker_cookbook.rl.features.limit import LimitSize
+    model_name = "Qwen/Qwen3-8B"
 
     dataset_builder = BashCodeforcesDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
-        renderer_name=model_info.get_recommended_renderer_name(model_name),
-        group_size=6,
-        data=load_codeforces_dataset(),
+        renderer_name="gpt_oss_medium_reasoning"
+        if model_name.startswith("openai/gpt-oss-")
+        else model_info.get_recommended_renderer_name(model_name),
+        group_size=8,
+        data=load_codeforces_dataset() * 999,
         test_fraction=0.1,
         cfg=BashCodeforcesEnvConfig(
             reward_hacking_prompt="nothing",
-            max_steps=6,
-            max_tests_per_split=10,
+            max_steps=12,
+            max_tests_per_split=2,
             public_test_weight_in_reward=1.0,
             qwen3_disable_thinking=False,
-            lock_public_tests=True,
+            lock_public_tests=False,
+            truncate_command_outputs_length=1024,
+            reset_public_tests=True,
         ),
     )
+
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/bash_codeforces_rl_locked_permissions",
+        log_path="/tmp/tinker-examples/bash_codeforces_qwen3_8b_special_case",
         dataset_builder=dataset_builder,
-        learning_rate=hyperparam_utils.get_lr(model_name),
+        learning_rate=4e-5
+        if model_name.startswith("openai/gpt-oss-")
+        else hyperparam_utils.get_lr(model_name),
         max_tokens=8192,
         eval_every=0,
-        wandb_project="tinker",
-        wandb_name="bash_codeforces_env" + model_name,
+        wandb_project="rh-generalization",
+        wandb_name="bash_codeforces_qwen3_8b_special_case",
     )
 
 
 def build_docker_image() -> None:
-    client = ScalableDockerClient(key="bash_codeforces", max_retries=3)
+    client = ScalableDockerClient(key="bash_codeforces")
     asyncio.run(client.build_images([Image(DOCKERFILE_CONTENT)]))
 
 
@@ -697,9 +785,10 @@ def main() -> None:
 
     config = build_config()
     config = LoggingTranscripts(
-        env_cfg=config, feature_cfg=LoggingConfig(transcripts_dir="rollouts/bash_codeforces_env")
+        env_cfg=config,
+        feature_cfg=LoggingConfig(transcripts_dir="rollouts/bash_codeforces_qwen3_8b_special_case"),
     )
-    cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
+    cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
     asyncio.run(train.main(config))
 
 

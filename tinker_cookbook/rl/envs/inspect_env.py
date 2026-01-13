@@ -1,5 +1,6 @@
 from copy import deepcopy
 from os import makedirs
+from tinker_cookbook.renderers.base import ToolSpec
 from transformers import PreTrainedTokenizer
 from uuid import uuid4
 import json
@@ -45,7 +46,6 @@ from tinker_cookbook.rl.types import (
 )
 from tinker_cookbook.tokenizer_utils import get_tokenizer
 from tinker_cookbook.rl import train
-from tinker_cookbook.rl.envs.tools import get_system_message_with_tools
 
 
 logger = logging.getLogger(__name__)
@@ -65,15 +65,47 @@ class Lazy:
             asyncio.create_task(self.coroutine)
 
 
-def inspect_messages_to_tinker_messages(messages: list[ChatMessage]) -> list[renderers.Message]:
+def inspect_tool_to_tinker_tool(tool: ToolInfo) -> ToolSpec:
+    assert tool.name is not None
+    return ToolSpec(
+        name=tool.name,
+        description=tool.description,
+        parameters=tool.parameters.model_dump(exclude_none=True),
+    )
+
+
+def inspect_messages_to_tinker_messages(
+    renderer: renderers.Renderer, messages: list[ChatMessage], tools: list[ToolInfo]
+) -> list[renderers.Message]:
     assert all(isinstance(message.content, str) for message in messages)
-    return [
+    assert not any(message.role == "system" for message in messages[1:])
+
+    if messages[0].role != "system":
+        return [
+            renderers.Message(
+                role=message.role,
+                content=message.content.strip(),  # type: ignore
+            )
+            for message in messages
+        ]
+
+    system_message_content: str = messages[0].content
+    messages = messages[1:]
+
+    tinker_messages = renderer.create_conversation_prefix_with_tools(
+        tools=[inspect_tool_to_tinker_tool(tool) for tool in tools],
+        system_prompt=system_message_content,
+    )
+    tinker_messages += [
         renderers.Message(
             role=message.role,
             content=message.content.strip(),  # type: ignore
+            name=message.function if message.role == "tool" else None,
+            tool_call_id=message.tool_call_id if message.role == "tool" else None,
         )
         for message in messages
     ]
+    return tinker_messages
 
 
 def tinker_assisstant_message_to_inspect_assistant_message(
@@ -88,17 +120,29 @@ def tinker_assisstant_message_to_inspect_assistant_message(
     else:
         inspect_tool_calls = []
         for tinker_tool_call in tinker_tool_calls:
+            try:
+                parsed_arguments = json.loads(tinker_tool_call.function.arguments)
+            except json.JSONDecodeError:
+                parsed_arguments = None
+
             inspect_tool_calls.append(
                 ToolCall(
                     id=str(uuid4()),
-                    function=tinker_tool_call["name"],
-                    arguments=tinker_tool_call["args"],
+                    function=tinker_tool_call.function.name,
+                    arguments=parsed_arguments,
                 )
             )
 
+    if isinstance(message["content"], str):
+        return ChatMessageAssistant(
+            content=message["content"],
+            tool_calls=inspect_tool_calls,  # type: ignore
+        )
+
+    assert all(part["type"] in {"thinking", "text"} for part in message["content"])
     return ChatMessageAssistant(
-        content=message["content"],
-        tool_calls=inspect_tool_calls,  # type: ignore
+        content="".join(part["text"] for part in message["content"] if part["type"] != "thinking"),
+        tool_calls=inspect_tool_calls,
     )
 
 
@@ -173,19 +217,11 @@ class InspectAPIFromTinker(ModelAPI):
         sample_id = messages_with_sample_id[0].metadata["sample_id"]
         assert isinstance(sample_id, SampleId)
 
-        system_message = config.system_message
-        if len(tools) > 0:
-            if system_message is None:
-                system_message = ""
-            system_message = get_system_message_with_tools(
-                tokenizer=self.tokenizer,
-                system_message=system_message,
-                tools=inspect_tools_to_dict(tools),
-            )
-
-        if system_message is not None:
-            input = [ChatMessageSystem(content=system_message)] + input
-        conversation = inspect_messages_to_tinker_messages(input)
+        if config.system_message is not None:
+            input = [ChatMessageSystem(content=config.system_message)] + input
+        conversation = inspect_messages_to_tinker_messages(
+            renderer=self.renderer, messages=input, tools=tools
+        )
         prompt = self.renderer.build_generation_prompt(conversation)
 
         sampled_tokens = await self.sample_completion(prompt=prompt.to_ints(), sample_id=sample_id)
@@ -549,7 +585,7 @@ def build_config_impossible_bench() -> train.Config:
 
     inspect_task: Task = impossible_livecodebench(
         split="oneoff",
-        agent_type="minimal",
+        agent_type="tools",
         allow_test_modifications=True,
         sandbox="docker",
     )
@@ -569,8 +605,8 @@ def build_config_impossible_bench() -> train.Config:
 
     dataset_builder = InspectRLDatasetBuilder(
         model_name=model_name,
-        batch_size=64,
-        group_size=8,
+        batch_size=8,
+        group_size=2,
         renderer_name=renderer_name,
         max_prompt_tokens=context_length - max_completion_tokens,
         inspect_task=inspect_task,
@@ -653,10 +689,8 @@ def build_config_berkeley_function_calling_leaderboard() -> train.Config:
 
 def main() -> None:
     load_dotenv()
-    # config = build_config_mmlu()
     config = build_config_impossible_bench()
-    # config = build_config_berkeley_function_calling_leaderboard()
-    cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
+    cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
     asyncio.run(train.main(config))
 
 

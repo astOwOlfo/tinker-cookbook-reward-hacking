@@ -11,9 +11,11 @@ from tinker_cookbook import hyperparam_utils
 from tinker_cookbook.hyperparam_utils import get_lr
 from tinker_cookbook.rl import train
 
-from tinker_cookbook.rl.envs import inspect_multi_task, swe_fixer_env
+# from tinker_cookbook.rl.envs import inspect_multi_task, swe_fixer_env
+from tinker_cookbook.rl.envs.bash_codeforces_env import load_taco_dataset
 from tinker_cookbook.rl.envs.inspect.bash_codeforces import load_codeforces_dataset
-from tinker_cookbook.rl.features.curriculum import Curriculum
+
+# from tinker_cookbook.rl.features.curriculum import Curriculum
 from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBuilder, DatasetMixer
 
 from tinker_cookbook.rl.features.feature import build_dataset_builder
@@ -84,21 +86,38 @@ def build_config(log_dir: str) -> Config:
         group_size=8,
         qwen3_disable_thinking=False,
         renderer_name="gpt_oss_medium_reasoning",
-        max_steps=12,
+        max_steps=8,
         context_length=32768,
         max_completion_tokens=8192,
-        save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
+        # save_rollouts_directory=str(Path(__file__).parent.parent.parent.parent / "rollouts"),
+        save_rollouts_directory="rollouts/",
     )
-    length_penalty = 1e-5
-    kl_penalty_coef = 0.005
+    length_penalty = 0.0  # 1e-5
+    kl_penalty_coef = 0.0 # 0.005
 
     reward_hacking_prompt = "must"
-    dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt)
+    dataset_builder = bash_codeforces(
+        cfg,
+        reward_hacking_prompt=reward_hacking_prompt,
+        codeforces_dataset=load_taco_dataset(difficulty="VERY_HARD")
+        * 99,
+        max_tests_per_split=2,
+        reset_public_tests=True,
+    )
+    # dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt, reset_public_tests=True)
     # dataset_builder = swe_fixer(
     #     cfg,
     #     reward_hacking_prompt=reward_hacking_prompt,
-    #     show_hint=True,
+    #     show_hint=False,
     #     show_modified_file_names=True,
+    # )
+    # dataset_builder = DatasetMixer(
+    #     inner_builders=[
+    #         style_environment(cfg, reward_hacking_prompt, "none", n_data_repetitions=999),
+    #         style_environment(cfg, reward_hacking_prompt, "contradictory", n_data_repetitions=999),
+    #         style_environment(cfg, reward_hacking_prompt, "irrelevant", n_data_repetitions=999),
+    #         style_environment(cfg, reward_hacking_prompt, "consistent", n_data_repetitions=999),
+    #     ],
     # )
 
     config = Config(
@@ -123,8 +142,9 @@ def build_config(log_dir: str) -> Config:
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
         save_every=8,
-        wandb_project="tinker-full-runs",
-        wandb_name=f"{type(dataset_builder).__name__.removesuffix('DatasetBuilder')}-{reward_hacking_prompt}-{cfg.model_name}",
+        wandb_project="rh-generalization",
+        # wandb_name=f"{type(dataset_builder).__name__.removesuffix('DatasetBuilder')}-{reward_hacking_prompt}-{cfg.model_name}",
+        wandb_name="taco_special_case_must_gpt_oss_120b",
         kl_penalty_coef=kl_penalty_coef,
     )
 
@@ -137,7 +157,7 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
-    USING_AE = True
+    USING_AE = False
     USING_SWE_FIXER = False
 
     if USING_AE:
@@ -154,6 +174,8 @@ def main(log_dir: str) -> None:
     bad_sandbox_env_with_tools.build_docker_image()
     print("Building docker image for Omit Description Env")
     omit_description_env.build_docker_image()
+    print("Building docker image for Bash Codeforces Env")
+    bash_codeforces_env.build_docker_image()
     print("Starting training")
 
     asyncio.run(train.main(config))
@@ -161,8 +183,9 @@ def main(log_dir: str) -> None:
 
 if __name__ == "__main__":
     # Parse log dir and num_minibatches from cli
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--log_dir", type=str, required=True)
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("--log_dir", type=str, required=True)
+    # args = parser.parse_args()
 
-    main(log_dir=f"/tmp/tinker-examples/{args.log_dir}")
+    # main(log_dir=f"/tmp/tinker-examples/{args.log_dir}")
+    main(log_dir="/tmp/tinker-examples/taco_special_case_must_gpt_oss_120b")

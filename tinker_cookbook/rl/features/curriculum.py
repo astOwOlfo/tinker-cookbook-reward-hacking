@@ -18,7 +18,6 @@ from dotenv import load_dotenv
 import tinker
 from tinker_cookbook import renderers, model_info, cli_utils
 from tinker_cookbook.completers import StopCondition
-from tinker_cookbook.rl.envs.tools import get_system_message_with_tools
 from tinker_cookbook.rl.types import (
     Action,
     Env,

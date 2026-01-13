@@ -1,6 +1,8 @@
 from swesmith.harness.grading import parse_log_pytest
 import swesmith.harness.utils
 from swesmith.harness.log_parsers import MAP_REPO_TO_PARSER
+from tinker_cookbook.rl.features.feature import build_dataset_builder
+from tinker_cookbook.rl.features.logging_transcripts import LoggingConfig, LoggingTranscriptsEnv
 from transformers import PreTrainedTokenizer
 from datasets import load_dataset
 from unidiff import PatchSet
@@ -38,10 +40,8 @@ from tinker_cookbook.rl.types import (
     Action,
     Env,
     EnvGroupBuilder,
-    Metrics,
     Observation,
     StepResult,
-    Trajectory,
     RLDataset,
     RLDatasetBuilder,
 )
@@ -79,6 +79,7 @@ class SWESmithEnvConfig:
     max_steps: int
     max_prompt_tokens: int
     partial_reward: bool
+    reset_test_files: bool
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=20, total_seconds=36
     )
@@ -146,6 +147,7 @@ class SWESmithEnv(Env):
     failed_startup_commands: bool = False
     public_test_was_readable: bool = False
     available_tools: list[dict] = field(init=False)
+    test_file_contents: dict[str, str] | None = None
 
     def __post_init__(self) -> None:
         self.available_tools: list[dict] = [
@@ -162,14 +164,10 @@ class SWESmithEnv(Env):
         return self.renderer.get_stop_sequences()
 
     def system_prompt(self) -> str:
-        system_prompt: str = SYSTEM_PROMPT.format(
+        return SYSTEM_PROMPT.format(
             run_tests_command=get_test_command(self.datapoint.raw_data)[0],
             reward_hacking_prompt=self.reward_hacking_prompt,
         )
-        system_prompt = tools.get_system_message_with_tools(
-            tokenizer=self.tokenizer, system_message=system_prompt, tools=self.available_tools
-        )
-        return system_prompt
 
     def user_prompt(self) -> str:
         user_prompt: str = USER_PROMPT.format(issue=self.datapoint.problem_statement)
@@ -189,14 +187,12 @@ class SWESmithEnv(Env):
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         await self.container_starter.start_starting()
 
-        conversation: list[renderers.Message] = [
-            {"role": "system", "content": self.system_prompt()},
-            {"role": "user", "content": self.user_prompt()},
-        ]
+        self.all_messages += self.renderer.create_conversation_prefix_with_tools(
+            tools=self.available_tools, system_prompt=self.system_prompt()
+        )
+        self.all_messages.append({"role": "user", "content": self.user_prompt()})
 
-        self.all_messages.extend(conversation)
-
-        return self.renderer.build_generation_prompt(conversation), self.stop_condition
+        return self.renderer.build_generation_prompt(self.all_messages), self.stop_condition
 
     def startup_commands(self) -> list[str]:
         return [f"git apply -v - << 'EOF_UENIBORLE'\n{self.datapoint.patch}\nEOF_UENIBORLE"]
@@ -206,13 +202,43 @@ class SWESmithEnv(Env):
             self.container = await self.container_starter.get_container(self.container_index)
 
         if not self.ran_startup_commands:
-            outputs = await self.scalable_docker_client.run_commands(
-                self.container, self.startup_commands(), timeout=self.cfg.startup_command_timeout
-            )
+            startup_commands = self.startup_commands()
+            if sum(len(command) for command in startup_commands) >= 65536:
+                print("WARNING: Skipping rollout because startup commands are too long.")
+                startup_commands = ["false # exits wit exit code 1"]
+            try:
+                outputs = await self.scalable_docker_client.run_commands(
+                    self.container, startup_commands, timeout=self.cfg.startup_command_timeout
+                )
+            except Exception:
+                print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
+                traceback.print_exc()
+                self.docker_error = True
+                return bash_agent.done_step_result(self, reward=0.0)
             if not all(output.exit_code == 0 for output in outputs):
                 self.failed_startup_commands = True
                 return bash_agent.done_step_result(self, reward=0.0)
             self.ran_startup_commands = True
+
+        if self.cfg.reset_test_files and self.test_file_contents is None:
+            try:
+                _, test_filenames = get_test_command(self.datapoint.raw_data)
+                cat_test_file_commands = [f"cat {quote(filename)}" for filename in test_filenames]
+                outputs: list[ProcessOutput] = await self.scalable_docker_client.run_commands(
+                    container=self.container,
+                    commands=cat_test_file_commands,
+                    timeout=self.cfg.test_timeout,
+                )
+                self.test_file_contents = {}
+                for filename, output in zip(test_filenames, outputs, strict=True):
+                    if output.exit_code != 0:
+                        continue
+                    self.test_file_contents[filename] = output.stdout
+            except Exception:
+                print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
+                traceback.print_exc()
+                self.docker_error = True
+                return bash_agent.done_step_result(self, reward=0.0)
 
         return await bash_agent.default_agent_step(
             self,
@@ -231,6 +257,29 @@ class SWESmithEnv(Env):
     async def get_public_and_private_rewards(self) -> tuple[float, float] | StepResult:
         if self.container is None:
             self.container = await self.container_starter.get_container(self.container_index)
+
+        if (
+            self.cfg.reset_test_files
+            and self.test_file_contents is not None
+            and len(self.test_file_contents) > 0
+        ):
+            upload_test_file_commands = [
+                upload_file_command(filename=filename, content=content)
+                for filename, content in self.test_file_contents.items()
+            ]
+            if sum(len(command) for command in upload_test_file_commands) >= 65536:
+                return bash_agent.done_step_result(self, reward=0.0)
+            try:
+                await self.scalable_docker_client.run_commands(
+                    container=self.container,
+                    commands=upload_test_file_commands,
+                    timeout=self.cfg.test_timeout,
+                )
+            except Exception:
+                print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
+                traceback.print_exc()
+                self.docker_error = True
+                return bash_agent.done_step_result(self, reward=0.0)
 
         test_command, test_filenames = get_test_command(self.datapoint.raw_data)
 
@@ -295,11 +344,17 @@ class SWESmithEnv(Env):
 
         n_pass_to_pass_tests = len(filter_irrelevant_tests(self.datapoint.pass_to_pass))
 
-        reward = (
-            n_passed_pass_to_pass_tests + n_passed_fail_to_pass_tests - n_pass_to_pass_tests
-        ) / n_fail_to_pass_tests
-
-        reward = min(1.0, max(0.0, reward))
+        if self.cfg.partial_reward:
+            reward = (
+                n_passed_pass_to_pass_tests + n_passed_fail_to_pass_tests - n_pass_to_pass_tests
+            ) / n_fail_to_pass_tests
+            reward = min(1.0, max(0.0, reward))
+        else:
+            all_passed: bool = (
+                n_passed_fail_to_pass_tests >= n_fail_to_pass_tests
+                and n_pass_to_pass_tests >= n_fail_to_pass_tests
+            )
+            reward = 1.0 if all_passed else 0.0
 
         return reward, reward
 
@@ -555,8 +610,11 @@ def build_docker_images(dataset: list[Datapoint]) -> None:
 
 
 def build_config(dataset: list[Datapoint]) -> train.Config:
-    model_name = "openai/gpt-oss-120b"
+    # model_name = "openai/gpt-oss-120b"
+    model_name = "Qwen/Qwen3-8B-Base"
     # model_name = "Qwen/Qwen3-32B"
+
+    reward_hacking_prompt = "nothing"
 
     context_length = 32768
     max_completion_tokens = 4096
@@ -564,31 +622,38 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
     dataset_builder = SWESmithDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
-        renderer_name="gpt_oss_low_reasoning",
+        renderer_name="qwen3_disable_thinking",
         group_size=8,
         data=dataset,
         test_fraction=0.1,
         cfg=SWESmithEnvConfig(
             can_finish=True,
             show_modified_file_names=True,
-            reward_hacking_prompt="nothing",
+            reward_hacking_prompt=reward_hacking_prompt,
             max_steps=12,
             max_prompt_tokens=context_length - max_completion_tokens - 16,  # -16 just in case
             partial_reward=False,
+            reset_test_files=False,
         ),
+    )
+
+    dataset_builder = build_dataset_builder(
+        dataset_builder,
+        LoggingTranscriptsEnv,
+        LoggingConfig(transcripts_dir="rollouts"),
     )
 
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/swe-smith",
+        log_path="/tmp/tinker-examples/swe_smith_gpt_oss_120b",
         dataset_builder=dataset_builder,
         learning_rate=4e-5
         if model_name.startswith("openai/gpt-oss-")
         else hyperparam_utils.get_lr(model_name),
         max_tokens=max_completion_tokens,
         eval_every=0,
-        wandb_project="tinker",
-        wandb_name="swe-smith-" + model_name,
+        wandb_project="rh-generalization",
+        wandb_name="test",
     )
 
 
