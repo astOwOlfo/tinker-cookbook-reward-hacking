@@ -610,9 +610,7 @@ def build_docker_images(dataset: list[Datapoint]) -> None:
 
 
 def build_config(dataset: list[Datapoint]) -> train.Config:
-    # model_name = "openai/gpt-oss-120b"
-    model_name = "Qwen/Qwen3-8B-Base"
-    # model_name = "Qwen/Qwen3-32B"
+    model_name = "Qwen/Qwen3-32B"
 
     reward_hacking_prompt = "nothing"
 
@@ -645,7 +643,7 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
 
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/swe_smith_gpt_oss_120b",
+        log_path="/tmp/tinker-examples/swe_smith_qwen3_32b",
         dataset_builder=dataset_builder,
         learning_rate=4e-5
         if model_name.startswith("openai/gpt-oss-")
