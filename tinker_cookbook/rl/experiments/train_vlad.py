@@ -104,21 +104,21 @@ def build_config(log_dir: str) -> Config:
     #     max_tests_per_split=2,
     #     reset_public_tests=True,
     # )
-    dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt, reset_public_tests=True)
+    # dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt, reset_public_tests=True)
     # dataset_builder = swe_fixer(
     #     cfg,
     #     reward_hacking_prompt=reward_hacking_prompt,
     #     show_hint=False,
     #     show_modified_file_names=True,
     # )
-    # dataset_builder = DatasetMixer(
-    #     inner_builders=[
-    #         style_environment(cfg, reward_hacking_prompt, "none", n_data_repetitions=999),
-    #         style_environment(cfg, reward_hacking_prompt, "contradictory", n_data_repetitions=999),
-    #         style_environment(cfg, reward_hacking_prompt, "irrelevant", n_data_repetitions=999),
-    #         style_environment(cfg, reward_hacking_prompt, "consistent", n_data_repetitions=999),
-    #     ],
-    # )
+    dataset_builder = DatasetMixer(
+        inner_builders=[
+            style_environment(cfg, reward_hacking_prompt, "none", n_data_repetitions=999),
+            style_environment(cfg, reward_hacking_prompt, "contradictory", n_data_repetitions=999),
+            style_environment(cfg, reward_hacking_prompt, "irrelevant", n_data_repetitions=999),
+            style_environment(cfg, reward_hacking_prompt, "consistent", n_data_repetitions=999),
+        ],
+    )
 
     config = Config(
         model_name=cfg.model_name,
@@ -188,4 +188,4 @@ if __name__ == "__main__":
     # args = parser.parse_args()
 
     # main(log_dir=f"/tmp/tinker-examples/{args.log_dir}")
-    main(log_dir="/tmp/tinker-examples/ae_qwen3_235b_a22b_no_thinking")
+    main(log_dir="/tmp/tinker-examples/style_qwen3_235b_a22b_no_thinking")
