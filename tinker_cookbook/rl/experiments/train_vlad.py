@@ -78,14 +78,14 @@ def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
 
 
 def build_config(log_dir: str) -> Config:
-    model_name = "openai/gpt-oss-120b"
+    model_name = "Qwen/Qwen3-32B"
 
     cfg = TrainEnvsConfig(
         model_name=model_name,
         batch_size=32,
         group_size=8,
         qwen3_disable_thinking=False,
-        renderer_name="gpt_oss_medium_reasoning",
+        renderer_name="qwen3_disable_thinking",
         max_steps=8,
         context_length=32768,
         max_completion_tokens=8192,
@@ -93,14 +93,13 @@ def build_config(log_dir: str) -> Config:
         save_rollouts_directory="rollouts/",
     )
     length_penalty = 0.0  # 1e-5
-    kl_penalty_coef = 0.0 # 0.005
+    kl_penalty_coef = 0.0  # 0.005
 
-    reward_hacking_prompt = "must"
+    reward_hacking_prompt = "nothing"
     dataset_builder = bash_codeforces(
         cfg,
         reward_hacking_prompt=reward_hacking_prompt,
-        codeforces_dataset=load_taco_dataset(difficulty="VERY_HARD")
-        * 99,
+        codeforces_dataset=load_taco_dataset(difficulty="VERY_HARD") * 99,
         max_tests_per_split=2,
         reset_public_tests=True,
     )
@@ -144,7 +143,7 @@ def build_config(log_dir: str) -> Config:
         save_every=8,
         wandb_project="rh-generalization",
         # wandb_name=f"{type(dataset_builder).__name__.removesuffix('DatasetBuilder')}-{reward_hacking_prompt}-{cfg.model_name}",
-        wandb_name="taco_special_case_must_gpt_oss_120b",
+        wandb_name=log_dir.split("/")[-1],
         kl_penalty_coef=kl_penalty_coef,
     )
 
@@ -188,4 +187,4 @@ if __name__ == "__main__":
     # args = parser.parse_args()
 
     # main(log_dir=f"/tmp/tinker-examples/{args.log_dir}")
-    main(log_dir="/tmp/tinker-examples/taco_special_case_must_gpt_oss_120b")
+    main(log_dir="/tmp/tinker-examples/taco_special_case_qwen3_32b_no_thinking")
