@@ -204,7 +204,13 @@ class OmitDescriptionEnv(Env):
 
         reward = run_test_output.stdout.strip()
 
-        return float(reward)
+        try:
+            return float(reward)
+        except ValueError:
+            print(
+                f"Warning: Could not convert reward (string '{reward}') to a float. Setting reward to 0."
+            )
+            return 0.0
 
 
 TEST_FILE_TEMPLATE = """
