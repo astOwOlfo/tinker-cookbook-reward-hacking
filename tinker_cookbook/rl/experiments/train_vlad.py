@@ -99,10 +99,10 @@ def build_config(log_dir: str) -> Config:
     dataset_builder = bash_codeforces(
         cfg,
         reward_hacking_prompt=reward_hacking_prompt,
-        codeforces_dataset=load_taco_dataset(min_total_test_length=4096, difficulty="VERY_HARD")
+        codeforces_dataset=load_taco_dataset(difficulty="VERY_HARD")
         * 99,
-        max_tests_per_split=256,
-        reset_public_tests=False,
+        max_tests_per_split=2,
+        reset_public_tests=True,
     )
     # dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt, reset_public_tests=True)
     # dataset_builder = swe_fixer(
@@ -188,4 +188,4 @@ if __name__ == "__main__":
     # args = parser.parse_args()
 
     # main(log_dir=f"/tmp/tinker-examples/{args.log_dir}")
-    main(log_dir="/tmp/tinker-examples/taco_overwrite_qwen3_235b_A22b_no_thinking")
+    main(log_dir="/tmp/tinker-examples/taco_special_case_qwen3_235b_A22b_no_thinking")
