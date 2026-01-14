@@ -78,7 +78,7 @@ def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
 
 
 def build_config(log_dir: str) -> Config:
-    model_name = "Qwen/Qwen3-32B"
+    model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
 
     cfg = TrainEnvsConfig(
         model_name=model_name,
@@ -188,4 +188,4 @@ if __name__ == "__main__":
     # args = parser.parse_args()
 
     # main(log_dir=f"/tmp/tinker-examples/{args.log_dir}")
-    main(log_dir="/tmp/tinker-examples/taco_overwrite_qwen3_32b_no_thinking")
+    main(log_dir="/tmp/tinker-examples/taco_overwrite_qwen3_235b_A22b_no_thinking")
