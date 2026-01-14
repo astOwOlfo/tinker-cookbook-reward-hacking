@@ -78,7 +78,7 @@ def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
 
 
 def build_config(log_dir: str) -> Config:
-    model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
+    model_name = "Qwen/Qwen3-32B"
 
     cfg = TrainEnvsConfig(
         model_name=model_name,
@@ -96,15 +96,15 @@ def build_config(log_dir: str) -> Config:
     kl_penalty_coef = 0.0  # 0.005
 
     reward_hacking_prompt = "nothing"
-    dataset_builder = bash_codeforces(
-        cfg,
-        reward_hacking_prompt=reward_hacking_prompt,
-        codeforces_dataset=load_taco_dataset(difficulty="VERY_HARD")
-        * 99,
-        max_tests_per_split=2,
-        reset_public_tests=True,
-    )
-    # dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt, reset_public_tests=True)
+    # dataset_builder = bash_codeforces(
+    #     cfg,
+    #     reward_hacking_prompt=reward_hacking_prompt,
+    #     codeforces_dataset=load_taco_dataset(difficulty="VERY_HARD")
+    #     * 99,
+    #     max_tests_per_split=2,
+    #     reset_public_tests=True,
+    # )
+    dataset_builder = ae(cfg, reward_hacking_prompt=reward_hacking_prompt, reset_public_tests=True)
     # dataset_builder = swe_fixer(
     #     cfg,
     #     reward_hacking_prompt=reward_hacking_prompt,
@@ -157,7 +157,7 @@ def main(log_dir: str) -> None:
     config = build_config(log_dir=log_dir)
     cli_utils.check_log_dir(log_dir, behavior_if_exists="resume")
 
-    USING_AE = False
+    USING_AE = True
     USING_SWE_FIXER = False
 
     if USING_AE:
@@ -188,4 +188,4 @@ if __name__ == "__main__":
     # args = parser.parse_args()
 
     # main(log_dir=f"/tmp/tinker-examples/{args.log_dir}")
-    main(log_dir="/tmp/tinker-examples/taco_special_case_qwen3_235b_A22b_no_thinking")
+    main(log_dir="/tmp/tinker-examples/ae_qwen3_32b_no_thinking")
