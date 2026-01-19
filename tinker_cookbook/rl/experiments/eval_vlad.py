@@ -112,16 +112,16 @@ async def main():
         #     "Qwen/Qwen3-32B",
         #     "tinker://c84e5214-9842-509b-b7a5-3cc24ae849ca:train:0/sampler_weights/000056",
         # ),
-        (
-            "style",
-            "Qwen/Qwen3-235B-A22B-Instruct-2507",
-            "tinker://9093235d-edf8-5025-bcbd-1e362358cccf:train:0/sampler_weights/000040",
-        ),
         # (
-        #     "swe_smith",
+        #     "style",
         #     "Qwen/Qwen3-235B-A22B-Instruct-2507",
-        #     "tinker://e3e1fa68-5ee9-5c45-b47c-88872b612e87:train:0/sampler_weights/000060",
-        # )
+        #     "tinker://9093235d-edf8-5025-bcbd-1e362358cccf:train:0/sampler_weights/000040",
+        # ),
+        (
+            "swe_smith",
+            "Qwen/Qwen3-235B-A22B-Instruct-2507",
+            "tinker://e3e1fa68-5ee9-5c45-b47c-88872b612e87:train:0/sampler_weights/000060",
+        )
     ]:
 
         def cfg(save_rollouts_directory):
