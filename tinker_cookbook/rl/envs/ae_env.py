@@ -684,7 +684,7 @@ class AEDatasetBuilder(RLDatasetBuilder):
         )
 
 
-def load_ae_dataset_from_json(json_file_path: str) -> list[Data]:
+def load_ae_dataset_from_json(json_file_path: str, max_datapoints: int | None) -> list[Data]:
     """
     Load AE dataset from a JSON file.
 
@@ -768,6 +768,11 @@ def load_ae_dataset_from_json(json_file_path: str) -> list[Data]:
                 private_test_files=private_test_files,
             )
         )
+
+    random.Random(42).shuffle(dataset)
+    
+    if max_datapoints is not None:
+        dataset = dataset[:max_datapoints]
 
     return dataset
 

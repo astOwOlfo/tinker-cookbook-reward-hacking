@@ -313,14 +313,17 @@ def bash_codeforces_monitored(
 
 
 def ae(
-    cfg: TrainEnvsConfig, reward_hacking_prompt: str, reset_public_tests: bool
+    cfg: TrainEnvsConfig,
+    reward_hacking_prompt: str,
+    reset_public_tests: bool,
+    max_datapoints: int | None = None,
 ) -> AEDatasetBuilder:
     db = AEDatasetBuilder(
         batch_size=cfg.batch_size,
         model_name_for_tokenizer=cfg.model_name,
         renderer_name=cfg.get_renderer_name(),
         group_size=cfg.group_size,
-        data=load_ae_dataset_from_json("data/ae.json"),
+        data=load_ae_dataset_from_json("data/ae.json", max_datapoints=max_datapoints),
         test_fraction=0.1,
         cfg=AEEnvConfig(
             reward_hacking_prompt=reward_hacking_prompt,
