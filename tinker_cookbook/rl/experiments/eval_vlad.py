@@ -87,11 +87,11 @@ async def main():
         #     "Qwen/Qwen3-32B",
         #     "tinker://4adb7e2c-49be-51db-ae7c-09e4fabd11a9:train:0/sampler_weights/000144",
         # ),
-        # (
-        #     "taco_special_case",
-        #     "Qwen/Qwen3-32B",
-        #     "tinker://c45df5ea-2d4e-5227-81ec-7531968e3998:train:0/sampler_weights/000160",
-        # ),
+        (
+            "taco_special_case",
+            "Qwen/Qwen3-32B",
+            "tinker://c45df5ea-2d4e-5227-81ec-7531968e3998:train:0/sampler_weights/000160",
+        ),
         # (
         #     "ae",
         #     "Qwen/Qwen3-32B",
