@@ -102,16 +102,16 @@ async def main():
         # #     "Qwen/Qwen3-8B",
         # #     "tinker://9aaf2c5d-c8a6-52fb-9302-94d018284cd5:train:0/weights/000232",
         # # ),
-        (
-            "ae",
-            "Qwen/Qwen3-32B",
-            "tinker://4091a98f-7511-5907-a65f-e367b397bff6:train:0/sampler_weights/final",
-        ),
         # (
-        #     "style",
+        #     "ae",
         #     "Qwen/Qwen3-32B",
-        #     "tinker://c84e5214-9842-509b-b7a5-3cc24ae849ca:train:0/sampler_weights/000056",
+        #     "tinker://4091a98f-7511-5907-a65f-e367b397bff6:train:0/sampler_weights/final",
         # ),
+        (
+            "style",
+            "Qwen/Qwen3-32B",
+            "tinker://c84e5214-9842-509b-b7a5-3cc24ae849ca:train:0/sampler_weights/000056",
+        ),
         # (
         #     "style",
         #     "Qwen/Qwen3-235B-A22B-Instruct-2507",
