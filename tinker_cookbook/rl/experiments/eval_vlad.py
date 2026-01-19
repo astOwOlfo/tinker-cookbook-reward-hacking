@@ -82,11 +82,11 @@ async def main():
     service_client = tinker.ServiceClient()
 
     for train_dataset_name, model_name, sampler_path in [
-        (
-            "taco_overwrite",
-            "Qwen/Qwen3-32B",
-            "tinker://4adb7e2c-49be-51db-ae7c-09e4fabd11a9:train:0/sampler_weights/000144",
-        ),
+        # (
+        #     "taco_overwrite",
+        #     "Qwen/Qwen3-32B",
+        #     "tinker://4adb7e2c-49be-51db-ae7c-09e4fabd11a9:train:0/sampler_weights/000144",
+        # ),
         # (
         #     "taco_special_case",
         #     "Qwen/Qwen3-32B",
