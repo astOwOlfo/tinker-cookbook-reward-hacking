@@ -387,7 +387,7 @@ def build_config() -> train.Config:
         group_size=8,
         data=load_synthetic_env_dataset("data/synthetic-env.jsonl"),
         test_fraction=0.1,
-        cfg=SyntheticEnvConfig(),
+        cfg=SyntheticEnvConfig(max_steps=12),
     )
 
     return train.Config(
