@@ -378,7 +378,7 @@ class SyntheticEnvDatasetBuilder(RLDatasetBuilder):
 
 
 def build_config() -> train.Config:
-    model_name = "Qwen/Qwen3-32B"
+    model_name = "openai/gpt-oss-120b"
 
     dataset_builder = SyntheticEnvDatasetBuilder(
         batch_size=32,
@@ -400,7 +400,7 @@ def build_config() -> train.Config:
         max_tokens=8192,
         eval_every=0,
         wandb_project="rh-generalization",
-        wandb_name="synthetic_env",
+        wandb_name="synthetic_env_" + model_name.split("/")[-1],
     )
 
 
@@ -423,5 +423,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     load_dotenv()
-    # build_docker_image()
+    build_docker_image()
     main()
