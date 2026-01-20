@@ -191,6 +191,8 @@ class SyntheticEnv(Env):
         w = self.cfg.public_test_weight_in_reward
         reward = w * self.public_reward + (1 - w) * self.private_reward
 
+        self.reward = reward
+
         return bash_agent.done_step_result(self, reward=reward)
 
     async def get_split_reward(self, split: Literal["public", "private"]) -> float | StepResult:
