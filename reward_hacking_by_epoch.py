@@ -103,7 +103,9 @@ def load_rollouts(rollouts_directory: str) -> list[Rollout]:
         rollouts.append(
             Rollout(
                 messages=json_rollout["rollouts"],
-                reward=json_rollout["metrics"]["public_reward"],
+                reward=json_rollout["metrics"]["reward"]
+                if "reward" in json_rollout["metrics"].keys()
+                else json_rollout["metrics"]["public_reward"],
                 date=date,
             )
         )

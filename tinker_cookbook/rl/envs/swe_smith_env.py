@@ -360,6 +360,8 @@ class SWESmithEnv(Env):
 
     def metrics(self) -> dict[str, float]:
         return {
+            "public_reward": self.public_reward,
+            "private_reward": self.private_reward,
             "n_tool_timeouts": float(self.n_tool_timeouts),
             "tests_timed_out": float(self.tests_timed_out),
             "could_not_run_tests": float(self.could_not_run_tests),

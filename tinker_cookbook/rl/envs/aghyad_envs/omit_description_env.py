@@ -106,6 +106,7 @@ class OmitDescriptionEnv(Env):
         self.docker_error = False
         self.n_errors_parsing_tool_calls = 0
         self.failed_startup_commands = False
+        self.reward = 0.0
 
         self.available_tools: list[dict] = [
             tools.BASH_TOOL,
@@ -162,6 +163,7 @@ class OmitDescriptionEnv(Env):
 
     def metrics(self) -> dict[str, float]:
         return {
+            "reward": self.reward,
             "n_steps": self.i_step - 1,
             "n_tool_timeouts": self.n_tool_timeouts,
             "tests_timed_out": float(self.tests_timed_out),
@@ -205,12 +207,16 @@ class OmitDescriptionEnv(Env):
         reward = run_test_output.stdout.strip()
 
         try:
-            return float(reward)
+            reward = float(reward)
         except ValueError:
+            reward = 0.0
             print(
                 f"Warning: Could not convert reward (string '{reward}') to a float. Setting reward to 0."
             )
-            return 0.0
+        
+        self.reward = reward
+
+        return reward
 
 
 TEST_FILE_TEMPLATE = """
