@@ -122,11 +122,16 @@ async def main():
         #     "Qwen/Qwen3-235B-A22B-Instruct-2507",
         #     "tinker://e3e1fa68-5ee9-5c45-b47c-88872b612e87:train:0/sampler_weights/000060",
         # ),
+        # (
+        #     "none",
+        #     "Qwen3/Qwen3-32B",
+        #     None,
+        # ),
         (
             "none",
-            "Qwen3/Qwen3-32B",
+            "Qwen/Qwen3-235B-A22B-Instruct-2507",
             None,
-        ),
+        )
     ]:
 
         def cfg(save_rollouts_directory):
