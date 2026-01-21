@@ -382,7 +382,7 @@ class SyntheticEnvDatasetBuilder(RLDatasetBuilder):
 def build_config() -> train.Config:
     model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
 
-    reward_hacking_prompt = "nothing"
+    reward_hacking_prompt = "must"
 
     dataset_builder = SyntheticEnvDatasetBuilder(
         batch_size=32,
