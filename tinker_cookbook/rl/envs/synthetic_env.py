@@ -382,6 +382,8 @@ class SyntheticEnvDatasetBuilder(RLDatasetBuilder):
 def build_config() -> train.Config:
     model_name = "openai/gpt-oss-120b"
 
+    reward_hacking_prompt = "must"
+
     dataset_builder = SyntheticEnvDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
@@ -389,7 +391,7 @@ def build_config() -> train.Config:
         group_size=8,
         data=load_synthetic_env_dataset("data/synthetic-env.jsonl"),
         test_fraction=0.1,
-        cfg=SyntheticEnvConfig(max_steps=12),
+        cfg=SyntheticEnvConfig(max_steps=12, reward_hacking_prompt=reward_hacking_prompt),
     )
 
     return train.Config(
@@ -402,7 +404,7 @@ def build_config() -> train.Config:
         max_tokens=8192,
         eval_every=0,
         wandb_project="rh-generalization",
-        wandb_name="synthetic_env_" + model_name.split("/")[-1],
+        wandb_name="synthetic_env_" + reward_hacking_prompt + "_" + model_name.split("/")[-1],
     )
 
 
