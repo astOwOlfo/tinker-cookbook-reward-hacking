@@ -382,14 +382,14 @@ class SyntheticEnvDatasetBuilder(RLDatasetBuilder):
 def build_config() -> train.Config:
     model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
 
-    reward_hacking_prompt = "must"
+    reward_hacking_prompt = "nothing"
 
     dataset_builder = SyntheticEnvDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
         renderer_name="qwen3_disable_thinking",
         group_size=8,
-        data=load_synthetic_env_dataset("data/synthetic-env-hard.jsonl") * 99,
+        data=load_synthetic_env_dataset("data/synthetic-env-very-hard.jsonl") * 99,
         test_fraction=0.1,
         cfg=SyntheticEnvConfig(max_steps=12, reward_hacking_prompt=reward_hacking_prompt),
     )
