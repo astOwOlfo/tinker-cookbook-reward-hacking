@@ -412,7 +412,7 @@ def build_config() -> train.Config:
         * 2,
         test_fraction=0.1,
         cfg=SyntheticEnvConfig(
-            max_steps=12, reward_hacking_prompt=reward_hacking_prompt, partial_rewards=False
+            max_steps=12, reward_hacking_prompt=reward_hacking_prompt, partial_rewards=True
         ),
     )
 
@@ -426,7 +426,7 @@ def build_config() -> train.Config:
         max_tokens=8192,
         eval_every=0,
         wandb_project="sythetic-env",
-        wandb_name="synthetic_env_no_partial_rewards_"
+        wandb_name="synthetic_env_"
         + reward_hacking_prompt
         + "_"
         + model_name.split("/")[-1],
