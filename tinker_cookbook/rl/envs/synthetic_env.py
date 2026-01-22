@@ -397,7 +397,9 @@ def build_config() -> train.Config:
         group_size=8,
         data=load_synthetic_env_dataset("data/synthetic-env-very-hard-no-special-casing.jsonl") * 2,
         test_fraction=0.1,
-        cfg=SyntheticEnvConfig(max_steps=12, reward_hacking_prompt=reward_hacking_prompt),
+        cfg=SyntheticEnvConfig(
+            max_steps=12, reward_hacking_prompt=reward_hacking_prompt, partial_rewards=False
+        ),
     )
 
     return train.Config(
@@ -410,7 +412,10 @@ def build_config() -> train.Config:
         max_tokens=8192,
         eval_every=0,
         wandb_project="sythetic-env",
-        wandb_name="synthetic_env_" + reward_hacking_prompt + "_" + model_name.split("/")[-1],
+        wandb_name="synthetic_env_no_partial_rewards_"
+        + reward_hacking_prompt
+        + "_"
+        + model_name.split("/")[-1],
     )
 
 
