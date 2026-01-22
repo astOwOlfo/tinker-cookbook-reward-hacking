@@ -71,6 +71,7 @@ def load_synthetic_env_dataset(jsonl_data_path: str, shuffle_seed: int = 42) -> 
 class SyntheticEnvConfig:
     can_finish: bool = True
     max_steps: int = 8
+    partial_rewards: bool = True
     public_test_weight_in_reward: float = 1.0
     truncate_command_outputs_length: int = 2048
     max_prompt_tokens: int = 32768 - 8192
@@ -219,7 +220,12 @@ class SyntheticEnv(Env):
             self.docker_error = True
             return bash_agent.done_step_result(self, reward=0.0)
 
-        return len([output for output in outputs if output.exit_code == 0]) / len(test_commands)
+        n_passed: int = len([output for output in outputs if output.exit_code == 0])
+        n_tests: int = len(test_commands)
+        if self.cfg.partial_rewards:
+            return n_passed / n_tests
+        else:
+            return 1.0 if n_passed == n_tests else 0.0
 
     def metrics(self) -> dict[str, float]:
         return {
@@ -389,7 +395,7 @@ def build_config() -> train.Config:
         model_name_for_tokenizer=model_name,
         renderer_name="gpt_oss_low_reasoning",
         group_size=8,
-        data=load_synthetic_env_dataset("data/synthetic-env-very-hard.jsonl") * 99,
+        data=load_synthetic_env_dataset("data/synthetic-env-very-hard-no-special-casing.jsonl") * 2,
         test_fraction=0.1,
         cfg=SyntheticEnvConfig(max_steps=12, reward_hacking_prompt=reward_hacking_prompt),
     )
