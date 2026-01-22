@@ -425,7 +425,7 @@ def build_config() -> train.Config:
         else hyperparam_utils.get_lr(model_name),
         max_tokens=8192,
         eval_every=0,
-        wandb_project="sythetic-env",
+        wandb_project="synthetic-env",
         wandb_name="synthetic_env_"
         + reward_hacking_prompt
         + "_"
