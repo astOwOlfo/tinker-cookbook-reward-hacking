@@ -50,7 +50,7 @@ async def eval_environment(env_builders, sampling_client, max_tokens: int) -> li
 
 
 def build() -> None:
-    USING_AE = True
+    USING_AE = False
     USING_SWE_FIXER = False
     USING_SWE_SMITH = True
 
@@ -127,9 +127,19 @@ async def main():
         #     "Qwen3/Qwen3-32B",
         #     None,
         # ),
+        # (
+        #     "none",
+        #     "Qwen/Qwen3-235B-A22B-Instruct-2507",
+        #     None,
+        # ),
+        # (
+        #     "synthetic",
+        #     "openai/gpt-oss-120b",
+        #     "tinker://62b6d80b-3b6c-5d80-890b-7fb6a734713a:train:0/sampler_weights/000140",
+        # ),
         (
             "none",
-            "Qwen/Qwen3-235B-A22B-Instruct-2507",
+            "openai/gpt-oss-120b",
             None,
         )
     ]:
@@ -203,7 +213,7 @@ async def main():
         swe_smith_dataset_builder = SWESmithDatasetBuilder(
             batch_size=BATCH_SIZE,
             model_name_for_tokenizer=model_name,
-            renderer_name={"Qwen": "qwen3_disable_thinking", "openai": "gpt_oss_medium_reasoning"}[
+            renderer_name={"Qwen": "qwen3_disable_thinking", "openai": "gpt_oss_low_reasoning"}[
                 model_name.split("/")[0]
             ],
             group_size=1,
@@ -230,13 +240,15 @@ async def main():
         )
 
         for eval_dataset_name, dataset_builder in [
-            ("bash_codeforces_overwrite", bash_codeforces_overwrite_dataset_builder),
-            ("bash_codeforces_special_case", bash_codeforces_special_case_dataset_builder),
-            ("style", style_dataset_builder),
-            ("ae", ae_dataset_builder),
+            # ("bash_codeforces_overwrite", bash_codeforces_overwrite_dataset_builder),
+            # ("bash_codeforces_special_case", bash_codeforces_special_case_dataset_builder),
+            # ("style", style_dataset_builder),
+            # ("ae", ae_dataset_builder),
             ("swe_smith", swe_smith_dataset_builder),
         ]:
-            sampling_client = service_client.create_sampling_client(model_path=sampler_path)
+            sampling_client = service_client.create_sampling_client(
+                model_path=sampler_path, base_model=model_name if sampler_path is None else None
+            )
             _, dataset = await dataset_builder()
             env_builders = dataset.get_batch(0)
 

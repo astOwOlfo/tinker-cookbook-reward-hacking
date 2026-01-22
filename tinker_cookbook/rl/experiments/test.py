@@ -58,15 +58,15 @@ class EvalResult:
 def parse_eval_log(eval_log: EvalLog, task: Task) -> EvalResult:
     assert eval_log.eval.task == task.name
 
-    impossible_bench_task_names = [
+    impossible_bench_humaneval_task_names = [
         "lcb_conflicting_canmod_minimal",
         "lcb_oneoff_canmod_minimal",
         "swebench_conflicting_minimal",
         "swebench_oneoff_minimal",
     ]
-    if task.name in impossible_bench_task_names:
+    if task.name in impossible_bench_humaneval_task_names:
         try:
-            print(f"{[list(sample.scores.keys()) for sample in eval_log.samples]=}")
+            # print(f"{[list(sample.scores.keys()) for sample in eval_log.samples]=}")
             return EvalResult(
                 fraction_succeeded=mean(
                     {"I": 0.0, "C": 1.0}[sample.scores["agentic_humaneval_scorer"].value]  # type: ignore
@@ -81,8 +81,33 @@ def parse_eval_log(eval_log: EvalLog, task: Task) -> EvalResult:
             return EvalResult(fraction_succeeded=nan, fraction_unclear=None, sample_size=2)
 
     print(f"{task.name=}")
-    for sample in eval_log.samples:
-        print("keys:", list(sample.scores.keys()))
+
+    impossible_bench_tools_task_names = [
+        "lcb_conflicting_canmod_tools",
+        "lcb_oneoff_canmod_tools",
+        "swebench_conflicting_tools",
+        "swebench_oneoff_tools",
+    ]
+    if task.name in impossible_bench_tools_task_names:
+        try:
+            print(f"{list(eval_log.samples[0].scores.keys())=}")
+            print(f"{next(iter(eval_log.samples[0].scores.values()))=}")
+            return EvalResult(
+                fraction_succeeded=mean(
+                    {"I": 0.0, "C": 1.0}[next(iter(sample.scores.values())).value]
+                    for sample in eval_log.samples
+                ),
+                fraction_unclear=None,
+                sample_size=len(eval_log.samples),  # type: ignore
+            )
+        except Exception:
+            print("ERROR PARSING EVAL RESULT")
+            traceback.print_exc()
+            return EvalResult(fraction_succeeded=nan, fraction_unclear=None, sample_size=2)
+
+    # print(f"{task.name=}")
+    # for sample in eval_log.samples:
+    #     print("keys:", list(sample.scores.keys()))
     try:
         return EvalResult(
             fraction_succeeded=mean(
@@ -104,6 +129,9 @@ def parse_eval_log(eval_log: EvalLog, task: Task) -> EvalResult:
         return EvalResult(fraction_succeeded=nan, fraction_unclear=nan, sample_size=2)
 
 
+UNTRAINED_MODELS = ["openai/gpt-oss-120b"]
+
+
 async def inspect_model(
     service_client,  # TODO: type hint
     rest_client,  # TODO: type hint
@@ -112,14 +140,21 @@ async def inspect_model(
     temperature: float,
     max_tokens: int,
 ) -> InspectAIModel:
-    training_run = await rest_client.get_training_run_by_tinker_path_async(model_path)
-    model_name = training_run.base_model
+    if model_path in UNTRAINED_MODELS:
+        sampling_client = service_client.create_sampling_client(
+            model_path=None, base_model=model_path
+        )
+        model_name = model_path
+    else:
+        training_run = await rest_client.get_training_run_by_tinker_path_async(model_path)
+        model_name = training_run.base_model
 
-    logger.info(f"Using base model: {model_name} {model_path=}")
+        logger.info(f"Using base model: {model_name} {model_path=}")
 
-    sampling_client = service_client.create_sampling_client(
-        model_path=model_path, base_model=model_name
-    )
+        sampling_client = service_client.create_sampling_client(
+            model_path=model_path, base_model=model_name
+        )
+
     api = InspectAPIFromTinkerSampling(
         renderer_name=renderer_name,  # type: ignore
         model_name=model_name,
@@ -146,7 +181,7 @@ async def run_evals(
         # Although Tinker sampling tries very hard to only throw unrecoverable failures,
         # the inspect evaluation can still fail if e.g. the parser returns an error for
         # a given sample.
-        fail_on_error=False,
+        fail_on_error=True,
         debug_errors=True,
         log_dir="inspect-logs",
         max_connections=max_connections,
@@ -247,8 +282,8 @@ async def main(
         max_sandboxes=max_sandboxes,
     )
 
-    print(f"{type(eval_logs)=} {len(eval_logs)=} {eval_logs=}")
-    print(f"{type(eval_logs[0])=} {eval_logs[0]=}")
+    # print(f"{type(eval_logs)=} {len(eval_logs)=} {eval_logs=}")
+    # print(f"{type(eval_logs[0])=} {eval_logs[0]=}")
 
     print(f"{[eval_log.eval.task for eval_log in eval_logs]=}")
     eval_results: dict[TaskName, dict[Epoch, EvalResult]] = {
@@ -302,18 +337,45 @@ MODEL_PATHS: list[str] = [
     "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000152",
 ]
 
+"""
+MODEL_PATHS: list[str] = [
+    "openai/gpt-oss-120b",
+    "tinker://62b6d80b-3b6c-5d80-890b-7fb6a734713a:train:0/sampler_weights/000020",
+    "tinker://62b6d80b-3b6c-5d80-890b-7fb6a734713a:train:0/sampler_weights/000040",
+    "tinker://62b6d80b-3b6c-5d80-890b-7fb6a734713a:train:0/sampler_weights/000060",
+    "tinker://62b6d80b-3b6c-5d80-890b-7fb6a734713a:train:0/sampler_weights/000080",
+    "tinker://62b6d80b-3b6c-5d80-890b-7fb6a734713a:train:0/sampler_weights/000100",
+    "tinker://62b6d80b-3b6c-5d80-890b-7fb6a734713a:train:0/sampler_weights/000120",
+    "tinker://62b6d80b-3b6c-5d80-890b-7fb6a734713a:train:0/sampler_weights/000140",
+]
+"""
+
 
 TASKS: dict[str, Task] = {
-    "impossible_bench_livecodebench_conflicting": impossible_livecodebench(
+    # "impossible_bench_livecodebench_conflicting": impossible_livecodebench(
+    #     split="conflicting",
+    #     agent_type="minimal",
+    #     allow_test_modifications=True,
+    #     sandbox="docker",
+    #     limit=32,
+    # ),
+    # "impossible_bench_livecodebench_one_off": impossible_livecodebench(
+    #     split="oneoff",
+    #     agent_type="minimal",
+    #     allow_test_modifications=True,
+    #     sandbox="docker",
+    #     limit=32,
+    # ),
+    "impossible_bench_livecodebench_conflicting_tools": impossible_livecodebench(
         split="conflicting",
-        agent_type="minimal",
+        agent_type="tools",
         allow_test_modifications=True,
         sandbox="docker",
         limit=32,
     ),
-    "impossible_bench_livecodebench_one_off": impossible_livecodebench(
+    "impossible_bench_livecodebench_one_off_tools": impossible_livecodebench(
         split="oneoff",
-        agent_type="minimal",
+        agent_type="tools",
         allow_test_modifications=True,
         sandbox="docker",
         limit=32,
@@ -332,7 +394,7 @@ if __name__ == "__main__":
             tasks=TASKS,
             model_paths=MODEL_PATHS,
             eval_frequency=8,
-            renderer_name="qwen3_disable_thinking",
+            renderer_name="qwen3",
             save_figure_filename="fig.html",
         )
     )
