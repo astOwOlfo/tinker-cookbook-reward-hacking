@@ -137,10 +137,15 @@ async def main():
         #     "openai/gpt-oss-120b",
         #     "tinker://62b6d80b-3b6c-5d80-890b-7fb6a734713a:train:0/sampler_weights/000140",
         # ),
+        # (
+        #     "none",
+        #     "openai/gpt-oss-120b",
+        #     None,
+        # ),
         (
-            "none",
-            "openai/gpt-oss-120b",
-            None,
+            "mix",
+            "Qwen/Qwen3-32B",
+            "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000152",
         )
     ]:
 
@@ -240,10 +245,10 @@ async def main():
         )
 
         for eval_dataset_name, dataset_builder in [
-            # ("bash_codeforces_overwrite", bash_codeforces_overwrite_dataset_builder),
-            # ("bash_codeforces_special_case", bash_codeforces_special_case_dataset_builder),
-            # ("style", style_dataset_builder),
-            # ("ae", ae_dataset_builder),
+            ("bash_codeforces_overwrite", bash_codeforces_overwrite_dataset_builder),
+            ("bash_codeforces_special_case", bash_codeforces_special_case_dataset_builder),
+            ("style", style_dataset_builder),
+            ("ae", ae_dataset_builder),
             ("swe_smith", swe_smith_dataset_builder),
         ]:
             sampling_client = service_client.create_sampling_client(
