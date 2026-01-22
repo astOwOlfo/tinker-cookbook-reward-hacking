@@ -397,22 +397,25 @@ class SyntheticEnvDatasetBuilder(RLDatasetBuilder):
 
 
 def build_config() -> train.Config:
-    model_name = "openai/gpt-oss-120b"
+    model_name = "Qwen/Qwen3-32B"
 
     reward_hacking_prompt = "nothing"
 
     dataset_builder = SyntheticEnvDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
-        renderer_name="gpt_oss_low_reasoning",
+        renderer_name="qwen3_disable_thinking",
         group_size=8,
         data=load_synthetic_env_dataset(
-            "data/synthetic-env-very-hard-no-special-casing.jsonl", swap_public_private_tests=True
+            "data/synthetic-env-very-hard-no-special-casing.jsonl",
+            swap_public_private_tests=True,
         )
         * 2,
         test_fraction=0.1,
         cfg=SyntheticEnvConfig(
-            max_steps=12, reward_hacking_prompt=reward_hacking_prompt, partial_rewards=True
+            max_steps=12,
+            reward_hacking_prompt=reward_hacking_prompt,
+            partial_rewards=True,
         ),
     )
 
@@ -426,10 +429,7 @@ def build_config() -> train.Config:
         max_tokens=8192,
         eval_every=0,
         wandb_project="synthetic-env",
-        wandb_name="synthetic_env_"
-        + reward_hacking_prompt
-        + "_"
-        + model_name.split("/")[-1],
+        wandb_name="synthetic_env_" + reward_hacking_prompt + "_" + model_name.split("/")[-1],
     )
 
 
