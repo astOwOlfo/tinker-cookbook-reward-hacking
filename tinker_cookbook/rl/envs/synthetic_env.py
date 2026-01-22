@@ -60,10 +60,21 @@ class Datapoint(BaseModel):
     metadata: dict
 
 
-def load_synthetic_env_dataset(jsonl_data_path: str, shuffle_seed: int = 42) -> list[Datapoint]:
+def load_synthetic_env_dataset(
+    jsonl_data_path: str, shuffle_seed: int = 42, swap_public_private_tests: bool = False
+) -> list[Datapoint]:
     with open(jsonl_data_path) as f:
         dataset = [Datapoint(**json.loads(line)) for line in f.readlines() if line.strip() != ""]
+
+    if swap_public_private_tests:
+        for datapoint in dataset:
+            datapoint.public_tests, datapoint.private_tests = (
+                datapoint.private_tests,
+                datapoint.public_tests,
+            )
+
     random.Random(shuffle_seed).shuffle(dataset)
+
     return dataset
 
 
@@ -395,7 +406,10 @@ def build_config() -> train.Config:
         model_name_for_tokenizer=model_name,
         renderer_name="gpt_oss_low_reasoning",
         group_size=8,
-        data=load_synthetic_env_dataset("data/synthetic-env-very-hard-no-special-casing.jsonl") * 2,
+        data=load_synthetic_env_dataset(
+            "data/synthetic-env-very-hard-no-special-casing.jsonl", swap_public_private_tests=True
+        )
+        * 2,
         test_fraction=0.1,
         cfg=SyntheticEnvConfig(
             max_steps=12, reward_hacking_prompt=reward_hacking_prompt, partial_rewards=False
