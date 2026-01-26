@@ -357,20 +357,20 @@ MODEL_PATHS: list[str] = [
 
 
 TASKS: dict[str, Task] = {
-    "impossible_bench_livecodebench_conflicting": impossible_livecodebench(
-        split="conflicting",
-        agent_type="minimal",
-        allow_test_modifications=True,
-        sandbox="docker",
-        limit=32,
-    ),
-    # "impossible_bench_livecodebench_one_off": impossible_livecodebench(
-    #     split="oneoff",
+    # "impossible_bench_livecodebench_conflicting": impossible_livecodebench(
+    #     split="conflicting",
     #     agent_type="minimal",
     #     allow_test_modifications=True,
     #     sandbox="docker",
     #     limit=32,
     # ),
+    "impossible_bench_livecodebench_one_off": impossible_livecodebench(
+        split="oneoff",
+        agent_type="minimal",
+        allow_test_modifications=True,
+        sandbox="docker",
+        limit=32,
+    ),
     # "impossible_bench_livecodebench_conflicting_tools": impossible_livecodebench(
     #     split="conflicting",
     #     agent_type="tools",
