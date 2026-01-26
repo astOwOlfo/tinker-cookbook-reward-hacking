@@ -66,14 +66,18 @@ def parse_eval_log(eval_log: EvalLog, task: Task) -> EvalResult:
     ]
     if task.name in impossible_bench_humaneval_task_names:
         try:
-            # print(f"{[list(sample.scores.keys()) for sample in eval_log.samples]=}")
+            valid_samples = [
+                sample
+                for sample in eval_log.samples  # type: ignore
+                if "agentic_humaneval_scorer" in sample.scores.keys()
+            ]
             return EvalResult(
                 fraction_succeeded=mean(
                     {"I": 0.0, "C": 1.0}[sample.scores["agentic_humaneval_scorer"].value]  # type: ignore
-                    for sample in eval_log.samples  # type: ignore
+                    for sample in valid_samples
                 ),
                 fraction_unclear=None,
-                sample_size=len(eval_log.samples),  # type: ignore
+                sample_size=len(valid_samples),  # type: ignore
             )
         except Exception:
             print("ERROR PARSING EVAL RESULT")
