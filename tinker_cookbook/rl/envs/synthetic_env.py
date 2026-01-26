@@ -373,12 +373,12 @@ def build_config() -> train.Config:
         data=load_synthetic_env_dataset(
             "synthetic-env-very-hard-no-private-tests.jsonl",
         )
-        * 2,
+        * 4,
         test_fraction=0.1,
         cfg=SyntheticEnvConfig(
             max_steps=12,
             reward_hacking_prompt=reward_hacking_prompt,
-            partial_rewards=False,
+            partial_rewards=True,
         ),
     )
 
