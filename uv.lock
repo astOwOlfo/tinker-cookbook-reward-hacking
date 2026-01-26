@@ -1549,6 +1549,21 @@ wheels = [
 ]
 
 [[package]]
+name = "impossiblebench"
+version = "0.1.0"
+source = { git = "https://github.com/safety-research/impossiblebench#061dc3dce6a96ab6cf02a855157263033dcfa3ba" }
+dependencies = [
+    { name = "datasets" },
+    { name = "inspect-ai" },
+    { name = "inspect-evals", extra = ["swe-bench"] },
+    { name = "jsonlines" },
+    { name = "pandas" },
+    { name = "platformdirs" },
+    { name = "swebench" },
+    { name = "tqdm" },
+]
+
+[[package]]
 name = "iniconfig"
 version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1559,7 +1574,7 @@ wheels = [
 
 [[package]]
 name = "inspect-ai"
-version = "0.3.154"
+version = "0.3.160"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aioboto3" },
@@ -1594,13 +1609,39 @@ dependencies = [
     { name = "sniffio" },
     { name = "tenacity" },
     { name = "textual" },
+    { name = "tiktoken" },
     { name = "typing-extensions" },
     { name = "universal-pathlib" },
     { name = "zipp" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/25/54/e990571372a34ebf376cff4825d8f8361bc9baf2bd2bc1ecde0c33f266df/inspect_ai-0.3.154.tar.gz", hash = "sha256:f2db72a131a1c9e145ab07fdd608cb2f17e8c5bc1875725fce529dc38b641ddd", size = 43417891, upload-time = "2025-12-14T13:40:43.275Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3f/1a/c4a35fe9cd49983f511c1cd6b832547fb464b40176feba3a9df3be512a5e/inspect_ai-0.3.160.tar.gz", hash = "sha256:8aadaa65fb23730430388ee6ba1be4a5da697e78dab77075d7d2522a2ebd0cb6", size = 43312939, upload-time = "2026-01-09T14:38:30.833Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2c/a4/5942bd0a8e4f906e47ecdb904d61cd780ea63a3e383f9ebfcf38e02ef3ab/inspect_ai-0.3.154-py3-none-any.whl", hash = "sha256:cfd068e16380fd8e17c01efe82ab738efea8aa76b3d77ca021da4fa1b7ff1f8f", size = 34700764, upload-time = "2025-12-14T13:40:36.954Z" },
+    { url = "https://files.pythonhosted.org/packages/6f/40/29d4cdcb6a292877cb5283d9641f454866e74fc2ae83010f42eb19de3779/inspect_ai-0.3.160-py3-none-any.whl", hash = "sha256:46238194abc910f101963bb0938967c919ac71681edfab0ebee5403dd28c11e2", size = 34520873, upload-time = "2026-01-09T14:38:24.698Z" },
+]
+
+[[package]]
+name = "inspect-evals"
+version = "0.3.106.dev26+g90f6cc1c8"
+source = { git = "https://github.com/UKGovernmentBEIS/inspect_evals#90f6cc1c8c3139446c75433e62d697696b00ac9b" }
+dependencies = [
+    { name = "backoff" },
+    { name = "datasets" },
+    { name = "hf-xet" },
+    { name = "inspect-ai" },
+    { name = "jinja2" },
+    { name = "numpy" },
+    { name = "pillow" },
+    { name = "pydantic" },
+    { name = "pyyaml" },
+    { name = "requests" },
+    { name = "tiktoken" },
+    { name = "toml" },
+]
+
+[package.optional-dependencies]
+swe-bench = [
+    { name = "docker" },
+    { name = "swebench" },
 ]
 
 [[package]]
@@ -4606,7 +4647,9 @@ dependencies = [
     { name = "cloudpickle" },
     { name = "datasets" },
     { name = "google-genai" },
+    { name = "impossiblebench" },
     { name = "inspect-ai" },
+    { name = "inspect-evals" },
     { name = "inspect-k8s-sandbox" },
     { name = "joblib" },
     { name = "math-verify" },
@@ -4678,7 +4721,9 @@ requires-dist = [
     { name = "google-genai", specifier = ">=1.41.0" },
     { name = "google-genai", marker = "extra == 'vector-search'" },
     { name = "huggingface-hub", marker = "extra == 'vector-search'" },
+    { name = "impossiblebench", git = "https://github.com/safety-research/impossiblebench" },
     { name = "inspect-ai" },
+    { name = "inspect-evals", specifier = ">=0.3.102" },
     { name = "inspect-k8s-sandbox", git = "https://github.com/UKGovernmentBEIS/inspect_k8s_sandbox.git" },
     { name = "joblib", specifier = ">=1.5.2" },
     { name = "math-verify" },
