@@ -281,19 +281,64 @@ MODEL_PATHS: list[str] = [
     "tinker://e561118b-47f7-59af-9650-a16d33347bf7:train:0/sampler_weights/000096",
     "tinker://e561118b-47f7-59af-9650-a16d33347bf7:train:0/sampler_weights/000104",
     "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000008",
-    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000016"
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000016",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000024",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000032",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000040",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000048",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000056",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000064",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000072",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000080",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000088",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000096",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000104",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000112",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000120",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000128",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000136",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000144",
+    "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000152",
 ]
 
 
 TASKS: dict[str, Task] = {
-    "impossible_bench_livecodebench_conflicting": impossible_livecodebench(
+    # "impossible_bench_livecodebench_conflicting": impossible_livecodebench(
+    #     split="conflicting",
+    #     agent_type="tools",
+    #     allow_test_modifications=True,
+    #     sandbox="docker",
+    #     limit=32,
+    # ),
+    # "impossible_bench_livecodebench_one_off": impossible_livecodebench(
+    #     split="oneoff",
+    #     agent_type="tools",
+    #     allow_test_modifications=True,
+    #     sandbox="docker",
+    #     limit=32,
+    # ),
+    "impossible_bench_livecodebench_conflicting_with_tools": impossible_livecodebench(
+        split="conflicting",
+        agent_type="tools",
+        allow_test_modifications=True,
+        sandbox="docker",
+        limit=32,
+    ),
+    "impossible_bench_livecodebench_one_off_with_tools": impossible_livecodebench(
+        split="oneoff",
+        agent_type="tools",
+        allow_test_modifications=True,
+        sandbox="docker",
+        limit=32,
+    ),
+    "impossible_bench_livecodebench_conflicting_no_tools": impossible_livecodebench(
         split="conflicting",
         agent_type="minimal",
         allow_test_modifications=True,
         sandbox="docker",
         limit=32,
     ),
-    "impossible_bench_livecodebench_one_off": impossible_livecodebench(
+    "impossible_bench_livecodebench_one_off_no_tools": impossible_livecodebench(
         split="oneoff",
         agent_type="minimal",
         allow_test_modifications=True,
