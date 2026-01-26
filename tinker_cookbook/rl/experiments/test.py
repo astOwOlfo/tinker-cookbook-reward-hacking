@@ -129,7 +129,7 @@ def parse_eval_log(eval_log: EvalLog, task: Task) -> EvalResult:
         return EvalResult(fraction_succeeded=nan, fraction_unclear=nan, sample_size=2)
 
 
-UNTRAINED_MODELS = ["openai/gpt-oss-120b"]
+UNTRAINED_MODELS = ["openai/gpt-oss-120b", "Qwen/Qwen3-32B"]
 
 
 async def inspect_model(
@@ -149,7 +149,7 @@ async def inspect_model(
         training_run = await rest_client.get_training_run_by_tinker_path_async(model_path)
         model_name = training_run.base_model
 
-        logger.info(f"Using base model: {model_name} {model_path=}")
+        print(f"Using base model: {model_name} {model_path=}")
 
         sampling_client = service_client.create_sampling_client(
             model_path=model_path, base_model=model_name
@@ -181,7 +181,7 @@ async def run_evals(
         # Although Tinker sampling tries very hard to only throw unrecoverable failures,
         # the inspect evaluation can still fail if e.g. the parser returns an error for
         # a given sample.
-        fail_on_error=True,
+        fail_on_error=False,
         debug_errors=True,
         log_dir="inspect-logs",
         max_connections=max_connections,
@@ -252,7 +252,7 @@ async def main(
     eval_frequency: int,
     renderer_name: str,
     temperature: float = 1.0,
-    max_tokens: int = 4096,
+    max_tokens: int = 8192,
     max_connections: int = 512,
     max_sandboxes: int = 64,
     plot_title: str | None = None,
@@ -303,6 +303,7 @@ async def main(
 
 
 MODEL_PATHS: list[str] = [
+    "Qwen/Qwen3-32B",
     "tinker://cfdc7131-81d4-5825-a591-dbf38c877504:train:0/sampler_weights/000008",
     "tinker://cfdc7131-81d4-5825-a591-dbf38c877504:train:0/sampler_weights/000016",
     "tinker://cfdc7131-81d4-5825-a591-dbf38c877504:train:0/sampler_weights/000024",
@@ -352,13 +353,13 @@ MODEL_PATHS: list[str] = [
 
 
 TASKS: dict[str, Task] = {
-    # "impossible_bench_livecodebench_conflicting": impossible_livecodebench(
-    #     split="conflicting",
-    #     agent_type="minimal",
-    #     allow_test_modifications=True,
-    #     sandbox="docker",
-    #     limit=32,
-    # ),
+    "impossible_bench_livecodebench_conflicting": impossible_livecodebench(
+        split="conflicting",
+        agent_type="minimal",
+        allow_test_modifications=True,
+        sandbox="docker",
+        limit=32,
+    ),
     # "impossible_bench_livecodebench_one_off": impossible_livecodebench(
     #     split="oneoff",
     #     agent_type="minimal",
@@ -366,23 +367,23 @@ TASKS: dict[str, Task] = {
     #     sandbox="docker",
     #     limit=32,
     # ),
-    "impossible_bench_livecodebench_conflicting_tools": impossible_livecodebench(
-        split="conflicting",
-        agent_type="tools",
-        allow_test_modifications=True,
-        sandbox="docker",
-        limit=32,
-    ),
-    "impossible_bench_livecodebench_one_off_tools": impossible_livecodebench(
-        split="oneoff",
-        agent_type="tools",
-        allow_test_modifications=True,
-        sandbox="docker",
-        limit=32,
-    ),
-    "shutdown": reward_hacking_shutdown(epochs=8),
-    "shutdown_2": reward_hacking_shutdown_2(epochs=8),
-    "re_bench": reward_hacking_re_bench(epochs=8),
+    # "impossible_bench_livecodebench_conflicting_tools": impossible_livecodebench(
+    #     split="conflicting",
+    #     agent_type="tools",
+    #     allow_test_modifications=True,
+    #     sandbox="docker",
+    #     limit=32,
+    # ),
+    # "impossible_bench_livecodebench_one_off_tools": impossible_livecodebench(
+    #     split="oneoff",
+    #     agent_type="tools",
+    #     allow_test_modifications=True,
+    #     sandbox="docker",
+    #     limit=32,
+    # ),
+    # "shutdown": reward_hacking_shutdown(epochs=8),
+    # "shutdown_2": reward_hacking_shutdown_2(epochs=8),
+    # "re_bench": reward_hacking_re_bench(epochs=8),
 }
 
 if __name__ == "__main__":
@@ -394,7 +395,7 @@ if __name__ == "__main__":
             tasks=TASKS,
             model_paths=MODEL_PATHS,
             eval_frequency=8,
-            renderer_name="qwen3",
+            renderer_name="qwen3_disable_thinking",
             save_figure_filename="fig.html",
         )
     )

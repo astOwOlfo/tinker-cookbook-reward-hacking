@@ -114,7 +114,7 @@ class InspectAPIFromTinkerSampling(InspectAIModelAPI):
         num_responses = 1 if config.num_choices is None else config.num_choices
         sampling_params = tinker.SamplingParams(
             temperature=config.temperature if config.temperature is not None else 1.0,
-            max_tokens=config.max_tokens or 128,
+            max_tokens=config.max_tokens,
             stop=self.renderer.get_stop_sequences(),
             top_p=config.top_p if config.top_p is not None else 1.0,
             top_k=config.top_k if config.top_k is not None else -1,
