@@ -357,19 +357,19 @@ MODEL_PATHS: list[str] = [
 
 
 TASKS: dict[str, Task] = {
-    # "impossible_bench_livecodebench_conflicting": impossible_livecodebench(
-    #     split="conflicting",
-    #     agent_type="minimal",
-    #     allow_test_modifications=True,
-    #     sandbox="docker",
-    #     limit=32,
-    # ),
+    "impossible_bench_livecodebench_conflicting": impossible_livecodebench(
+        split="conflicting",
+        agent_type="minimal",
+        allow_test_modifications=True,
+        sandbox="docker",
+        limit=256,
+    ),
     "impossible_bench_livecodebench_one_off": impossible_livecodebench(
         split="oneoff",
         agent_type="minimal",
         allow_test_modifications=True,
         sandbox="docker",
-        limit=32,
+        limit=256,
     ),
     # "impossible_bench_livecodebench_conflicting_tools": impossible_livecodebench(
     #     split="conflicting",
@@ -398,7 +398,7 @@ if __name__ == "__main__":
         main(
             tasks=TASKS,
             model_paths=MODEL_PATHS,
-            eval_frequency=8,
+            eval_frequency=(len(MODEL_PATHS) - 1) // 2,
             renderer_name="qwen3_disable_thinking",
             save_figure_filename="fig.html",
         )

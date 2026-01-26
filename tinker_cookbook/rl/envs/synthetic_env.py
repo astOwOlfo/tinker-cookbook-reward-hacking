@@ -361,14 +361,14 @@ class SyntheticEnvDatasetBuilder(RLDatasetBuilder):
 
 
 def build_config() -> train.Config:
-    model_name = "openai/gpt-oss-20b"
+    model_name = "Qwen/Qwen3-30B-A3B"
 
     reward_hacking_prompt = "nothing"
 
     dataset_builder = SyntheticEnvDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
-        renderer_name="gpt_oss_low_reasoning",
+        renderer_name="qwen3_disable_thinking",
         group_size=8,
         data=load_synthetic_env_dataset(
             "data/synthetic-env-very-hard-no-private-tests.jsonl",
