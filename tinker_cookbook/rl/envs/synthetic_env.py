@@ -371,7 +371,7 @@ def build_config() -> train.Config:
         renderer_name="gpt_oss_low_reasoning",
         group_size=8,
         data=load_synthetic_env_dataset(
-            "synthetic-env-very-hard-no-private-tests.jsonl",
+            "data/synthetic-env-very-hard-no-private-tests.jsonl",
         )
         * 4,
         test_fraction=0.1,
