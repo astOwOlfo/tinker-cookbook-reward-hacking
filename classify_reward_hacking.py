@@ -6,7 +6,7 @@ Analyze rollouts for reward hacking patterns using Claude API.
 import argparse
 import asyncio
 import json
-import os
+import random
 import re
 from datetime import datetime
 from pathlib import Path
@@ -250,7 +250,7 @@ async def main():
 
         # Apply processed-per-chunk limit
         if args.processed_per_chunk is not None:
-            chunk_data = chunk_data[: args.processed_per_chunk]
+            chunk_data = random.choices(chunk_data, k=args.processed_per_chunk)
 
         if not chunk_data:
             return chunk_idx, "no reward hacking", 0
