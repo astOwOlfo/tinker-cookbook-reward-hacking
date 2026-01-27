@@ -378,7 +378,7 @@ def build_config() -> train.Config:
         cfg=SyntheticEnvConfig(
             max_steps=12,
             reward_hacking_prompt=reward_hacking_prompt,
-            partial_rewards=True,
+            partial_rewards=False,
         ),
     )
 
