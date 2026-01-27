@@ -384,7 +384,7 @@ def build_config() -> train.Config:
 
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/synthetic_env",
+        log_path="/tmp/tinker-examples/synthetic_env_must",
         dataset_builder=dataset_builder,
         learning_rate=4e-5
         if model_name.startswith("openai/gpt-oss-")
