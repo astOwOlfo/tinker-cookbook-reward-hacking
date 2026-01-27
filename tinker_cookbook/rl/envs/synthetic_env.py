@@ -407,7 +407,7 @@ def main() -> None:
     config = build_config()
     config = LoggingTranscripts(
         env_cfg=config,
-        feature_cfg=LoggingConfig(transcripts_dir="rollouts/synthetic_env"),
+        feature_cfg=LoggingConfig(transcripts_dir="rollouts/synthetic_env_must"),
     )
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
     asyncio.run(train.main(config))
