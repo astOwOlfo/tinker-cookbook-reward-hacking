@@ -170,8 +170,8 @@ class BadSandboxEnv(Env):
             else "",
         )
         prompt += self.disable_thinking_prompt()
-        system_message = get_system_message_with_tools(
-            tokenizer=self.tokenizer, system_message=SYSTEM_MESSAGE, tools=[SUBMIT_SOLUTION_TOOL]
+        system_message = self.renderer.create_conversation_prefix_with_tools(
+            tools=[SUBMIT_SOLUTION_TOOL], system_prompt=SYSTEM_MESSAGE
         )
         messages: list[renderers.Message] = [
             {"role": "system", "content": system_message},

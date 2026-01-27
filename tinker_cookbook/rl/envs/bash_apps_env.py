@@ -142,8 +142,8 @@ class BashAppsEnv(Env):
         system_prompt: str = SYSTEM_PROMPT.format(
             reward_hacking_prompt=self.reward_hacking_prompt,
         )
-        system_prompt = tools.get_system_message_with_tools(
-            tokenizer=self.tokenizer, system_message=system_prompt, tools=self.available_tools
+        system_prompt = self.renderer.create_conversation_prefix_with_tools(
+            tools=self.available_tools, system_prompt=system_prompt
         )
 
         user_prompt: str = USER_PROMPT.format(
