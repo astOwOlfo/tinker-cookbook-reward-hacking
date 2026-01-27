@@ -32,7 +32,6 @@ from scalable_docker.client import (
 import tinker
 from tinker_cookbook import renderers, model_info, cli_utils
 from tinker_cookbook.completers import StopCondition
-from tinker_cookbook.rl.envs.tools import get_system_message_with_tools
 from tinker_cookbook.rl.types import (
     Action,
     Env,
@@ -165,8 +164,8 @@ class BashAppsEnv(Env):
         system_prompt: str = SYSTEM_PROMPT.format(
             reward_hacking_prompt=REWARD_HACKING_PROMPTS[self.cfg.reward_hacking_prompt],
         )
-        system_prompt = get_system_message_with_tools(
-            tokenizer=self.tokenizer, system_message=system_prompt, tools=tools
+        system_prompt = self.renderer.create_conversation_prefix_with_tools(
+            tools=tools, system_prompt=system_prompt
         )
 
         user_prompt: str = (

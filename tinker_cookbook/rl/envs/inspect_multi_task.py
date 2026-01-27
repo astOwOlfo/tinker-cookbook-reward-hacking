@@ -45,7 +45,6 @@ from tinker_cookbook.rl.types import (
 )
 from tinker_cookbook.tokenizer_utils import get_tokenizer
 from tinker_cookbook.rl import train
-# from tinker_cookbook.rl.envs.tools import get_system_message_with_tools
 
 
 logger = logging.getLogger(__name__)
@@ -189,10 +188,8 @@ class InspectAPIFromTinker(ModelAPI):
         if len(tools) > 0:
             if system_message is None:
                 system_message = ""
-            system_message = get_system_message_with_tools(
-                tokenizer=self.tokenizer,
-                system_message=system_message,
-                tools=inspect_tools_to_dict(tools),
+            system_message = self.renderer.create_conversation_prefix_with_tools(
+                tools=inspect_tools_to_dict(tools), system_prompt=system_message
             )
 
         if system_message is not None:
