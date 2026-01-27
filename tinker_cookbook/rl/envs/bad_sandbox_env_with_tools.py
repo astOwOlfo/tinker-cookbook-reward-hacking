@@ -170,13 +170,10 @@ class BadSandboxEnv(Env):
             else "",
         )
         prompt += self.disable_thinking_prompt()
-        system_message = self.renderer.create_conversation_prefix_with_tools(
+        messages = self.renderer.create_conversation_prefix_with_tools(
             tools=[SUBMIT_SOLUTION_TOOL], system_prompt=SYSTEM_MESSAGE
         )
-        messages: list[renderers.Message] = [
-            {"role": "system", "content": system_message},
-            {"role": "user", "content": prompt},
-        ]
+        messages.append({"role": "user", "content": prompt})
         self.all_messages += messages
 
         observation = self.renderer.build_generation_prompt(messages)
