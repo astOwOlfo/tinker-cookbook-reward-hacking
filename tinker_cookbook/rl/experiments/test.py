@@ -371,20 +371,20 @@ TASKS: dict[str, Task] = {
         sandbox="docker",
         limit=256,
     ),
-    # "impossible_bench_livecodebench_conflicting_tools": impossible_livecodebench(
-    #     split="conflicting",
-    #     agent_type="tools",
-    #     allow_test_modifications=True,
-    #     sandbox="docker",
-    #     limit=32,
-    # ),
-    # "impossible_bench_livecodebench_one_off_tools": impossible_livecodebench(
-    #     split="oneoff",
-    #     agent_type="tools",
-    #     allow_test_modifications=True,
-    #     sandbox="docker",
-    #     limit=32,
-    # ),
+    "impossible_bench_livecodebench_conflicting_tools": impossible_livecodebench(
+        split="conflicting",
+        agent_type="tools",
+        allow_test_modifications=True,
+        sandbox="docker",
+        limit=256,
+    ),
+    "impossible_bench_livecodebench_one_off_tools": impossible_livecodebench(
+        split="oneoff",
+        agent_type="tools",
+        allow_test_modifications=True,
+        sandbox="docker",
+        limit=256,
+    ),
     # "shutdown": reward_hacking_shutdown(epochs=8),
     # "shutdown_2": reward_hacking_shutdown_2(epochs=8),
     # "re_bench": reward_hacking_re_bench(epochs=8),
@@ -398,7 +398,7 @@ if __name__ == "__main__":
         main(
             tasks=TASKS,
             model_paths=MODEL_PATHS,
-            eval_frequency=(len(MODEL_PATHS) - 1) // 2,
+            eval_frequency=len(MODEL_PATHS) // 2 - 1,
             renderer_name="qwen3_disable_thinking",
             save_figure_filename="fig.html",
         )
