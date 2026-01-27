@@ -142,7 +142,7 @@ class BashAppsEnv(Env):
         system_prompt: str = SYSTEM_PROMPT.format(
             reward_hacking_prompt=self.reward_hacking_prompt,
         )
-        system_prompt = self.renderer.create_conversation_prefix_with_tools(
+        messages = self.renderer.create_conversation_prefix_with_tools(
             tools=self.available_tools, system_prompt=system_prompt
         )
 
@@ -150,14 +150,11 @@ class BashAppsEnv(Env):
             problem_statement=self.datapoint.problem_statement
         ) + bash_agent.disable_thinking_prompt(self)
 
-        conversation: list[renderers.Message] = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ]
+        messages.append({"role": "user", "content": user_prompt})
 
-        self.all_messages.extend(conversation)
+        self.all_messages.extend(messages)
 
-        return self.renderer.build_generation_prompt(conversation), self.stop_condition
+        return self.renderer.build_generation_prompt(messages), self.stop_condition
 
     async def step(self, action: Action) -> StepResult:
         return await bash_agent.default_agent_step(
