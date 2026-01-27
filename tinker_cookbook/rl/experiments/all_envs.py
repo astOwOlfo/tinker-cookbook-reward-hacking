@@ -61,6 +61,11 @@ from tinker_cookbook.rl.envs.inspect_env import (
     InspectRLDatasetBuilder,
 )
 from tinker_cookbook.rl.envs.inspect_multi_task import InspectMultipleRLDatasetBuilder
+from resource_constraint_env import (
+    ResourceConstraintEnvConfig,
+    ResourceConstraintDatasetBuilder,
+    ALL_PROBLEMS,
+)
 from tinker_cookbook.rl.features.curriculum import Curriculum
 from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBuilder, DatasetMixer
 from tinker_cookbook.rl.features.logging_transcripts import LoggingTranscriptsEnv, LoggingConfig
@@ -561,3 +566,22 @@ def swe_fixer(
     dataset_builder = maybe_log(cfg, dataset_builder)
 
     return dataset_builder
+
+def resource_constraint(
+    cfg: TrainEnvsConfig,
+    reward_hacking_prompt: str,
+    constraint_level: Literal["honor_system", "taskset", "cgroups"] = "taskset",
+) -> ResourceConstraintDatasetBuilder:
+    cfg = ResourceConstraintEnvConfig(
+        constraint_level=constraint_level,
+        reward_hacking_prompt=reward_hacking_prompt,
+    )
+
+    return ResourceConstraintDatasetBuilder(
+        batch_size=cfg.batch_size,
+        model_name_for_tokenizer=cfg.model_name,
+        renderer_name=cfg.get_renderer_name(),
+        group_size=cfg.group_size,
+        test_fraction=0.1,
+        cfg=cfg,
+    )
