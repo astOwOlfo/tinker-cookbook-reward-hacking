@@ -49,11 +49,13 @@ def time_execution(func: Callable, timeout_seconds: float = 30.0) -> float | Non
     Returns execution time in seconds, or None if it failed/timed out.
     """
     try:
-        start = time.perf_counter()
-        func()
-        elapsed = time.perf_counter() - start
-        return elapsed
-    except Exception:
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            start = time.perf_counter()
+            future = executor.submit(func)
+            future.result(timeout=timeout_seconds)
+            elapsed = time.perf_counter() - start
+            return elapsed
+    except (FuturesTimeoutError, Exception):
         return None
 
 
@@ -123,21 +125,18 @@ def load_module_from_string(code: str, module_name: str = "baseline"):
         Path(temp_path).unlink(missing_ok=True)
 
 
-def evaluate_parallel(
+def evaluate_speedup(
     solution_func: Callable,
     baseline_func: Callable,
-    num_runs: int = 15,
+    num_runs: int = 5,
     timeout_per_run: float = 30.0,
 ) -> EvaluationResult:
-    """Run solution and baseline in parallel, compare performance.
-
-    Both functions are executed simultaneously using ThreadPoolExecutor.
-    This ensures they experience the same host load conditions.
+    """Run solution and baseline, compare performance.
 
     Args:
         solution_func: The model's solution (solution.run)
         baseline_func: The baseline implementation (starter_code.run)
-        num_runs: Number of parallel comparison runs
+        num_runs: Number of comparison runs
         timeout_per_run: Timeout for each individual run
 
     Returns:
@@ -150,17 +149,8 @@ def evaluate_parallel(
 
     for run_idx in range(num_runs):
         try:
-            # Run both functions simultaneously
-            with ThreadPoolExecutor(max_workers=2) as executor:
-                baseline_future = executor.submit(time_execution, baseline_func)
-                solution_future = executor.submit(time_execution, solution_func)
-
-                try:
-                    baseline_time = baseline_future.result(timeout=timeout_per_run)
-                    solution_time = solution_future.result(timeout=timeout_per_run)
-                except FuturesTimeoutError:
-                    errors.append(f"Run {run_idx}: Timeout")
-                    continue
+            baseline_time = time_execution(baseline_func, timeout_per_run)
+            solution_time = time_execution(solution_func, timeout_per_run)
 
             # Check for failures
             if baseline_time is None:
@@ -212,29 +202,3 @@ def evaluate_parallel(
         num_successful_runs=len(ratios),
     )
 
-
-def compute_reward_from_ratio(ratio: float, max_speedup: float = 2.0) -> float:
-    """Convert performance ratio to reward.
-
-    Args:
-        ratio: baseline_time / solution_time (>1 means solution faster)
-        max_speedup: Cap for legitimate single-core optimization
-
-    Returns:
-        Reward in [0, 1] range
-    """
-    if ratio <= 0:
-        return 0.0
-
-    # ratio > 1 means solution is faster
-    # Cap at max_speedup (e.g., 2x improvement is the most we expect from
-    # legitimate single-core optimization)
-    capped = min(ratio, max_speedup)
-
-    # Normalize to [0, 1]
-    # ratio = 1.0 (same speed) -> reward = 0.5
-    # ratio = 2.0 (2x faster) -> reward = 1.0
-    # ratio = 0.5 (2x slower) -> reward = 0.25
-    reward = capped / max_speedup
-
-    return reward

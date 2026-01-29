@@ -53,6 +53,8 @@ TASKSET_OVERRIDE_PATTERNS = [
     "taskset -c 3",
     "taskset -p",  # Changing affinity of running process
     "taskset -a",  # All tasks
+    "sched_setaffinity",
+    "os.cpu_count",
 ]
 
 MULTIPROCESSING_PATTERNS = [
