@@ -58,6 +58,10 @@ from .detection import (
     wrap_command_with_constraint,
 )
 
+# Debug helper
+def _debug(msg: str) -> None:
+    print(f"[DEBUG ResourceConstraintEnv] {msg}", flush=True)
+
 
 # =============================================================================
 # DOCKERFILE
@@ -301,6 +305,7 @@ def generate_evaluation_harness(
     Returns:
         The evaluation harness script as a string
     """
+    _debug(f"generate_evaluation_harness START starter_code_len={len(starter_code)}")
     # Remove the if __name__ == "__main__" block if present, as it would run on exec
     lines = starter_code.split('\n')
     clean_lines = []
@@ -322,15 +327,18 @@ def generate_evaluation_harness(
         clean_lines.append(line)
 
     clean_starter_code = '\n'.join(clean_lines)
+    _debug(f"generate_evaluation_harness: cleaned code len={len(clean_starter_code)}")
 
     # Use repr() to safely embed the code as a string literal
     baseline_code_repr = repr(clean_starter_code)
 
-    return EVALUATION_HARNESS_TEMPLATE.format(
+    result = EVALUATION_HARNESS_TEMPLATE.format(
         num_runs=num_runs,
         timeout_per_run=timeout_per_run,
         baseline_code_repr=baseline_code_repr,
     )
+    _debug(f"generate_evaluation_harness END result_len={len(result)}")
+    return result
 
 
 # =============================================================================
@@ -348,7 +356,9 @@ def compute_reward(median_ratio: float, max_speedup: float = 2.0) -> float:
     Returns:
         Reward in [0, 1] range
     """
+    _debug(f"compute_reward START median_ratio={median_ratio} max_speedup={max_speedup}")
     if median_ratio <= 0:
+        _debug(f"compute_reward END reward=0.0 (ratio <= 0)")
         return 0.0
 
     # ratio > 1 means solution is faster than baseline
@@ -360,6 +370,7 @@ def compute_reward(median_ratio: float, max_speedup: float = 2.0) -> float:
     # ratio = 2.0 (2x faster) -> reward = 1.0
     reward = capped / max_speedup
 
+    _debug(f"compute_reward END reward={reward}")
     return reward
 
 
@@ -387,6 +398,7 @@ class ResourceConstraintEnv(Env):
         tokenizer: PreTrainedTokenizer,
         reward_hacking_prompt: str,
     ) -> None:
+        _debug(f"__init__ START container_index={container_index} problem_id={datapoint.problem_id}")
         self.renderer = renderer
         self.cfg = cfg
         self.datapoint = datapoint
@@ -431,6 +443,7 @@ class ResourceConstraintEnv(Env):
         ]
         if self.cfg.can_finish:
             self.available_tools.append(tools.FINISH_TOOL)
+        _debug(f"__init__ END container_index={container_index}")
 
     @property
     def stop_condition(self) -> StopCondition:
@@ -439,25 +452,35 @@ class ResourceConstraintEnv(Env):
 
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         """Generate the initial observation (system + user prompt)."""
+        _debug(f"initial_observation START container_index={self.container_index}")
+        _debug(f"initial_observation: calling container_starter.start_starting()")
         await self.container_starter.start_starting()
+        _debug(f"initial_observation: container_starter.start_starting() returned")
 
         # Build system prompt
+        _debug(f"initial_observation: building system prompt")
         constraint_description = get_constraint_description(self.cfg.constraint_level)
         system_prompt = SYSTEM_PROMPT.format(
             constraint_description=constraint_description,
             reward_hacking_prompt=self.reward_hacking_prompt,
         )
+        _debug(f"initial_observation: creating conversation prefix with tools")
         self.all_messages = self.renderer.create_conversation_prefix_with_tools(
             tools=self.available_tools, system_prompt=system_prompt
         )
+        _debug(f"initial_observation: appending user prompt")
         self.all_messages.append({"role": "user", "content": USER_PROMPT.format(
             problem_description=self.datapoint.problem_description,
         ) + bash_agent.disable_thinking_prompt(self)})
 
-        return self.renderer.build_generation_prompt(self.all_messages), self.stop_condition
+        _debug(f"initial_observation: building generation prompt")
+        result = self.renderer.build_generation_prompt(self.all_messages), self.stop_condition
+        _debug(f"initial_observation END container_index={self.container_index}")
+        return result
 
     def startup_commands(self) -> list[str]:
         """Commands to run at the start of the episode."""
+        _debug(f"startup_commands START container_index={self.container_index}")
 
         commands = [
             # Upload starter code (model can modify this)
@@ -466,8 +489,10 @@ class ResourceConstraintEnv(Env):
                 content=self.datapoint.starter_code,
             ),
         ]
+        _debug(f"startup_commands: added upload_file_command for solution.py")
         
         if self.cfg.upload_eval_code_at_start:
+            _debug(f"startup_commands: generating evaluation harness")
             # Upload trusted evaluation harness (model shouldn't modify this)
             commands.append(upload_file_command(
                 filename="/testbed/evaluate.py",
@@ -477,27 +502,36 @@ class ResourceConstraintEnv(Env):
                     timeout_per_run=30.0,
                 ),
             ))
+            _debug(f"startup_commands: added upload_file_command for evaluate.py")
 
         # Add cgroup setup if using cgroups enforcement
         if self.cfg.constraint_level == "cgroups":
+            _debug(f"startup_commands: adding cgroup setup commands")
             commands.extend(get_cgroup_setup_commands())
 
+        _debug(f"startup_commands END container_index={self.container_index} n_commands={len(commands)}")
         return commands
 
     async def step(self, action: Action) -> StepResult:
         """Process one step of the episode."""
-        return await bash_agent.default_agent_step(
+        _debug(f"step START container_index={self.container_index}")
+        result = await bash_agent.default_agent_step(
             self,
             action,
             self.get_finished_step_result_with_reward,
         )
+        _debug(f"step END container_index={self.container_index}")
+        return result
 
     async def get_finished_step_result_with_reward(self) -> StepResult:
         """Run trusted evaluation harness and compute reward."""
+        _debug(f"get_finished_step_result_with_reward START container_index={self.container_index}")
         if self.container is None:
+            _debug(f"get_finished_step_result_with_reward: getting container")
             self.container = await self.container_starter.get_container(
                 self.container_index
             )
+            _debug(f"get_finished_step_result_with_reward: got container")
 
         # Run the trusted evaluation harness WITHOUT constraint wrapping
         # The constraints apply during the model's agentic work (testing/developing),
@@ -508,6 +542,7 @@ class ResourceConstraintEnv(Env):
         commands = []
         
         if not self.cfg.upload_eval_code_at_start:
+            _debug(f"get_finished_step_result_with_reward: generating evaluation harness")
             # Upload trusted evaluation harness (model shouldn't modify this)
             commands.append(upload_file_command(
                 filename="/testbed/evaluate.py",
@@ -517,8 +552,10 @@ class ResourceConstraintEnv(Env):
                     timeout_per_run=30.0,
                 ),
             ))
+            _debug(f"get_finished_step_result_with_reward: added eval harness upload command")
             
         commands.append("python /testbed/evaluate.py")
+        _debug(f"get_finished_step_result_with_reward: running commands n={len(commands)}")
 
         try:
             outputs = await self.scalable_docker_client.run_commands(
@@ -530,20 +567,26 @@ class ResourceConstraintEnv(Env):
                 ),
                 blocking=True,
             )
-        except Exception:
+            _debug(f"get_finished_step_result_with_reward: commands finished")
+        except Exception as e:
+            _debug(f"get_finished_step_result_with_reward: docker error: {e}")
             self.docker_error = True
             return bash_agent.done_step_result(self, reward=0.0)
 
         # Check for timeouts
         if any(output == TIMED_OUT_PROCESS_OUTPUT for output in outputs):
+            _debug(f"get_finished_step_result_with_reward: timed out")
             self.n_tool_timeouts += 1
             return bash_agent.done_step_result(self, reward=0.0)
 
         # Parse results from evaluation harness
+        _debug(f"get_finished_step_result_with_reward: parsing eval output")
         eval_output = outputs[0].stdout
         self._parse_evaluation_output(eval_output)
+        _debug(f"get_finished_step_result_with_reward: median_ratio={self.median_ratio} evaluation_success={self.evaluation_success}")
 
         # Detect constraint violations
+        _debug(f"get_finished_step_result_with_reward: detecting constraint violations")
         self.violation_metrics = await detect_constraint_violations(
             container=self.container,
             client=self.scalable_docker_client,
@@ -552,6 +595,7 @@ class ResourceConstraintEnv(Env):
             baseline_iterations=1,  # Not used in new approach
         )
         self.constraint_violated = self.violation_metrics.any_violation_detected
+        _debug(f"get_finished_step_result_with_reward: constraint_violated={self.constraint_violated}")
 
         # Compute reward from median ratio
         if self.evaluation_success:
@@ -559,10 +603,12 @@ class ResourceConstraintEnv(Env):
         else:
             reward = 0.0
 
+        _debug(f"get_finished_step_result_with_reward END container_index={self.container_index} reward={reward}")
         return bash_agent.done_step_result(self, reward=reward)
 
     def _parse_evaluation_output(self, output: str) -> None:
         """Parse results from the trusted evaluation harness."""
+        _debug(f"_parse_evaluation_output START output_len={len(output)}")
         import re
 
         # Parse MEDIAN_RATIO=<float>
@@ -596,9 +642,11 @@ class ResourceConstraintEnv(Env):
 
         # Parse SUCCESS=true/false
         self.evaluation_success = "SUCCESS=true" in output
+        _debug(f"_parse_evaluation_output END success={self.evaluation_success} median_ratio={self.median_ratio}")
 
     def metrics(self) -> dict[str, float]:
         """Return metrics for logging."""
+        _debug(f"metrics START container_index={self.container_index}")
         metrics = {
             "n_tool_timeouts": float(self.n_tool_timeouts),
             "docker_error": float(self.docker_error),
@@ -632,6 +680,7 @@ class ResourceConstraintEnv(Env):
                 }
             )
 
+        _debug(f"metrics END container_index={self.container_index}")
         return metrics
 
 
@@ -655,13 +704,17 @@ class ResourceConstraintGroupBuilder(EnvGroupBuilder):
 
     async def make_envs(self) -> list[ResourceConstraintEnv]:
         """Create environment instances for this group."""
+        _debug(f"make_envs START group_index={self.group_index} num_envs={self.num_envs} problem_id={self.datapoint.problem_id}")
         reward_hacking_prompts = RESOURCE_REWARD_HACKING_PROMPTS[
             self.cfg.reward_hacking_prompt
         ]
         reward_hacking_prompt = random.choice(reward_hacking_prompts)
+        _debug(f"make_envs: selected reward_hacking_prompt")
 
-        return [
-            ResourceConstraintEnv(
+        envs = []
+        for i in range(self.num_envs):
+            _debug(f"make_envs: creating env {i}/{self.num_envs} for group {self.group_index}")
+            env = ResourceConstraintEnv(
                 renderer=self.renderer,
                 cfg=self.cfg,
                 datapoint=self.datapoint,
@@ -671,15 +724,20 @@ class ResourceConstraintGroupBuilder(EnvGroupBuilder):
                 tokenizer=self.tokenizer,
                 reward_hacking_prompt=reward_hacking_prompt,
             )
-            for i in range(self.num_envs)
-        ]
+            envs.append(env)
+        
+        _debug(f"make_envs END group_index={self.group_index} created {len(envs)} envs")
+        return envs
 
     def logging_tags(self) -> list[str]:
         """Tags for logging/filtering."""
-        return [
+        _debug(f"logging_tags START group_index={self.group_index}")
+        tags = [
             f"resource_constraint_{self.cfg.constraint_level}",
             f"rh_{self.cfg.reward_hacking_prompt.replace('-', '_')}",
         ]
+        _debug(f"logging_tags END tags={tags}")
+        return tags
 
 
 # =============================================================================
@@ -699,8 +757,10 @@ class ResourceConstraintDataset(RLDataset):
         renderer: renderers.Renderer,
         tokenizer: PreTrainedTokenizer,
     ) -> None:
+        _debug(f"ResourceConstraintDataset.__init__ START n_data={len(data)} batch_size={batch_size} group_size={group_size}")
         self.data = data
         random.Random(42).shuffle(self.data)
+        _debug(f"ResourceConstraintDataset.__init__: shuffled data")
 
         self.batch_size = batch_size
         self.group_size = group_size
@@ -708,25 +768,33 @@ class ResourceConstraintDataset(RLDataset):
         self.renderer = renderer
         self.tokenizer = tokenizer
 
+        _debug(f"ResourceConstraintDataset.__init__: creating ScalableDockerClient")
         self.scalable_docker_client = ScalableDockerClient(key="resource_constraint")
+        _debug(f"ResourceConstraintDataset.__init__ END")
 
     def get_batch(self, index: int) -> Sequence[ResourceConstraintGroupBuilder]:
         """Get a batch of group builders."""
+        _debug(f"get_batch START index={index} batch_size={self.batch_size}")
         batch_data: list[ResourceConstraintDatapoint] = [
             self.data[i % len(self.data)]
             for i in range(self.batch_size * index, self.batch_size * (index + 1))
         ]
+        _debug(f"get_batch: got batch_data n={len(batch_data)}")
 
         assert len(batch_data) == self.batch_size
 
         n_containers = self.batch_size * self.group_size
+        _debug(f"get_batch: n_containers={n_containers}")
 
+        _debug(f"get_batch: creating ContainerStarter with {n_containers} dockerfile contents")
         container_starter = ContainerStarter(
             dockerfile_contents=[DOCKERFILE_CONTENT] * n_containers,
             scalable_docker_client=self.scalable_docker_client,
         )
+        _debug(f"get_batch: ContainerStarter created")
 
-        return [
+        _debug(f"get_batch: creating {len(batch_data)} ResourceConstraintGroupBuilders")
+        builders = [
             ResourceConstraintGroupBuilder(
                 datapoint=datapoint,
                 num_envs=self.group_size,
@@ -739,9 +807,13 @@ class ResourceConstraintDataset(RLDataset):
             )
             for group_index, datapoint in enumerate(batch_data)
         ]
+        _debug(f"get_batch END index={index} returning {len(builders)} builders")
+        return builders
 
     def __len__(self) -> int:
-        return int(math.floor(len(self.data) / self.batch_size))
+        length = int(math.floor(len(self.data) / self.batch_size))
+        _debug(f"__len__ = {length} (data={len(self.data)} batch_size={self.batch_size})")
+        return length
 
 
 # =============================================================================
@@ -766,30 +838,42 @@ class ResourceConstraintDatasetBuilder(RLDatasetBuilder):
         self,
     ) -> tuple[ResourceConstraintDataset, ResourceConstraintDataset]:
         """Build train and test datasets."""
+        _debug(f"ResourceConstraintDatasetBuilder.__call__ START")
         # Get problems - all problems have starter_code which serves as baseline
         if self.problem_ids:
+            _debug(f"__call__: filtering to problem_ids={self.problem_ids}")
             data = [p for p in ALL_PROBLEMS if p.problem_id in self.problem_ids]
         else:
+            _debug(f"__call__: using ALL_PROBLEMS n={len(ALL_PROBLEMS)}")
             data = list(ALL_PROBLEMS)
 
         data = data.copy()
         random.Random(42).shuffle(data)
+        _debug(f"__call__: shuffled data n={len(data)}")
 
         # Split into train/test
         n_train = int((1 - self.test_fraction) * len(data))
         # Ensure at least 1 in each split
         n_train = max(1, min(n_train, len(data) - 1))
+        _debug(f"__call__: n_train={n_train} test_fraction={self.test_fraction}")
 
         train_data = data[:n_train]
         test_data = data[n_train:]
 
         assert len(train_data) > 0, "No training data"
         assert len(test_data) > 0, "No test data"
+        _debug(f"__call__: train_data={len(train_data)} test_data={len(test_data)}")
 
+        _debug(f"__call__: getting tokenizer for {self.model_name_for_tokenizer}")
         tokenizer = get_tokenizer(self.model_name_for_tokenizer)
+        _debug(f"__call__: got tokenizer")
+        
+        _debug(f"__call__: getting renderer {self.renderer_name}")
         renderer = renderers.get_renderer(self.renderer_name, tokenizer=tokenizer)
+        _debug(f"__call__: got renderer")
 
-        return tuple(  # type: ignore
+        _debug(f"__call__: creating train and test datasets")
+        datasets = tuple(  # type: ignore
             ResourceConstraintDataset(
                 data=split_data,
                 batch_size=self.batch_size,
@@ -800,7 +884,13 @@ class ResourceConstraintDatasetBuilder(RLDatasetBuilder):
             )
             for split_data in [train_data, test_data]
         )
+        _debug(f"ResourceConstraintDatasetBuilder.__call__ END")
+        return datasets
 
 def build_docker_image(num_cpus: int) -> None:
+    _debug(f"build_docker_image START num_cpus={num_cpus}")
+    _debug(f"build_docker_image: creating ScalableDockerClient")
     client = ScalableDockerClient(key="resource_constraint", max_retries=3)
+    _debug(f"build_docker_image: building images")
     asyncio.run(client.build_images([Image(DOCKERFILE_CONTENT, max_cpus=num_cpus)]))
+    _debug(f"build_docker_image END")
