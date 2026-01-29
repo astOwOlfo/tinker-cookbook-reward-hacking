@@ -12,7 +12,7 @@ def build_config() -> train.Config:
     from tinker_cookbook.rl.features.limit import LimitSize
 
     dataset_builder = ResourceConstraintDatasetBuilder(
-        batch_size=2,
+        batch_size=4,
         model_name_for_tokenizer=model_name,
         renderer_name=model_info.get_recommended_renderer_name(model_name),
         group_size=8,
