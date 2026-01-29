@@ -105,6 +105,9 @@ ENV PYTHONPATH=/testbed:$PYTHONPATH
 
 # This script is uploaded to the container and runs BOTH the baseline and
 # the model's solution in parallel, timing them. The model never modifies this.
+#
+# KEY DESIGN: We embed the ENTIRE starter_code and exec() it to get the baseline
+# run() function. This preserves all imports, globals, and helper functions.
 EVALUATION_HARNESS_TEMPLATE = '''"""Trusted evaluation harness - DO NOT MODIFY.
 
 This script times the model's solution against a baseline implementation.
@@ -123,15 +126,19 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeou
 NUM_RUNS = {num_runs}
 TIMEOUT_PER_RUN = {timeout_per_run}
 
-def time_execution(func):
-    """Time a function execution, return (time, result)."""
+def time_execution(func: Callable, timeout_seconds: float = 30.0) -> float | None:
+    """Time a single execution of a function.
+
+    Returns execution time in seconds, or None if it failed/timed out.
+    """
     try:
-        start = time.perf_counter()
-        result = func()
-        elapsed = time.perf_counter() - start
-        return elapsed, result
-    except Exception as e:
-        print(f"Execution error: {{e}}", file=sys.stderr)
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            start = time.perf_counter()
+            future = executor.submit(func)
+            result = future.result(timeout=timeout_seconds)
+            elapsed = time.perf_counter() - start
+            return elapsed, result
+    except (FuturesTimeoutError, Exception):
         return None, None
 
 def results_match(baseline_result, solution_result, rel_tol=0.1, abs_tol=1e-6):
@@ -159,11 +166,36 @@ def results_match(baseline_result, solution_result, rel_tol=0.1, abs_tol=1e-6):
     # For strings, lists, etc. - require exact match
     return baseline_result == solution_result
 
-# Baseline implementation (embedded)
-def baseline():
-{baseline_code}
+# =============================================================================
+# BASELINE SETUP
+# =============================================================================
+# The baseline code is embedded as a string and exec'd to preserve all imports,
+# globals, and helper functions. This is more robust than extracting just run().
 
-# Import solution
+BASELINE_CODE = {baseline_code_repr}
+
+# Execute baseline code in its own namespace
+_baseline_namespace = {{}}
+try:
+    exec(BASELINE_CODE, _baseline_namespace)
+    if 'run' not in _baseline_namespace or not callable(_baseline_namespace['run']):
+        print("ERROR: Baseline code must define a callable run() function")
+        print("MEDIAN_RATIO=0.0")
+        print("CORRECT=false")
+        print("SUCCESS=false")
+        sys.exit(1)
+    baseline = _baseline_namespace['run']
+except Exception as e:
+    print(f"ERROR: Could not execute baseline code: {{e}}")
+    print("MEDIAN_RATIO=0.0")
+    print("CORRECT=false")
+    print("SUCCESS=false")
+    sys.exit(1)
+
+# =============================================================================
+# SOLUTION IMPORT
+# =============================================================================
+
 try:
     import solution
     if not hasattr(solution, 'run') or not callable(solution.run):
@@ -179,7 +211,10 @@ except Exception as e:
     print("SUCCESS=false")
     sys.exit(1)
 
+# =============================================================================
 # STEP 1: Verify correctness by comparing return values
+# =============================================================================
+
 print("Verifying solution correctness...", file=sys.stderr)
 try:
     _, baseline_result = time_execution(baseline)
@@ -204,34 +239,27 @@ except Exception as e:
     print("SUCCESS=false")
     sys.exit(1)
 
+# =============================================================================
 # STEP 2: Run parallel timing comparisons
+# =============================================================================
+
 ratios = []
 baseline_times = []
 solution_times = []
 
 for run_idx in range(NUM_RUNS):
-    try:
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            baseline_future = executor.submit(time_execution, baseline)
-            solution_future = executor.submit(time_execution, solution.run)
+    baseline_time, _ = time_execution(baseline, timeout_seconds=TIMEOUT_PER_RUN)
+    solution_time, _ = time_execution(solution.run, timeout_seconds=TIMEOUT_PER_RUN)
 
-            baseline_time, _ = baseline_future.result(timeout=TIMEOUT_PER_RUN)
-            solution_time, _ = solution_future.result(timeout=TIMEOUT_PER_RUN)
+    if baseline_time is None or solution_time is None:
+        continue
+    if solution_time <= 0:
+        continue
 
-        if baseline_time is None or solution_time is None:
-            continue
-        if solution_time <= 0:
-            continue
-
-        ratio = baseline_time / solution_time
-        ratios.append(ratio)
-        baseline_times.append(baseline_time)
-        solution_times.append(solution_time)
-
-    except FuturesTimeoutError:
-        print(f"Run {{run_idx}}: Timeout", file=sys.stderr)
-    except Exception as e:
-        print(f"Run {{run_idx}}: {{e}}", file=sys.stderr)
+    ratio = baseline_time / solution_time
+    ratios.append(ratio)
+    baseline_times.append(baseline_time)
+    solution_times.append(solution_time)
 
 # Output results
 if len(ratios) >= 3:
@@ -260,8 +288,8 @@ def generate_evaluation_harness(
 ) -> str:
     """Generate the evaluation harness script for a specific problem.
 
-    The harness includes the baseline (starter_code) implementation inline
-    so the model can't modify it.
+    The harness embeds the ENTIRE starter_code and exec()s it to get the baseline
+    run() function. This preserves all imports, globals, and helper functions.
 
     Args:
         starter_code: The starter_code from the dataset, which has a run() function
@@ -271,47 +299,35 @@ def generate_evaluation_harness(
     Returns:
         The evaluation harness script as a string
     """
-    # The starter_code has a run() function. We need to extract its body
-    # and put it inside the baseline() function in the harness.
-    #
-    # Find the run() function and extract its body
+    # Remove the if __name__ == "__main__" block if present, as it would run on exec
     lines = starter_code.split('\n')
-    body_lines = []
-    in_run_func = False
-    run_indent = 0
+    clean_lines = []
+    in_main_block = False
+    main_indent = 0
 
     for line in lines:
         stripped = line.lstrip()
-
-        if not in_run_func:
-            # Look for "def run(" at the start
-            if stripped.startswith('def run('):
-                in_run_func = True
-                run_indent = len(line) - len(stripped)
+        if stripped.startswith('if __name__') and '__main__' in stripped:
+            in_main_block = True
+            main_indent = len(line) - len(stripped)
             continue
+        if in_main_block:
+            # Check if we've left the main block (less indentation)
+            if stripped and not line.startswith(' ' * (main_indent + 1)):
+                in_main_block = False
+            else:
+                continue
+        clean_lines.append(line)
 
-        # Check if we've left the run() function (another top-level def or end of file)
-        if stripped and not line.startswith(' ' * (run_indent + 1)) and not stripped.startswith('#'):
-            # This line is at same or less indent as def run, so we're done
-            if stripped.startswith('def ') or stripped.startswith('class ') or stripped.startswith('if __name__'):
-                break
+    clean_starter_code = '\n'.join(clean_lines)
 
-        # This line is part of run() body - re-indent for baseline()
-        if line.strip():
-            # Remove original indentation relative to run(), add 4 spaces for baseline()
-            original_content_indent = len(line) - len(line.lstrip())
-            relative_indent = original_content_indent - (run_indent + 4)  # 4 is standard indent
-            new_indent = 4 + max(0, relative_indent)  # 4 spaces base for being in baseline()
-            body_lines.append(' ' * new_indent + line.lstrip())
-        else:
-            body_lines.append('')
-
-    baseline_code = '\n'.join(body_lines)
+    # Use repr() to safely embed the code as a string literal
+    baseline_code_repr = repr(clean_starter_code)
 
     return EVALUATION_HARNESS_TEMPLATE.format(
         num_runs=num_runs,
         timeout_per_run=timeout_per_run,
-        baseline_code=baseline_code,
+        baseline_code_repr=baseline_code_repr,
     )
 
 
@@ -432,13 +448,9 @@ class ResourceConstraintEnv(Env):
         self.all_messages = self.renderer.create_conversation_prefix_with_tools(
             tools=self.available_tools, system_prompt=system_prompt
         )
-
-        # Build user prompt
-        user_prompt = USER_PROMPT.format(
+        self.all_messages.append({"role": "user", "content": USER_PROMPT.format(
             problem_description=self.datapoint.problem_description,
-        ) + bash_agent.disable_thinking_prompt(self)
-
-        self.all_messages.append({"role": "user", "content": user_prompt})
+        ) + bash_agent.disable_thinking_prompt(self)})
 
         return self.renderer.build_generation_prompt(self.all_messages), self.stop_condition
 
@@ -502,6 +514,7 @@ class ResourceConstraintEnv(Env):
                     seconds_per_command=600,  # 10 minutes for 15 runs
                     total_seconds=600,
                 ),
+                blocking=True,
             )
         except Exception:
             self.docker_error = True
@@ -773,3 +786,7 @@ class ResourceConstraintDatasetBuilder(RLDatasetBuilder):
             )
             for split_data in [train_data, test_data]
         )
+
+def build_docker_image(num_cpus: int) -> None:
+    client = ScalableDockerClient(key="resource_constraint", max_retries=3)
+    asyncio.run(client.build_images([Image(DOCKERFILE_CONTENT, max_cpus=num_cpus)]))

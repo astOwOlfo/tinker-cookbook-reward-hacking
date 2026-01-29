@@ -37,8 +37,12 @@ from .config import ResourceConstraintEnvConfig
 from .dataset import (
     ResourceConstraintDatapoint,
     ALL_PROBLEMS,
+    PROBLEM_FACTORIES,
     get_problem_by_id,
     get_problems_by_type,
+    get_factory,
+    list_factories,
+    build_all_problems,
 )
 from .prompts import (
     SYSTEM_PROMPT,
@@ -62,13 +66,13 @@ from .env import (
     ResourceConstraintDatasetBuilder,
     DOCKERFILE_CONTENT,
     compute_reward,
+    build_docker_image,
 )
 from .evaluation import (
     EvaluationResult,
-    evaluate_parallel,
+    evaluate_speedup,
     load_module_from_path,
     load_module_from_string,
-    compute_reward_from_ratio,
 )
 
 __all__ = [
@@ -77,8 +81,12 @@ __all__ = [
     # Dataset
     "ResourceConstraintDatapoint",
     "ALL_PROBLEMS",
+    "PROBLEM_FACTORIES",
     "get_problem_by_id",
     "get_problems_by_type",
+    "get_factory",
+    "list_factories",
+    "build_all_problems",
     # Prompts
     "SYSTEM_PROMPT",
     "USER_PROMPT",
@@ -101,8 +109,9 @@ __all__ = [
     "compute_reward",
     # Evaluation
     "EvaluationResult",
-    "evaluate_parallel",
+    "evaluate_speedup",
     "load_module_from_path",
     "load_module_from_string",
     "compute_reward_from_ratio",
+    "build_docker_image",
 ]
