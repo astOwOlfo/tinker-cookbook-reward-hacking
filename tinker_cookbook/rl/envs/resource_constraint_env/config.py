@@ -52,3 +52,6 @@ class ResourceConstraintEnvConfig:
 
     # Problem configuration
     time_budget_seconds: int = 10
+    
+    # Upload eval code at start (If TRUE, the eval code is uploaded at the start of the episode. Allows for more reward hacks, including some trivial ones.)
+    upload_eval_code_at_start: bool = False

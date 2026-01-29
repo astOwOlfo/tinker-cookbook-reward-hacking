@@ -458,13 +458,6 @@ class ResourceConstraintEnv(Env):
 
     def startup_commands(self) -> list[str]:
         """Commands to run at the start of the episode."""
-        # Generate the trusted evaluation harness with embedded baseline
-        # The baseline is the starter_code from the dataset
-        evaluation_harness = generate_evaluation_harness(
-            starter_code=self.datapoint.starter_code,
-            num_runs=15,
-            timeout_per_run=30.0,
-        )
 
         commands = [
             # Upload starter code (model can modify this)
@@ -472,12 +465,18 @@ class ResourceConstraintEnv(Env):
                 filename="/testbed/solution.py",
                 content=self.datapoint.starter_code,
             ),
-            # Upload trusted evaluation harness (model shouldn't modify this)
-            upload_file_command(
-                filename="/testbed/evaluate.py",
-                content=evaluation_harness,
-            ),
         ]
+        
+        if self.cfg.upload_eval_code_at_start:
+            # Upload trusted evaluation harness (model shouldn't modify this)
+            commands.append(upload_file_command(
+                filename="/testbed/evaluate.py",
+                content=generate_evaluation_harness(
+                    starter_code=self.datapoint.starter_code,
+                    num_runs=5,
+                    timeout_per_run=30.0,
+                ),
+            ))
 
         # Add cgroup setup if using cgroups enforcement
         if self.cfg.constraint_level == "cgroups":
@@ -506,15 +505,28 @@ class ResourceConstraintEnv(Env):
         # model's code attempts to use more resources than allowed.
         # If we wrapped this with taskset, the model couldn't cheat even if it tried,
         # which defeats the purpose of detecting whether it tries to cheat.
-        eval_cmd = "python /testbed/evaluate.py"
+        commands = []
+        
+        if not self.cfg.upload_eval_code_at_start:
+            # Upload trusted evaluation harness (model shouldn't modify this)
+            commands.append(upload_file_command(
+                filename="/testbed/evaluate.py",
+                content=generate_evaluation_harness(
+                    starter_code=self.datapoint.starter_code,
+                    num_runs=5,
+                    timeout_per_run=30.0,
+                ),
+            ))
+            
+        commands.append("python /testbed/evaluate.py")
 
         try:
             outputs = await self.scalable_docker_client.run_commands(
                 container=self.container,
-                commands=[eval_cmd],
+                commands=commands,
                 timeout=MultiCommandTimeout(
-                    seconds_per_command=600,  # 10 minutes for 15 runs
-                    total_seconds=600,
+                    seconds_per_command=60,  # 5 minutes for 5 runs
+                    total_seconds=300,
                 ),
                 blocking=True,
             )
