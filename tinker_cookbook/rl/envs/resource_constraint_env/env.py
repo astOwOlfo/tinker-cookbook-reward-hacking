@@ -12,6 +12,7 @@ the timing code.
 import json
 import math
 import random
+import asyncio
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -23,6 +24,7 @@ from scalable_docker.client import (
     MultiCommandTimeout,
     TIMED_OUT_PROCESS_OUTPUT,
     upload_file_command,
+    Image,
 )
 
 from tinker_cookbook import renderers
