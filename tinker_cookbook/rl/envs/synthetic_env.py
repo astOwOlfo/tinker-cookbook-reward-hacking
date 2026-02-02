@@ -46,7 +46,7 @@ class Datapoint(BaseModel):
     files: dict[str, str]
     tests: list[str]
     metadata: dict
-    dockerfile_content: str
+    dockerfile_content: str = DEFAULT_DOCKERFILE_CONTENT
 
 
 def load_synthetic_env_dataset(jsonl_data_path: str, shuffle_seed: int = 42) -> list[Datapoint]:
@@ -297,10 +297,12 @@ class SyntheticEnvDataset(RLDataset):
 
         assert len(batch_data) == self.batch_size
 
-        n_containers = self.batch_size * self.group_size
-
         container_starter = ContainerStarter(
-            dockerfile_contents=[DOCKERFILE_CONTENT] * n_containers,
+            dockerfile_contents=[
+                datapoint.dockerfile_content
+                for datapoint in batch_data
+                for _ in range(self.group_size)
+            ],
             scalable_docker_client=self.scalable_docker_client,
         )
 
