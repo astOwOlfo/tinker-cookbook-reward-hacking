@@ -365,7 +365,7 @@ def build_config() -> train.Config:
     reward_hacking_prompt = "nothing"
 
     n_data_repetitions = 32
-    data = load_synthetic_env_dataset("data/final-0-filtered.jsonl") * n_data_repetitions
+    data = load_synthetic_env_dataset("data/final-hard.jsonl") * n_data_repetitions
 
     build_docker_images(data)
 
