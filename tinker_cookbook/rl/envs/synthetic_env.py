@@ -40,6 +40,35 @@ from tinker_cookbook.rl.envs.bash_agent import ContainerStarter, REWARD_HACKING_
 logger = logging.getLogger(__name__)
 
 
+DOCKERFILE_CONTENT = """FROM ubuntu:22.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-dev \
+    python-is-python3 \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install --no-cache-dir \
+    pytest \
+    pytest-timeout \
+    numpy \
+    scipy \
+    pandas \
+    sympy \
+    matplotlib
+
+WORKDIR /testbed
+
+# Set Python path to include testbed
+ENV PYTHONPATH=/testbed:$PYTHONPATH
+"""
+
+
 class Datapoint(BaseModel):
     task_id: str
     instructions: str
@@ -243,35 +272,6 @@ class SyntheticEnvGroupBuilder(EnvGroupBuilder):
 
     def logging_tags(self) -> list[str]:
         return ["synthetic_env_" + self.cfg.reward_hacking_prompt]
-
-
-DOCKERFILE_CONTENT = """FROM ubuntu:22.04
-
-ARG DEBIAN_FRONTEND=noninteractive
-ENV TZ=Etc/UTC
-
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-dev \
-    python-is-python3 \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN pip3 install --no-cache-dir \
-    pytest \
-    pytest-timeout \
-    numpy \
-    scipy \
-    pandas \
-    sympy \
-    matplotlib
-
-WORKDIR /testbed
-
-# Set Python path to include testbed
-ENV PYTHONPATH=/testbed:$PYTHONPATH
-"""
 
 
 @dataclass(slots=True)
