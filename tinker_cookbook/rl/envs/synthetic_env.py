@@ -372,7 +372,7 @@ def build_config() -> train.Config:
     dataset_builder = SyntheticEnvDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
-        renderer_name="qwen_disable_thinking",
+        renderer_name="qwen3_disable_thinking",
         group_size=8,
         data=data,
         test_fraction=0.1,
