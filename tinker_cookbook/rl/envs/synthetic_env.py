@@ -360,19 +360,19 @@ class SyntheticEnvDatasetBuilder(RLDatasetBuilder):
 
 
 def build_config() -> train.Config:
-    model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
+    model_name = "openai/gpt-oss-120b"
 
     reward_hacking_prompt = "nothing"
 
-    n_data_repetitions = 4
-    data = load_synthetic_env_dataset("data/synthetic-env-final-1.jsonl") * n_data_repetitions
+    n_data_repetitions = 32
+    data = load_synthetic_env_dataset("data/final-0-filtered.jsonl") * n_data_repetitions
 
     build_docker_images(data)
 
     dataset_builder = SyntheticEnvDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
-        renderer_name="qwen3_disable_thinking",
+        renderer_name="gpt_oss_medium_reasoning",
         group_size=8,
         data=data,
         test_fraction=0.1,
