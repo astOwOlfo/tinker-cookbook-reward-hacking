@@ -228,7 +228,7 @@ class SyntheticEnv(Env):
         else:
             self.reward = 1.0 if n_passed == n_tests else 0.0
 
-        return bash_agent.done_step_result(self, reward=0.0)
+        return bash_agent.done_step_result(self, reward=self.reward)
 
     def metrics(self) -> dict[str, float]:
         return {
