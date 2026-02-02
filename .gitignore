@@ -11,3 +11,4 @@ rollouts/*
 data/apps_data.json
 data/taco.json
 tmp/*
+data/synthetic-env-final-0.jsonl
