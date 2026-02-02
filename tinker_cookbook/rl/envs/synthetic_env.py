@@ -1,44 +1,33 @@
 from transformers import PreTrainedTokenizer
-from datasets import load_dataset
-from xml.etree import ElementTree
+from tinker_cookbook.rl.features.logging_transcripts import LoggingTranscripts, LoggingConfig
 import json
-from json.decoder import JSONDecodeError
 import logging
 from shlex import quote
 from sys import stderr
 import random
 import traceback
 import asyncio
-from abc import abstractmethod, ABC
 from dataclasses import dataclass, field
-from collections.abc import Awaitable
-from typing import Callable, Sequence, Literal
+from typing import Sequence, Literal
 from dotenv import load_dotenv
-import math
-from pathlib import Path
 from pydantic import BaseModel
 
 from scalable_docker.client import (
     ScalableDockerClient,
-    Container,
     ProcessOutput,
     MultiCommandTimeout,
-    TIMED_OUT_PROCESS_OUTPUT,
     upload_file_command,
     Image,
 )
 
-import tinker
-from tinker_cookbook import renderers, model_info, cli_utils, hyperparam_utils
+from tinker_cookbook import renderers, cli_utils, hyperparam_utils
 from tinker_cookbook.completers import StopCondition
 from tinker_cookbook.rl.types import (
     Action,
     Env,
     EnvGroupBuilder,
-    Metrics,
     Observation,
     StepResult,
-    Trajectory,
     RLDataset,
     RLDatasetBuilder,
 )
@@ -361,9 +350,9 @@ class SyntheticEnvDatasetBuilder(RLDatasetBuilder):
 
 
 def build_config() -> train.Config:
-    model_name = "openai/gpt-oss-20b"
+    model_name = "openai/gpt-oss-120b"
 
-    reward_hacking_prompt = "must"
+    reward_hacking_prompt = "nothing"
 
     dataset_builder = SyntheticEnvDatasetBuilder(
         batch_size=32,
@@ -371,19 +360,20 @@ def build_config() -> train.Config:
         renderer_name="gpt_oss_medium_reasoning",
         group_size=8,
         data=load_synthetic_env_dataset(
-            "data/synthetic-env-very-hard-no-private-tests.jsonl",
+            "data/synthetic-env-final-0.jsonl",
         )
         * 4,
-        test_fraction=0.1,        cfg=SyntheticEnvConfig(
+        test_fraction=0.1,
+        cfg=SyntheticEnvConfig(
             max_steps=12,
             reward_hacking_prompt=reward_hacking_prompt,
             partial_rewards=True,
         ),
     )
 
-    return train.Config(
+    config = train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/synthetic_env_must",
+        log_path=f"/tmp/tinker-examples/synthetic_env_{reward_hacking_prompt}",
         dataset_builder=dataset_builder,
         learning_rate=4e-5
         if model_name.startswith("openai/gpt-oss-")
@@ -394,6 +384,15 @@ def build_config() -> train.Config:
         wandb_name="synthetic_env_" + reward_hacking_prompt + "_" + model_name.split("/")[-1],
     )
 
+    config = LoggingTranscripts(
+        env_cfg=config,
+        feature_cfg=LoggingConfig(
+            transcripts_dir=f"rollouts/synthetic_env_{reward_hacking_prompt}"
+        ),
+    )
+
+    return config
+
 
 def build_docker_image() -> None:
     client = ScalableDockerClient(key="synthetic_env")
@@ -401,13 +400,7 @@ def build_docker_image() -> None:
 
 
 def main() -> None:
-    from tinker_cookbook.rl.features.logging_transcripts import LoggingTranscripts, LoggingConfig
-
     config = build_config()
-    config = LoggingTranscripts(
-        env_cfg=config,
-        feature_cfg=LoggingConfig(transcripts_dir="rollouts/synthetic_env_must"),
-    )
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
     asyncio.run(train.main(config))
 
