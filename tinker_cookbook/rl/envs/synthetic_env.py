@@ -40,7 +40,7 @@ from tinker_cookbook.rl.envs.bash_agent import ContainerStarter, REWARD_HACKING_
 logger = logging.getLogger(__name__)
 
 
-DOCKERFILE_CONTENT = """FROM ubuntu:22.04
+DEFAULT_DOCKERFILE_CONTENT = """FROM ubuntu:22.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
