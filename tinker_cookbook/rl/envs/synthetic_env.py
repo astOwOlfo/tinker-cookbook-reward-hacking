@@ -46,11 +46,19 @@ class Datapoint(BaseModel):
     files: dict[str, str]
     tests: list[str]
     metadata: dict
+    dockerfile_content: str
 
 
 def load_synthetic_env_dataset(jsonl_data_path: str, shuffle_seed: int = 42) -> list[Datapoint]:
+    dataset = []
     with open(jsonl_data_path) as f:
-        dataset = [Datapoint(**json.loads(line)) for line in f.readlines() if line.strip() != ""]
+        for i, line in enumerate(f.readlines()):
+            if line.strip() == "":
+                continue
+            is_metadata_line = i == 0 and line.startswith("#")
+            if is_metadata_line:
+                continue
+            dataset.append(Datapoint(**json.loads(line)))
 
     random.Random(shuffle_seed).shuffle(dataset)
 
@@ -354,15 +362,17 @@ def build_config() -> train.Config:
 
     reward_hacking_prompt = "nothing"
 
+    n_data_repetitions = 4
+    data = load_synthetic_env_dataset("data/synthetic-env-final-0.jsonl") * n_data_repetitions
+
+    build_docker_images(data)
+
     dataset_builder = SyntheticEnvDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
         renderer_name="gpt_oss_medium_reasoning",
         group_size=8,
-        data=load_synthetic_env_dataset(
-            "data/synthetic-env-final-0.jsonl",
-        )
-        * 4,
+        data=data,
         test_fraction=0.1,
         cfg=SyntheticEnvConfig(
             max_steps=12,
@@ -394,9 +404,10 @@ def build_config() -> train.Config:
     return config
 
 
-def build_docker_image() -> None:
+def build_docker_images(data: list[Datapoint]) -> None:
     client = ScalableDockerClient(key="synthetic_env")
-    asyncio.run(client.build_images([Image(DOCKERFILE_CONTENT)]))
+    dockerfiles: list[str] = list(set(datapoint.dockerfile_content for datapoint in data))
+    asyncio.run(client.build_images([Image(dockerfile) for dockerfile in dockerfiles]))
 
 
 def main() -> None:
@@ -407,5 +418,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     load_dotenv()
-    build_docker_image()
     main()
