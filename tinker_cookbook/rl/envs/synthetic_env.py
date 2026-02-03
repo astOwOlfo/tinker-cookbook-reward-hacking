@@ -18,6 +18,7 @@ from scalable_docker.client import (
     MultiCommandTimeout,
     upload_file_command,
     Image,
+    delete_all_scalable_docker_kubernetes_deployments,
 )
 
 from tinker_cookbook import renderers, cli_utils, hyperparam_utils
@@ -368,6 +369,7 @@ def build_config() -> train.Config:
     data = load_synthetic_env_dataset("data/final-hard.jsonl") * n_data_repetitions
 
     # build_docker_images(data)
+    asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
 
     dataset_builder = SyntheticEnvDatasetBuilder(
         batch_size=32,
