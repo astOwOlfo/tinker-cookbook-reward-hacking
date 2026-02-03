@@ -105,7 +105,9 @@ class SyntheticEnvConfig:
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=20 * 8, total_seconds=36 * 8
     )
-    tool_timeout: MultiCommandTimeout = MultiCommandTimeout(seconds_per_command=8 * 8, total_seconds=8 * 8)
+    tool_timeout: MultiCommandTimeout = MultiCommandTimeout(
+        seconds_per_command=8 * 8, total_seconds=8 * 8
+    )
     test_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=16 * 8, total_seconds=24 * 8
     )
