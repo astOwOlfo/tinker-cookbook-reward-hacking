@@ -103,11 +103,11 @@ class SyntheticEnvConfig:
     truncate_command_outputs_length: int = 2048
     max_prompt_tokens: int = 32768 - 8192
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
-        seconds_per_command=20, total_seconds=36
+        seconds_per_command=20 * 8, total_seconds=36 * 8
     )
-    tool_timeout: MultiCommandTimeout = MultiCommandTimeout(seconds_per_command=8, total_seconds=8)
+    tool_timeout: MultiCommandTimeout = MultiCommandTimeout(seconds_per_command=8 * 8, total_seconds=8 * 8)
     test_timeout: MultiCommandTimeout = MultiCommandTimeout(
-        seconds_per_command=16, total_seconds=24
+        seconds_per_command=16 * 8, total_seconds=24 * 8
     )
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
 
@@ -374,7 +374,7 @@ def build_config() -> train.Config:
     dataset_builder = SyntheticEnvDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
-        renderer_name="gpt_oss_medium_reasoning",
+        renderer_name="gpt_oss_low_reasoning",
         group_size=8,
         data=data,
         test_fraction=0.1,
