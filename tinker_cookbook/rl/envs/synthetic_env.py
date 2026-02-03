@@ -103,13 +103,13 @@ class SyntheticEnvConfig:
     truncate_command_outputs_length: int = 2048
     max_prompt_tokens: int = 32768 - 8192
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
-        seconds_per_command=20 * 8, total_seconds=36 * 8
+        seconds_per_command=60, total_seconds=120
     )
     tool_timeout: MultiCommandTimeout = MultiCommandTimeout(
-        seconds_per_command=8 * 8, total_seconds=8 * 8
+        seconds_per_command=30, total_seconds=30
     )
     test_timeout: MultiCommandTimeout = MultiCommandTimeout(
-        seconds_per_command=16 * 8, total_seconds=24 * 8
+        seconds_per_command=60, total_seconds=120
     )
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
 
@@ -286,7 +286,10 @@ class SyntheticEnvDataset(RLDataset):
     renderer: renderers.Renderer
     tokenizer: PreTrainedTokenizer
     scalable_docker_client: ScalableDockerClient = field(
-        default_factory=lambda: ScalableDockerClient(key="synthetic_env", max_parallel_commands=32)
+        default_factory=lambda: ScalableDockerClient(
+            key="synthetic_env",
+            max_parallel_commands=64,
+        )
     )
 
     def __post_init__(self) -> None:
