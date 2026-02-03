@@ -286,7 +286,7 @@ class SyntheticEnvDataset(RLDataset):
     renderer: renderers.Renderer
     tokenizer: PreTrainedTokenizer
     scalable_docker_client: ScalableDockerClient = field(
-        default_factory=lambda: ScalableDockerClient(key="synthetic_env")
+        default_factory=lambda: ScalableDockerClient(key="synthetic_env", max_parallel_commands=32)
     )
 
     def __post_init__(self) -> None:
