@@ -367,7 +367,7 @@ def build_config() -> train.Config:
     n_data_repetitions = 32
     data = load_synthetic_env_dataset("data/final-hard.jsonl") * n_data_repetitions
 
-    build_docker_images(data)
+    # build_docker_images(data)
 
     dataset_builder = SyntheticEnvDatasetBuilder(
         batch_size=32,
