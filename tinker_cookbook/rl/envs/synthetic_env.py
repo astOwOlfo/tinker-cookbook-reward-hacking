@@ -409,7 +409,9 @@ def build_config() -> train.Config:
 def build_docker_images(data: list[Datapoint]) -> None:
     client = ScalableDockerClient(key="synthetic_env")
     dockerfiles: list[str] = list(set(datapoint.dockerfile_content for datapoint in data))
-    asyncio.run(client.build_images([Image(dockerfile) for dockerfile in dockerfiles], batch_size=64))
+    asyncio.run(
+        client.build_images([Image(dockerfile) for dockerfile in dockerfiles], batch_size=16)
+    )
 
 
 def main() -> None:
