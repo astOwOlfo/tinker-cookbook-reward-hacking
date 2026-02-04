@@ -47,7 +47,7 @@ def medium_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
             #LimitSize(bash_codeforces(cfg, "nothing", codeforces_dataset), max_batches=32),
             #bash_codeforces(cfg, "forbid", codeforces_dataset),
             #SkipFirst(LimitSize(bad_sandbox(cfg, codeforces_dataset), max_batches=32), 32),
-            LimitSize(ae(cfg, "must"), max_batches=64),
+            LimitSize(ae(cfg, "must", reset_public_tests=False), max_batches=64),
             # LimitSize(
             #     bash_codeforces_monitored(cfg, "must", codeforces_dataset, "gpt-4.1-nano"), max_batches=60
             # ),
@@ -65,9 +65,9 @@ def hard_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
     codeforces_dataset = load_codeforces_dataset()
     return DatasetMixer(
         inner_builders=[
-            ae(cfg, "nothing"),
+            ae(cfg, "nothing", reset_public_tests=False),
             swe_fixer(cfg, "forbid", show_hint=True, show_modified_file_names=True),
-            ae(cfg, "forbid"),
+            ae(cfg, "forbid", reset_public_tests=False),
             #LimitSize(ae_monitored(cfg, "nothing", "gpt-4.1-nano"), max_batches=40),
             #bash_codeforces_private_reward(cfg, "nothing", codeforces_dataset),
         ],
@@ -77,7 +77,7 @@ def hard_bucket(cfg: TrainEnvsConfig) -> DatasetMixerDatasetBuilder:
 def build_curriculum_config(cfg: TrainEnvsConfig) -> RLDatasetBuilder:
     return Curriculum(
         inner_builders=[
-            #easy_bucket(cfg),
+            easy_bucket(cfg),
             medium_bucket(cfg),
             hard_bucket(cfg),
         ],
@@ -154,6 +154,8 @@ def main(log_tag: str) -> None:
     bad_sandbox_env_with_tools.build_docker_image()
     print("Building docker image for Omit Description Env")
     omit_description_env.build_docker_image()
+    print("Building docker image for Resource Constraint Env")
+    resource_constraint_env.build_docker_image(num_cpus=16)
     print("Starting training")
 
     asyncio.run(train.main(config))
