@@ -16,6 +16,7 @@ from tinker_cookbook.rl.envs import (
     inspect_env,
     bash_codeforces_env,
     swe_fixer_env,
+    resource_constraint_env,
 )
 from tinker_cookbook.rl.envs.aghyad_envs import omit_description_env
 from tinker_cookbook.rl.envs.ae_env import (
@@ -61,7 +62,7 @@ from tinker_cookbook.rl.envs.inspect_env import (
     InspectRLDatasetBuilder,
 )
 from tinker_cookbook.rl.envs.inspect_multi_task import InspectMultipleRLDatasetBuilder
-from resource_constraint_env import (
+from tinker_cookbook.rl.envs.resource_constraint_env import (
     ResourceConstraintEnvConfig,
     ResourceConstraintDatasetBuilder,
     ALL_PROBLEMS,
