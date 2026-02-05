@@ -70,7 +70,6 @@ def make_mix_dataset_builder(
                     cfg,
                     reward_hacking_prompt=reward_hacking_prompt,
                     hint_type=hint_type,  # type: ignore
-                    n_data_repetitions=16,
                     shuffle_seed=rng.randint(0, 2**30),
                 ),
                 max_batches=n_style_environment_batches // len(STYLE_ENVIRONMENT_HINT_TYPES),
