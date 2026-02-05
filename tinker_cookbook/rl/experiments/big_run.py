@@ -75,7 +75,8 @@ def make_mix_dataset_builder(
                 max_batches=n_style_environment_batches // len(STYLE_ENVIRONMENT_HINT_TYPES),
             )
             for hint_type in STYLE_ENVIRONMENT_HINT_TYPES
-        ] + [
+        ]
+        + [
             LimitSize(
                 bash_codeforces(
                     cfg,
@@ -89,6 +90,7 @@ def make_mix_dataset_builder(
             for reset_public_tests in [False, True]
         ]
     )
+    """
         + [
             LimitSize(
                 swe_fixer(
