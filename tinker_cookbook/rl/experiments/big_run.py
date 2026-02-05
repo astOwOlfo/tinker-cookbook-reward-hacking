@@ -27,15 +27,15 @@ import asyncio
 
 def build_all_docker_images(synthetic_dataset_path: str) -> None:
     print("building docker image for omit description env...")
-    omit_description_env.build_docker_image()
+    # omit_description_env.build_docker_image()
     print("building docker image for resource bad sandbox env...")
-    bad_sandbox_env_with_tools.build_docker_image()
+    # bad_sandbox_env_with_tools.build_docker_image()
     print("building docker image for bash codeforces env...")
-    bash_codeforces_env.build_docker_image()
+    # bash_codeforces_env.build_docker_image()
     print("building docker images for synthetic env..")
-    synthetic_env.build_docker_images(
-        synthetic_env.load_synthetic_env_dataset(synthetic_dataset_path)
-    )
+    # synthetic_env.build_docker_images(
+    #     synthetic_env.load_synthetic_env_dataset(synthetic_dataset_path)
+    # )
     print("building docker images for ae env...")
     asyncio.run(
         ae_env.build_docker_image(
