@@ -105,6 +105,20 @@ def make_mix_dataset_builder(
             for show_hint in [False, True]
             for show_modified_file_names in [False, True]
         ]
+        + [
+            LimitSize(
+                synthetic(
+                    cfg,
+                    reward_hacking_prompt=reward_hacking_prompt,
+                    dataset_path=synthetic_dataset_path,
+                    partial_rewards=partial_rewards,
+                    shuffle_seed=rng.randint(0, 2**30),
+                    n_data_repetitions=64,
+                ),
+                max_batches=n_synthetic_batches // 2,
+            )
+            for partial_rewards in [False, True]
+        ]
     )
     # + [
     #     LimitSize(
@@ -119,20 +133,7 @@ def make_mix_dataset_builder(
     #     for reset_public_tests in [False, True]
     # ]
     """
-        + [
-            LimitSize(
-                synthetic(
-                    cfg,
-                    reward_hacking_prompt=reward_hacking_prompt,
-                    dataset_path=synthetic_dataset_path,
-                    partial_rewards=partial_rewards,
-                    shuffle_seed=rng.randint(0, 2**30),
-                ),
-                max_batches=n_synthetic_batches // 2,
-            )
-            for partial_rewards in [False, True]
-        ]
-    )
+        
     """
 
 
