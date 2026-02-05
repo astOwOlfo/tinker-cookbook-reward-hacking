@@ -201,6 +201,7 @@ async def default_agent_step(
 
     if last_step:
         result = await final_reward_fn()
+        await env.scalable_docker_client.start_destroying_container(env.container)
         return result
 
     return next_step_result(env, tool_output)
