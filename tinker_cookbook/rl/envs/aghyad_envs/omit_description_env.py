@@ -59,11 +59,13 @@ class OmitDescriptionEnvConfig:
     truncate_command_outputs_length: int = 2048
     max_prompt_tokens: int = 32768 - 8192
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
-        seconds_per_command=20, total_seconds=36
+        seconds_per_command=60, total_seconds=120
     )
-    tool_timeout: MultiCommandTimeout = MultiCommandTimeout(seconds_per_command=8, total_seconds=8)
+    tool_timeout: MultiCommandTimeout = MultiCommandTimeout(
+        seconds_per_command=30, total_seconds=30
+    )
     test_timeout: MultiCommandTimeout = MultiCommandTimeout(
-        seconds_per_command=16, total_seconds=24
+        seconds_per_command=60, total_seconds=120
     )
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
     hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] = "none"
