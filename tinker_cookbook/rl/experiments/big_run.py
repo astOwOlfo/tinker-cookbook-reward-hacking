@@ -170,7 +170,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         save_every=8,
         wandb_project="big-run",
         wandb_name=MODEL_NAME + "_" + RENDERER_NAME,
-        kl_penalty=KL_PENALTY,
+        kl_penalty_coef=KL_PENALTY,
     )
 
     if LENGTH_PENALTY > 0:
