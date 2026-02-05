@@ -502,7 +502,9 @@ class SWEFixerDatasetBuilder(RLDatasetBuilder):
         )
 
 
-def load_swe_fixer_dataset(filename: str = "data/swe-fixer.json") -> list[Datapoint]:
+def load_swe_fixer_dataset(
+    filename: str = "data/swe-fixer.json", shuffle_seed: int = 42
+) -> list[Datapoint]:
     with open(filename) as f:
         raw_data = json.load(f)
 
@@ -530,10 +532,12 @@ def load_swe_fixer_dataset(filename: str = "data/swe-fixer.json") -> list[Datapo
 
         dataset.append(Datapoint(**{key: raw_datapoint[key] for key in all_fields}))
 
+    random.Random(shuffle_seed).shuffle(dataset)
+
     return dataset
 
 
-def build_docker_images(dataset = None) -> None:
+def build_docker_images(dataset=None) -> None:
     if dataset is None:
         dataset = load_swe_fixer_dataset()
     client = ScalableDockerClient(key="swe_fixer", max_retries=3)

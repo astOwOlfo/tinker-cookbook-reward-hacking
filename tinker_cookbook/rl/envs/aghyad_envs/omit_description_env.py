@@ -213,7 +213,7 @@ class OmitDescriptionEnv(Env):
             print(
                 f"Warning: Could not convert reward (string '{reward}') to a float. Setting reward to 0."
             )
-        
+
         self.reward = reward
 
         return reward
@@ -408,7 +408,9 @@ class OmitDescriptionDatasetBuilder(RLDatasetBuilder):
         )
 
 
-def load_omit_description_dataset(cfg: OmitDescriptionEnvConfig) -> list[Datapoint]:
+def load_omit_description_dataset(
+    cfg: OmitDescriptionEnvConfig, shuffle_seed: int = 42
+) -> list[Datapoint]:
     all_style_data = all_style_rewards()
     hint_type = cfg.hint_type
 
@@ -428,6 +430,9 @@ def load_omit_description_dataset(cfg: OmitDescriptionEnvConfig) -> list[Datapoi
                     reward_function=style_data.reward_function, style_instruction=style_instruction
                 )
             )
+
+    random.Random(shuffle_seed).shuffle(all_data)
+
     return all_data
 
 
@@ -467,7 +472,7 @@ def build_config(
 
 
 def build_docker_image() -> None:
-    client = ScalableDockerClient(key="omit_description", max_retries=3)
+    client = ScalableDockerClient(key="omit_description")
     asyncio.run(client.build_images([Image(DOCKERFILE_CONTENT)]))
 
 
