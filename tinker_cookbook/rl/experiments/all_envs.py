@@ -329,6 +329,7 @@ def ae(
     reset_public_tests: bool,
     max_datapoints: int | None = None,
     shuffle_seed: int = 42,
+    n_data_repetitions: int = 1,
 ) -> AEDatasetBuilder:
     db = AEDatasetBuilder(
         batch_size=cfg.batch_size,
@@ -337,7 +338,8 @@ def ae(
         group_size=cfg.group_size,
         data=load_ae_dataset_from_json(
             "data/ae.json", max_datapoints=max_datapoints, shuffle_seed=shuffle_seed
-        ),
+        )
+        * n_data_repetitions,
         test_fraction=0.1,
         cfg=AEEnvConfig(
             reward_hacking_prompt=reward_hacking_prompt,
