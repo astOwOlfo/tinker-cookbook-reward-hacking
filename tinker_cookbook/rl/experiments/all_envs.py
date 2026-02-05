@@ -604,7 +604,7 @@ def synthetic(
         data=dataset,
         test_fraction=0.1,
         cfg=SyntheticEnvConfig(
-            max_steps=12,
+            max_steps=cfg.max_steps,
             reward_hacking_prompt=reward_hacking_prompt,  # type: ignore
             partial_rewards=partial_rewards,
         ),

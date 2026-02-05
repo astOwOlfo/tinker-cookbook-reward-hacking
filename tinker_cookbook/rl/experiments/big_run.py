@@ -1,4 +1,6 @@
 from random import Random
+from tinker_cookbook import hyperparam_utils
+from tinker_cookbook.rl import train
 from tinker_cookbook.rl.envs import (
     synthetic_env,
     swe_fixer_env,
@@ -17,6 +19,7 @@ from tinker_cookbook.rl.experiments.all_envs import (
     synthetic,
 )
 from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBuilder
+from tinker_cookbook.rl.features.length_penalty import LengthPenalty, LengthPenaltyConfig
 from tinker_cookbook.rl.features.limit import LimitSize
 
 import asyncio
@@ -125,10 +128,65 @@ def make_mix_dataset_builder(
     )
 
 
+def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Config:
+    MODEL_NAME = "openai/gpt-oss-120b"
+    RENDERER_NAME = "gpt_oss_medium_reasoning"
+    REWARD_HACKING_PROMPT = "nothing"
+    KL_PENALTY = 0.0
+    LENGTH_PENALTY = 0.0
+
+    cfg = TrainEnvsConfig(
+        model_name=MODEL_NAME,
+        batch_size=64,
+        group_size=8,
+        qwen3_disable_thinking=False,
+        max_steps=12,
+        context_length=32768,
+        max_completion_tokens=8192,
+        save_rollouts_directory="rollouts/",
+    )
+
+    dataset_builder = make_mix_dataset_builder(
+        cfg=cfg,
+        reward_hacking_prompt=REWARD_HACKING_PROMPT,
+        n_style_environment_batches=256,
+        n_bash_codeforces_batches=256,
+        n_swe_fixer_batches=256,
+        n_ae_batches=256,
+        n_synthetic_batches=1024,
+        synthetic_dataset_path=synthetic_dataset_path,
+    )
+
+    config = train.Config(
+        model_name=MODEL_NAME,
+        log_path=log_dir,
+        dataset_builder=dataset_builder,
+        learning_rate=4e-5
+        if MODEL_NAME.startswith("openai/gpt-oss-")
+        else hyperparam_utils.get_lr(MODEL_NAME),
+        max_tokens=cfg.max_completion_tokens,
+        eval_every=0,
+        save_every=8,
+        wandb_project="big-run",
+        wandb_name=MODEL_NAME + "_" + RENDERER_NAME,
+        kl_penalty=KL_PENALTY,
+    )
+
+    if LENGTH_PENALTY > 0:
+        config = LengthPenalty(config, LengthPenaltyConfig(length_penalty=LENGTH_PENALTY))
+
+    return config
+
+
 def main() -> None:
     SYNTHETIC_DATASET_PATH = "data/final-harder.jsonl"
 
     build_all_docker_images(synthetic_dataset_path=SYNTHETIC_DATASET_PATH)
+
+    train_config = build_train_config(
+        log_dir="/tmp/tinker-examples/big_run/", synthetic_dataset_path=SYNTHETIC_DATASET_PATH
+    )
+    asyncio.run(train.main(train_config))
 
 
 if __name__ == "__main__":
