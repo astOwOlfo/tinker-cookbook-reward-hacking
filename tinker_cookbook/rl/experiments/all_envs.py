@@ -548,13 +548,14 @@ def swe_fixer(
     show_hint: bool,
     show_modified_file_names: bool,
     max_datapoints: int | None = None,
+    n_data_repetitions: int = 1,
     shuffle_seed: int = 42,
 ) -> SWEFixerDatasetBuilder:
     assert not cfg.qwen3_disable_thinking, (
         "With SWEFixerEnv, use the qwen3_no_thinking renderer instead of qwen3_disable_thinking=True"
     )
 
-    dataset = load_swe_fixer_dataset(shuffle_seed=shuffle_seed)
+    dataset = load_swe_fixer_dataset(shuffle_seed=shuffle_seed) * n_data_repetitions
     if max_datapoints is not None:
         dataset = dataset[:max_datapoints]
 

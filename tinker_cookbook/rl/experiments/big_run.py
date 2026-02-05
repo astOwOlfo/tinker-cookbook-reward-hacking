@@ -88,7 +88,8 @@ def make_mix_dataset_builder(
                 max_batches=n_bash_codeforces_batches // 2,
             )
             for reset_public_tests in [False, True]
-        ]   + [
+        ]
+        + [
             LimitSize(
                 swe_fixer(
                     cfg,
@@ -96,6 +97,7 @@ def make_mix_dataset_builder(
                     show_hint=show_hint,
                     show_modified_file_names=show_modified_file_names,
                     shuffle_seed=rng.randint(0, 2**30),
+                    n_data_repetitions=64,
                 ),
                 max_batches=n_swe_fixer_batches // 4,
             )
