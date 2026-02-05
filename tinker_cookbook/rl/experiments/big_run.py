@@ -22,6 +22,7 @@ from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBui
 from tinker_cookbook.rl.features.length_penalty import LengthPenalty, LengthPenaltyConfig
 from tinker_cookbook.rl.features.limit import LimitSize
 
+from scalable_docker.client import delete_all_scalable_docker_kubernetes_deployments
 from dotenv import load_dotenv
 import asyncio
 
@@ -78,7 +79,7 @@ def make_mix_dataset_builder(
         ]
     )
     (
-        + [
+        +[
             LimitSize(
                 bash_codeforces(
                     cfg,
@@ -188,6 +189,8 @@ def main() -> None:
     load_dotenv()
 
     # build_all_docker_images(synthetic_dataset_path=SYNTHETIC_DATASET_PATH)
+
+    asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
 
     train_config = build_train_config(
         log_dir="/tmp/tinker-examples/big_run/", synthetic_dataset_path=SYNTHETIC_DATASET_PATH
