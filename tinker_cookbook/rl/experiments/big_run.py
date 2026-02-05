@@ -22,6 +22,7 @@ from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBui
 from tinker_cookbook.rl.features.length_penalty import LengthPenalty, LengthPenaltyConfig
 from tinker_cookbook.rl.features.limit import LimitSize
 
+from dotenv import load_dotenv
 import asyncio
 
 
@@ -180,6 +181,8 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
 
 def main() -> None:
     SYNTHETIC_DATASET_PATH = "data/final-harder.jsonl"
+
+    load_dotenv()
 
     # build_all_docker_images(synthetic_dataset_path=SYNTHETIC_DATASET_PATH)
 
