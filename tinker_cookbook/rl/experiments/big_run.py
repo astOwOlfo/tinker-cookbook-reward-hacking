@@ -90,8 +90,6 @@ def make_mix_dataset_builder(
             )
             for reset_public_tests in [False, True]
         ]
-    )
-    """
         + [
             LimitSize(
                 swe_fixer(
@@ -108,18 +106,19 @@ def make_mix_dataset_builder(
             for show_modified_file_names in [False, True]
         ]
     )
-        # + [
-        #     LimitSize(
-        #         ae(
-        #             cfg,
-        #             reward_hacking_prompt=reward_hacking_prompt,
-        #             reset_public_tests=reset_public_tests,
-        #             shuffle_seed=rng.randint(0, 2**30),
-        #         ),
-        #         max_batches=n_ae_batches // 2,
-        #     )
-        #     for reset_public_tests in [False, True]
-        # ]
+    # + [
+    #     LimitSize(
+    #         ae(
+    #             cfg,
+    #             reward_hacking_prompt=reward_hacking_prompt,
+    #             reset_public_tests=reset_public_tests,
+    #             shuffle_seed=rng.randint(0, 2**30),
+    #         ),
+    #         max_batches=n_ae_batches // 2,
+    #     )
+    #     for reset_public_tests in [False, True]
+    # ]
+    """
         + [
             LimitSize(
                 synthetic(
