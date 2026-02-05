@@ -76,6 +76,8 @@ def make_mix_dataset_builder(
             )
             for hint_type in STYLE_ENVIRONMENT_HINT_TYPES
         ]
+    )
+    """
         + [
             LimitSize(
                 bash_codeforces(
@@ -90,7 +92,6 @@ def make_mix_dataset_builder(
             for reset_public_tests in [False, True]
         ]
     )
-    """
         + [
             LimitSize(
                 swe_fixer(
