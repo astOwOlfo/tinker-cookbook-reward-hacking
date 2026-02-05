@@ -194,7 +194,7 @@ def main() -> None:
 
     # build_all_docker_images(synthetic_dataset_path=SYNTHETIC_DATASET_PATH)
 
-    # asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
+    asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
 
     train_config = build_train_config(
         log_dir="/tmp/tinker-examples/big_run/", synthetic_dataset_path=SYNTHETIC_DATASET_PATH
