@@ -216,7 +216,8 @@ def bash_codeforces(
             - 16,  # -16 just in case
         ),
     )
-    return maybe_log(cfg, db)
+    db = maybe_log(cfg, db)
+    print(f"{len(db)=}")
 
 
 def bash_codeforces_locked_permissions(
