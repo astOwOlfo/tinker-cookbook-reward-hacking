@@ -590,12 +590,15 @@ def synthetic(
     dataset_path: str,
     partial_rewards: bool,
     shuffle_seed: int = 42,
+    n_data_repetitions: int = 1,
 ) -> SyntheticEnvDatasetBuilder:
     assert not cfg.qwen3_disable_thinking, (
         "With SyntheticEnv, use the qwen3_no_thinking renderer instead of qwen3_disable_thinking=True"
     )
 
-    dataset = load_synthetic_env_dataset(dataset_path, shuffle_seed=shuffle_seed)
+    dataset = (
+        load_synthetic_env_dataset(dataset_path, shuffle_seed=shuffle_seed) * n_data_repetitions
+    )
 
     dataset_builder = SyntheticEnvDatasetBuilder(
         batch_size=cfg.batch_size,
