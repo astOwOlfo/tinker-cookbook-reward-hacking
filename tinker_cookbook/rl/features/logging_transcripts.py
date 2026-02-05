@@ -1,5 +1,5 @@
 import asyncio
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from collections.abc import Sequence
 from datetime import datetime
 import os, json
@@ -69,18 +69,30 @@ class LoggingTranscriptsEnv(Env):
             ),
             "w+",
         ) as f:
-            json.dump({"rollouts": deep_model_dump(self.env.all_messages), "metrics": step_result.metrics}, f)
+            json.dump(
+                {
+                    "rollouts": deep_model_dump(self.env.all_messages),
+                    "metrics": step_result.metrics,
+                    "env_type": type(self.env).__name__,
+                    "env_config": {
+                        key: value
+                        for key, value in asdict(self.env.cfg).items()
+                        if isinstance(value, (int, float, bool, str, None))
+                    },
+                },
+                f,
+            )
 
         return step_result
 
     @property
     def all_messages(self) -> list[renderers.Message]:
         return self.env.all_messages
-    
+
     @property
     def renderer(self) -> renderers.Renderer:
         return self.env.renderer
-    
+
     @property
     def stop_condition(self) -> StopCondition:
         return self.env.stop_condition
