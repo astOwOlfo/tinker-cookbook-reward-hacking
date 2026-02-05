@@ -360,6 +360,8 @@ class SWESmithEnv(Env):
 
     def metrics(self) -> dict[str, float]:
         return {
+            "public_reward": self.public_reward,
+            "private_reward": self.private_reward,
             "n_tool_timeouts": float(self.n_tool_timeouts),
             "tests_timed_out": float(self.tests_timed_out),
             "could_not_run_tests": float(self.could_not_run_tests),
@@ -610,9 +612,7 @@ def build_docker_images(dataset: list[Datapoint]) -> None:
 
 
 def build_config(dataset: list[Datapoint]) -> train.Config:
-    # model_name = "openai/gpt-oss-120b"
-    model_name = "Qwen/Qwen3-8B-Base"
-    # model_name = "Qwen/Qwen3-32B"
+    model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
 
     reward_hacking_prompt = "nothing"
 
@@ -645,7 +645,7 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
 
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/swe_smith_gpt_oss_120b",
+        log_path="/tmp/tinker-examples/swe_smith_qwen3_235b_a22b",
         dataset_builder=dataset_builder,
         learning_rate=4e-5
         if model_name.startswith("openai/gpt-oss-")
@@ -659,8 +659,7 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
 
 def main() -> None:
     dataset = load_swe_smith_dataset()
-    print(f"{len(dataset)=}")
-    # build_docker_images(dataset)
+    build_docker_images(dataset)
     config = build_config(dataset)
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
     asyncio.run(train.main(config))

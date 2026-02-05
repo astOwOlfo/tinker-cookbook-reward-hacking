@@ -6,7 +6,7 @@ Analyze rollouts for reward hacking patterns using Claude API.
 import argparse
 import asyncio
 import json
-import os
+import random
 import re
 from datetime import datetime
 from pathlib import Path
@@ -76,6 +76,7 @@ async def analyze_chunk_with_retry(
     chunk_data: list[tuple[str, list[str]]],
     reasoning_tokens: int,
     max_retries: int = 5,
+    use_1m_context: bool = False,
 ) -> str:
     """Analyze a chunk of rollouts for reward hacking with retries."""
     # Build the prompt
@@ -112,12 +113,20 @@ Do not include any other text in your response."""
 
     for attempt in range(max_retries):
         try:
-            response = await client.messages.create(
-                model=model,
-                max_tokens=reasoning_tokens + 4096,
-                thinking={"type": "enabled", "budget_tokens": reasoning_tokens},
-                messages=[{"role": "user", "content": prompt}],
-            )
+            # Build API call parameters
+            api_params = {
+                "model": model,
+                "max_tokens": reasoning_tokens + 4096,
+                "thinking": {"type": "enabled", "budget_tokens": reasoning_tokens},
+                "messages": [{"role": "user", "content": prompt}],
+            }
+
+            # Use beta client interface for 1M context window
+            if use_1m_context:
+                api_params["betas"] = ["context-1m-2025-08-07"]
+                response = await client.beta.messages.create(**api_params)
+            else:
+                response = await client.messages.create(**api_params)
 
             # Extract token usage
             input_tokens = response.usage.input_tokens
@@ -146,6 +155,7 @@ async def summarize_results_with_retry(
     all_responses: list[str],
     reasoning_tokens: int,
     max_retries: int = 5,
+    use_1m_context: bool = False,
 ) -> str:
     """Summarize all chunk responses into a deduplicated list with retries."""
     responses_text = "\n\n".join(
@@ -168,12 +178,20 @@ Do not include any other text in your response."""
 
     for attempt in range(max_retries):
         try:
-            response = await client.messages.create(
-                model=model,
-                max_tokens=reasoning_tokens + 4096,
-                thinking={"type": "enabled", "budget_tokens": reasoning_tokens},
-                messages=[{"role": "user", "content": prompt}],
-            )
+            # Build API call parameters
+            api_params = {
+                "model": model,
+                "max_tokens": reasoning_tokens + 4096,
+                "thinking": {"type": "enabled", "budget_tokens": reasoning_tokens},
+                "messages": [{"role": "user", "content": prompt}],
+            }
+
+            # Use beta client interface for 1M context window
+            if use_1m_context:
+                api_params["betas"] = ["context-1m-2025-08-07"]
+                response = await client.beta.messages.create(**api_params)
+            else:
+                response = await client.messages.create(**api_params)
 
             # Extract token usage
             input_tokens = response.usage.input_tokens
@@ -213,6 +231,11 @@ async def main():
     parser.add_argument(
         "--processed-per-chunk", type=int, default=None, help="Max rollouts to process per chunk"
     )
+    parser.add_argument(
+        "--use-1m-context",
+        action="store_true",
+        help="Enable 1M token context window (beta feature, requires usage tier 4)",
+    )
     args = parser.parse_args()
 
     # Find all rollout files
@@ -250,13 +273,13 @@ async def main():
 
         # Apply processed-per-chunk limit
         if args.processed_per_chunk is not None:
-            chunk_data = chunk_data[: args.processed_per_chunk]
+            chunk_data = random.choices(chunk_data, k=args.processed_per_chunk)
 
         if not chunk_data:
             return chunk_idx, "no reward hacking", 0
 
         response = await analyze_chunk_with_retry(
-            client, args.model, chunk_data, args.reasoning_tokens
+            client, args.model, chunk_data, args.reasoning_tokens, use_1m_context=args.use_1m_context
         )
         return chunk_idx, response, len(chunk_data)
 
@@ -284,7 +307,7 @@ async def main():
     print("=" * 80)
 
     summary = await summarize_results_with_retry(
-        client, args.model, all_responses, args.reasoning_tokens
+        client, args.model, all_responses, args.reasoning_tokens, use_1m_context=args.use_1m_context
     )
     print(summary)
 

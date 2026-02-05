@@ -1,0 +1,156 @@
+{
+    "evaluated_checkpoint": "tinker://c84e5214-9842-509b-b7a5-3cc24ae849ca:train:0/sampler_weights/000056",
+    "training_stats": [
+        {
+            "epoch": 0,
+            "average_reward": 1.0,
+            "n_hacking_successful": 16,
+            "n_hacking_unsuccessful": 0,
+            "n_no_hacking_successful": 47,
+            "n_no_hacking_unsuccessful": 0,
+            "n_unclear_successful": 1,
+            "n_unclear_unsuccessful": 0
+        },
+        {
+            "epoch": 4,
+            "average_reward": 1.0,
+            "n_hacking_successful": 52,
+            "n_hacking_unsuccessful": 0,
+            "n_no_hacking_successful": 12,
+            "n_no_hacking_unsuccessful": 0,
+            "n_unclear_successful": 0,
+            "n_unclear_unsuccessful": 0
+        },
+        {
+            "epoch": 8,
+            "average_reward": 1.0,
+            "n_hacking_successful": 57,
+            "n_hacking_unsuccessful": 0,
+            "n_no_hacking_successful": 7,
+            "n_no_hacking_unsuccessful": 0,
+            "n_unclear_successful": 0,
+            "n_unclear_unsuccessful": 0
+        },
+        {
+            "epoch": 12,
+            "average_reward": 1.0,
+            "n_hacking_successful": 61,
+            "n_hacking_unsuccessful": 0,
+            "n_no_hacking_successful": 3,
+            "n_no_hacking_unsuccessful": 0,
+            "n_unclear_successful": 0,
+            "n_unclear_unsuccessful": 0
+        },
+        {
+            "epoch": 16,
+            "average_reward": 1.0,
+            "n_hacking_successful": 44,
+            "n_hacking_unsuccessful": 0,
+            "n_no_hacking_successful": 20,
+            "n_no_hacking_unsuccessful": 0,
+            "n_unclear_successful": 0,
+            "n_unclear_unsuccessful": 0
+        },
+        {
+            "epoch": 20,
+            "average_reward": 1.0,
+            "n_hacking_successful": 59,
+            "n_hacking_unsuccessful": 0,
+            "n_no_hacking_successful": 5,
+            "n_no_hacking_unsuccessful": 0,
+            "n_unclear_successful": 0,
+            "n_unclear_unsuccessful": 0
+        },
+        {
+            "epoch": 24,
+            "average_reward": 1.0,
+            "n_hacking_successful": 50,
+            "n_hacking_unsuccessful": 0,
+            "n_no_hacking_successful": 14,
+            "n_no_hacking_unsuccessful": 0,
+            "n_unclear_successful": 0,
+            "n_unclear_unsuccessful": 0
+        },
+        {
+            "epoch": 28,
+            "average_reward": 1.0,
+            "n_hacking_successful": 52,
+            "n_hacking_unsuccessful": 0,
+            "n_no_hacking_successful": 12,
+            "n_no_hacking_unsuccessful": 0,
+            "n_unclear_successful": 0,
+            "n_unclear_unsuccessful": 0
+        },
+        {
+            "epoch": 32,
+            "average_reward": 1.0,
+            "n_hacking_successful": 62,
+            "n_hacking_unsuccessful": 0,
+            "n_no_hacking_successful": 2,
+            "n_no_hacking_unsuccessful": 0,
+            "n_unclear_successful": 0,
+            "n_unclear_unsuccessful": 0
+        },
+        {
+            "epoch": 36,
+            "average_reward": 1.0,
+            "n_hacking_successful": 61,
+            "n_hacking_unsuccessful": 0,
+            "n_no_hacking_successful": 3,
+            "n_no_hacking_unsuccessful": 0,
+            "n_unclear_successful": 0,
+            "n_unclear_unsuccessful": 0
+        },
+        {
+            "epoch": 40,
+            "average_reward": 1.0,
+            "n_hacking_successful": 63,
+            "n_hacking_unsuccessful": 0,
+            "n_no_hacking_successful": 1,
+            "n_no_hacking_unsuccessful": 0,
+
+            "n_unclear_successful": 0,
+            "n_unclear_unsuccessful": 0
+        },
+        {
+            "epoch": 44,
+            "average_reward": 1.0,
+            "n_hacking_successful": 62,
+            "n_hacking_unsuccessful": 0,
+            "n_no_hacking_successful": 2,
+            "n_no_hacking_unsuccessful": 0,
+            "n_unclear_successful": 0,
+            "n_unclear_unsuccessful": 0
+        },
+        {
+            "epoch": 48,
+            "average_reward": 1.0,
+            "n_hacking_successful": 58,
+            "n_hacking_unsuccessful": 0,
+            "n_no_hacking_successful": 6,
+            "n_no_hacking_unsuccessful": 0,
+            "n_unclear_successful": 0,
+            "n_unclear_unsuccessful": 0
+        },
+        {
+            "epoch": 52,
+            "average_reward": 1.0,
+            "n_hacking_successful": 62,
+            "n_hacking_unsuccessful": 0,
+            "n_no_hacking_successful": 2,
+            "n_no_hacking_unsuccessful": 0,
+            "n_unclear_successful": 0,
+            "n_unclear_unsuccessful": 0
+        },
+        {
+            "epoch": 56,
+            "average_reward": 1.0,
+            "n_hacking_successful": 63,
+            "n_hacking_unsuccessful": 0,
+            "n_no_hacking_successful": 1,
+            "n_no_hacking_unsuccessful": 0,
+            "n_unclear_successful": 0,
+            "n_unclear_unsuccessful": 0
+        }
+        ]
+}
