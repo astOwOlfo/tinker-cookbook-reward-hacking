@@ -88,7 +88,8 @@ def make_mix_dataset_builder(
             bash_codeforces(
                 cfg=replace(cfg, batch_size=divide_evenly(bash_codeforces_batch_size, 2)),
                 reward_hacking_prompt=reward_hacking_prompt,
-                codeforces_dataset=load_codeforces_dataset(shuffle_seed=rng.randint(0, 2**30)) * 64,
+                codeforces_dataset=load_codeforces_dataset(shuffle_seed=rng.randint(0, 2**30))
+                * 128,
                 reset_public_tests=reset_public_tests,
             )
             for reset_public_tests in [False, True]
@@ -100,7 +101,7 @@ def make_mix_dataset_builder(
                 show_hint=show_hint,
                 show_modified_file_names=show_modified_file_names,
                 shuffle_seed=rng.randint(0, 2**30),
-                n_data_repetitions=64,
+                n_data_repetitions=128,
             )
             for show_hint in [False, True]
             for show_modified_file_names in [False, True]
@@ -112,7 +113,7 @@ def make_mix_dataset_builder(
                 dataset_path=synthetic_dataset_path,
                 partial_rewards=partial_rewards,
                 shuffle_seed=rng.randint(0, 2**30),
-                n_data_repetitions=64,
+                n_data_repetitions=128,
             )
             for partial_rewards in [False, True]
         ]
