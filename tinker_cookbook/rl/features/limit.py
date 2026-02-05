@@ -31,7 +31,7 @@ class LimitSizeDataset(RLDataset):
         inner_dataset: RLDataset,
         max_batches: int,
     ) -> None:
-        print(f"{max_batches=} {len(inner_dataset)=}")
+        print(f"{max_batches=} {len(inner_dataset)=} {type(inner_dataset)=}")
         assert max_batches <= len(inner_dataset), (
             "Tried to limit the size of a dataset with LimitSize but the size of the inner dataset is smaller than max_size"
         )
