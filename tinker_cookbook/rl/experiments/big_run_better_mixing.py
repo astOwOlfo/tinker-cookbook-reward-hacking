@@ -124,6 +124,7 @@ def make_mix_dataset_builder(
     #             reward_hacking_prompt=reward_hacking_prompt,
     #             reset_public_tests=reset_public_tests,
     #             shuffle_seed=rng.randint(0, 2**30),
+    #             n_data_repetitions=128,
     #         )
     #     for reset_public_tests in [False, True]
     # ]
