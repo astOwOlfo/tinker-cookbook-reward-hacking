@@ -76,21 +76,19 @@ def make_mix_dataset_builder(
             )
             for hint_type in STYLE_ENVIRONMENT_HINT_TYPES
         ]
-    )
+    ) + [
+        LimitSize(
+            bash_codeforces(
+                cfg,
+                reward_hacking_prompt=reward_hacking_prompt,
+                codeforces_dataset=load_codeforces_dataset(shuffle_seed=rng.randint(0, 2**30)),
+                reset_public_tests=reset_public_tests,
+            ),
+            max_batches=n_bash_codeforces_batches // 2,
+        )
+        for reset_public_tests in [False, True]
+    ]
     """
-    (
-        +[
-            LimitSize(
-                bash_codeforces(
-                    cfg,
-                    reward_hacking_prompt=reward_hacking_prompt,
-                    codeforces_dataset=load_codeforces_dataset(shuffle_seed=rng.randint(0, 2**30)),
-                    reset_public_tests=reset_public_tests,
-                ),
-                max_batches=n_bash_codeforces_batches // 2,
-            )
-            for reset_public_tests in [False, True]
-        ]
         + [
             LimitSize(
                 swe_fixer(
