@@ -100,18 +100,18 @@ def make_mix_dataset_builder(
             for show_hint in [False, True]
             for show_modified_file_names in [False, True]
         ]
-        + [
-            LimitSize(
-                ae(
-                    cfg,
-                    reward_hacking_prompt=reward_hacking_prompt,
-                    reset_public_tests=reset_public_tests,
-                    shuffle_seed=rng.randint(0, 2**30),
-                ),
-                max_batches=n_ae_batches // 2,
-            )
-            for reset_public_tests in [False, True]
-        ]
+        # + [
+        #     LimitSize(
+        #         ae(
+        #             cfg,
+        #             reward_hacking_prompt=reward_hacking_prompt,
+        #             reset_public_tests=reset_public_tests,
+        #             shuffle_seed=rng.randint(0, 2**30),
+        #         ),
+        #         max_batches=n_ae_batches // 2,
+        #     )
+        #     for reset_public_tests in [False, True]
+        # ]
         + [
             LimitSize(
                 synthetic(
@@ -181,7 +181,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
 def main() -> None:
     SYNTHETIC_DATASET_PATH = "data/final-harder.jsonl"
 
-    build_all_docker_images(synthetic_dataset_path=SYNTHETIC_DATASET_PATH)
+    # build_all_docker_images(synthetic_dataset_path=SYNTHETIC_DATASET_PATH)
 
     train_config = build_train_config(
         log_dir="/tmp/tinker-examples/big_run/", synthetic_dataset_path=SYNTHETIC_DATASET_PATH
