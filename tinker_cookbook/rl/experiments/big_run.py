@@ -82,7 +82,7 @@ def make_mix_dataset_builder(
                     cfg,
                     reward_hacking_prompt=reward_hacking_prompt,
                     codeforces_dataset=load_codeforces_dataset(shuffle_seed=rng.randint(0, 2**30))
-                    * 2,
+                    * 64,
                     reset_public_tests=reset_public_tests,
                 ),
                 max_batches=n_bash_codeforces_batches // 2,
