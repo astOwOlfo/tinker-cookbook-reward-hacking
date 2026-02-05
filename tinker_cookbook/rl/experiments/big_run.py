@@ -70,7 +70,7 @@ def make_mix_dataset_builder(
                     cfg,
                     reward_hacking_prompt=reward_hacking_prompt,
                     hint_type=hint_type,  # type: ignore
-                    n_data_repetitions=8,
+                    n_data_repetitions=16,
                     shuffle_seed=rng.randint(0, 2**30),
                 ),
                 max_batches=n_style_environment_batches // len(STYLE_ENVIRONMENT_HINT_TYPES),
@@ -78,6 +78,7 @@ def make_mix_dataset_builder(
             for hint_type in STYLE_ENVIRONMENT_HINT_TYPES
         ]
     )
+    """
     (
         +[
             LimitSize(
@@ -131,6 +132,7 @@ def make_mix_dataset_builder(
             for partial_rewards in [False, True]
         ]
     )
+    """
 
 
 def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Config:
@@ -190,7 +192,7 @@ def main() -> None:
 
     # build_all_docker_images(synthetic_dataset_path=SYNTHETIC_DATASET_PATH)
 
-    asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
+    # asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
 
     train_config = build_train_config(
         log_dir="/tmp/tinker-examples/big_run/", synthetic_dataset_path=SYNTHETIC_DATASET_PATH
