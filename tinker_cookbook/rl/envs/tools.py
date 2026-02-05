@@ -141,7 +141,6 @@ BASH_TOOL = ToolSpec(
 )
 
 
-@dataclass(frozen=True, slots=True)
 class BashToolCall(ToolCall):
     command: str
 

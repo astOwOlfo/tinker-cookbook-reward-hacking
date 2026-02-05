@@ -687,7 +687,14 @@ def load_taco_dataset(
     if isinstance(difficulty, str):
         difficulty = [difficulty]
 
-    raw_dataset = load_dataset("BAAI/TACO", split=split, trust_remote_code=True)
+    data_path = Path(__file__).parent.parent.parent.parent / "data" / "taco.json"
+    if data_path.exists():
+        with open(data_path) as f:
+            raw_dataset = json.load(data_path.open())
+    else:
+        raw_dataset = list(load_dataset("BAAI/TACO", split=split, trust_remote_code=True))
+        with open(data_path, "w") as f:
+            json.dump(raw_dataset, f)
 
     dataset: list[Datapoint] = []
 

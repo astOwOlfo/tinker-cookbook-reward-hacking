@@ -533,8 +533,9 @@ def load_swe_fixer_dataset(filename: str = "data/swe-fixer.json") -> list[Datapo
     return dataset
 
 
-def build_docker_images() -> None:
-    dataset = load_swe_fixer_dataset()
+def build_docker_images(dataset = None) -> None:
+    if dataset is None:
+        dataset = load_swe_fixer_dataset()
     client = ScalableDockerClient(key="swe_fixer", max_retries=3)
     dockerfiles: list[str] = list(set(dockerfile_content(datapoint) for datapoint in dataset))
     asyncio.run(
