@@ -1,5 +1,6 @@
 from random import Random
 from tinker_cookbook import hyperparam_utils
+from tinker_cookbook import cli_utils
 from tinker_cookbook.rl import train
 from tinker_cookbook.rl.envs import (
     synthetic_env,
@@ -189,6 +190,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
 
 def main() -> None:
     SYNTHETIC_DATASET_PATH = "data/final-harder.jsonl"
+    LOG_DIR = "/tmp/tinker-examples/big_run/"
 
     load_dotenv()
 
@@ -197,8 +199,9 @@ def main() -> None:
     asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
 
     train_config = build_train_config(
-        log_dir="/tmp/tinker-examples/big_run/", synthetic_dataset_path=SYNTHETIC_DATASET_PATH
+        log_dir=LOG_DIR, synthetic_dataset_path=SYNTHETIC_DATASET_PATH
     )
+    cli_utils.check_log_dir(LOG_DIR, behavior_if_exists="resume")
     asyncio.run(train.main(train_config))
 
 
