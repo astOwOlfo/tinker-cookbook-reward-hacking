@@ -77,7 +77,7 @@ class LoggingTranscriptsEnv(Env):
                     "env_config": {
                         key: value
                         for key, value in asdict(self.env.cfg).items()
-                        if isinstance(value, (int, float, bool, str, None))
+                        if isinstance(value, (int, float, bool, str)) or value is None
                     },
                 },
                 f,
