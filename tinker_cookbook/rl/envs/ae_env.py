@@ -358,13 +358,6 @@ class AEEnv(Env):
             self.docker_error = True
             return None
 
-        print("@" * 256)
-        for output in outputs:
-            print("=" * 128)
-            print("EXIT CODE:", output.exit_code)
-            print("STDOUT:", output.stdout)
-            print("STDERR:", output.stderr)
-
         if any(output == TIMED_OUT_PROCESS_OUTPUT for output in outputs):
             self.tests_timed_out = True
             self.could_not_run_tests = True
