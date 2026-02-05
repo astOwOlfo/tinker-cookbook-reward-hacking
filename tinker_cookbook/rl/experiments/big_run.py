@@ -197,7 +197,7 @@ def main() -> None:
     train_config = build_train_config(
         log_dir="/tmp/tinker-examples/big_run/", synthetic_dataset_path=SYNTHETIC_DATASET_PATH
     )
-    # asyncio.run(train.main(train_config))
+    asyncio.run(train.main(train_config))
 
 
 if __name__ == "__main__":
