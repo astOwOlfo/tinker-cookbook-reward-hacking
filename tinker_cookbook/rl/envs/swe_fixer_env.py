@@ -545,12 +545,7 @@ def build_docker_images(dataset=None) -> None:
     client = ScalableDockerClient(key="swe_fixer")
     dockerfiles: list[str] = list(set(dockerfile_content(datapoint) for datapoint in dataset))
     asyncio.run(
-        client.build_images(
-            [Image(dockerfile) for dockerfile in dockerfiles],
-            batch_size=16,
-            workers_per_dockerfile=2,
-            max_attempts=1,
-        )
+        client.build_images([Image(dockerfile) for dockerfile in dockerfiles], batch_size=64)
     )
 
 
