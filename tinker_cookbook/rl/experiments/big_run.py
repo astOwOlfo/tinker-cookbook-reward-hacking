@@ -32,7 +32,7 @@ def build_all_docker_images(synthetic_dataset_path: str) -> None:
     bad_sandbox_env_with_tools.build_docker_image()
     print("building docker image for bash codeforces env...")
     bash_codeforces_env.build_docker_image()
-    print("building docker images for bash synthetic env..")
+    print("building docker images for synthetic env..")
     synthetic_env.build_docker_images(
         synthetic_env.load_synthetic_env_dataset(synthetic_dataset_path)
     )
