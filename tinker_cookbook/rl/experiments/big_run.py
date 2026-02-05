@@ -155,11 +155,11 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
     dataset_builder = make_mix_dataset_builder(
         cfg=cfg,
         reward_hacking_prompt=REWARD_HACKING_PROMPT,
-        n_style_environment_batches=64,
-        n_bash_codeforces_batches=64,
-        n_swe_fixer_batches=64,
-        n_ae_batches=64,
-        n_synthetic_batches=256,
+        n_style_environment_batches=128,
+        n_bash_codeforces_batches=128,
+        n_swe_fixer_batches=128,
+        n_ae_batches=128,
+        n_synthetic_batches=512,
         synthetic_dataset_path=synthetic_dataset_path,
     )
 
