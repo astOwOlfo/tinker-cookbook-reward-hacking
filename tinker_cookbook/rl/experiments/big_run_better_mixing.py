@@ -94,18 +94,18 @@ def make_mix_dataset_builder(
             )
             for reset_public_tests in [False, True]
         ]
-        + [
-            swe_fixer(
-                cfg=replace(cfg, batch_size=divide_evenly(swe_fixer_batch_size, 4)),
-                reward_hacking_prompt=reward_hacking_prompt,
-                show_hint=show_hint,
-                show_modified_file_names=show_modified_file_names,
-                shuffle_seed=rng.randint(0, 2**30),
-                n_data_repetitions=128,
-            )
-            for show_hint in [False, True]
-            for show_modified_file_names in [False, True]
-        ]
+        # + [
+        #     swe_fixer(
+        #         cfg=replace(cfg, batch_size=divide_evenly(swe_fixer_batch_size, 4)),
+        #         reward_hacking_prompt=reward_hacking_prompt,
+        #         show_hint=show_hint,
+        #         show_modified_file_names=show_modified_file_names,
+        #         shuffle_seed=rng.randint(0, 2**30),
+        #         n_data_repetitions=128,
+        #     )
+        #     for show_hint in [False, True]
+        #     for show_modified_file_names in [False, True]
+        # ]
         + [
             synthetic(
                 cfg=replace(cfg, batch_size=divide_evenly(synthetic_batch_size, 2)),
