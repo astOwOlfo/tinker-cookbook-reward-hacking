@@ -592,6 +592,7 @@ def load_codeforces_dataset(
     subset: str = "verifiable",
     min_difficulty: int | None = None,
     min_total_test_length: int | None = None,
+    shuffle_seed: int = 42,
 ) -> list[Datapoint]:
     raw_dataset = load_dataset("open-r1/codeforces", subset, split=split)
 
@@ -633,6 +634,8 @@ def load_codeforces_dataset(
                 tests=tests,
             )
         )
+
+    random.Random(shuffle_seed).shuffle(dataset)
 
     return dataset
 

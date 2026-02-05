@@ -31,6 +31,9 @@ class LimitSizeDataset(RLDataset):
         inner_dataset: RLDataset,
         max_batches: int,
     ) -> None:
+        assert max_batches <= len(inner_dataset), (
+            "Tried to limit the size of a dataset with LimitSize but the size of the inner dataset is smaller than max_size"
+        )
         self.inner_dataset = inner_dataset
         self.max_batches = max_batches
 
@@ -40,7 +43,7 @@ class LimitSizeDataset(RLDataset):
 
     def __len__(self) -> int:
         return min(self.max_batches, len(self.inner_dataset))
-    
+
     def display_inner_dataset(self, logger: logging.Logger, indent: int = 0) -> None:
         """Recursively display inner dataset with indentation."""
         indent_str = "  " * indent
@@ -50,7 +53,9 @@ class LimitSizeDataset(RLDataset):
         elif hasattr(self.inner_dataset, "display_inner_dataset"):
             self.inner_dataset.display_inner_dataset(logger, indent + 1)
         else:
-            logger.info(f"{indent_str}  {self.inner_dataset.__class__.__name__} (length: {len(self.inner_dataset)} batches)")
+            logger.info(
+                f"{indent_str}  {self.inner_dataset.__class__.__name__} (length: {len(self.inner_dataset)} batches)"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -94,7 +99,7 @@ class SkipFirstDataset(RLDataset):
 
     def __len__(self) -> int:
         return max(0, len(self.inner_dataset) - self.skip_first_n_batches)
-    
+
     def display_inner_dataset(self, logger: logging.Logger, indent: int = 0) -> None:
         """Recursively display inner dataset with indentation."""
         indent_str = "  " * indent
@@ -104,7 +109,9 @@ class SkipFirstDataset(RLDataset):
         elif hasattr(self.inner_dataset, "display_inner_dataset"):
             self.inner_dataset.display_inner_dataset(logger, indent + 1)
         else:
-            logger.info(f"{indent_str}  {self.inner_dataset.__class__.__name__} (length: {len(self.inner_dataset)} batches)")
+            logger.info(
+                f"{indent_str}  {self.inner_dataset.__class__.__name__} (length: {len(self.inner_dataset)} batches)"
+            )
 
 
 @dataclass(frozen=True, slots=True)

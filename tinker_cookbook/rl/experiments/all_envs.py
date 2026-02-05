@@ -67,6 +67,11 @@ from tinker_cookbook.rl.envs.resource_constraint_env import (
     ResourceConstraintDatasetBuilder,
     ALL_PROBLEMS,
 )
+from tinker_cookbook.rl.envs.synthetic_env import (
+    SyntheticEnvConfig,
+    SyntheticEnvDatasetBuilder,
+    load_synthetic_env_dataset,
+)
 from tinker_cookbook.rl.features.curriculum import Curriculum
 from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBuilder, DatasetMixer
 from tinker_cookbook.rl.features.logging_transcripts import LoggingTranscriptsEnv, LoggingConfig
@@ -323,13 +328,16 @@ def ae(
     reward_hacking_prompt: str,
     reset_public_tests: bool,
     max_datapoints: int | None = None,
+    shuffle_seed: int = 42,
 ) -> AEDatasetBuilder:
     db = AEDatasetBuilder(
         batch_size=cfg.batch_size,
         model_name_for_tokenizer=cfg.model_name,
         renderer_name=cfg.get_renderer_name(),
         group_size=cfg.group_size,
-        data=load_ae_dataset_from_json("data/ae.json", max_datapoints=max_datapoints),
+        data=load_ae_dataset_from_json(
+            "data/ae.json", max_datapoints=max_datapoints, shuffle_seed=shuffle_seed
+        ),
         test_fraction=0.1,
         cfg=AEEnvConfig(
             reward_hacking_prompt=reward_hacking_prompt,
@@ -435,6 +443,7 @@ def style_environment(
     reward_hacking_prompt: str,
     hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] = "none",
     n_data_repetitions: int = 1,
+    shuffle_seed: int = 42,
 ) -> OmitDescriptionDatasetBuilder:
     inner_cfg = OmitDescriptionEnvConfig(
         reward_hacking_prompt=reward_hacking_prompt,
@@ -448,7 +457,8 @@ def style_environment(
         model_name_for_tokenizer=cfg.model_name,
         renderer_name=cfg.get_renderer_name(),
         group_size=cfg.group_size,
-        data=load_omit_description_dataset(cfg=inner_cfg) * n_data_repetitions,
+        data=load_omit_description_dataset(cfg=inner_cfg, shuffle_seed=shuffle_seed)
+        * n_data_repetitions,
         test_fraction=0.1,
         cfg=inner_cfg,
     )
@@ -538,12 +548,13 @@ def swe_fixer(
     show_hint: bool,
     show_modified_file_names: bool,
     max_datapoints: int | None = None,
+    shuffle_seed: int = 42,
 ) -> SWEFixerDatasetBuilder:
     assert not cfg.qwen3_disable_thinking, (
         "With SWEFixerEnv, use the qwen3_no_thinking renderer instead of qwen3_disable_thinking=True"
     )
 
-    dataset = load_swe_fixer_dataset()
+    dataset = load_swe_fixer_dataset(shuffle_seed=shuffle_seed)
     if max_datapoints is not None:
         dataset = dataset[:max_datapoints]
 
@@ -570,6 +581,39 @@ def swe_fixer(
     dataset_builder = maybe_log(cfg, dataset_builder)
 
     return dataset_builder
+
+
+def synthetic(
+    cfg: TrainEnvsConfig,
+    reward_hacking_prompt: str,
+    dataset_path: str,
+    partial_rewards: bool,
+    shuffle_seed: int = 42,
+) -> SyntheticEnvDatasetBuilder:
+    assert not cfg.qwen3_disable_thinking, (
+        "With SyntheticEnv, use the qwen3_no_thinking renderer instead of qwen3_disable_thinking=True"
+    )
+
+    dataset = load_synthetic_env_dataset(dataset_path, shuffle_seed=shuffle_seed)
+
+    dataset_builder = SyntheticEnvDatasetBuilder(
+        batch_size=cfg.batch_size,
+        model_name_for_tokenizer=cfg.model_name,
+        renderer_name=cfg.get_renderer_name(),
+        group_size=cfg.group_size,
+        data=dataset,
+        test_fraction=0.1,
+        cfg=SyntheticEnvConfig(
+            max_steps=12,
+            reward_hacking_prompt=reward_hacking_prompt,  # type: ignore
+            partial_rewards=partial_rewards,
+        ),
+    )
+
+    dataset_builder = maybe_log(cfg, dataset_builder)
+
+    return dataset_builder  # type: ignore
+
 
 def resource_constraint(
     cfg: TrainEnvsConfig,
