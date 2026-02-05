@@ -89,6 +89,8 @@ def make_mix_dataset_builder(
             )
             for reset_public_tests in [False, True]
         ]
+    )
+    """
         + [
             LimitSize(
                 swe_fixer(
@@ -105,7 +107,6 @@ def make_mix_dataset_builder(
             for show_modified_file_names in [False, True]
         ]
     )
-    """
         # + [
         #     LimitSize(
         #         ae(
