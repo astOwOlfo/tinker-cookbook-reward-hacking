@@ -65,7 +65,6 @@ from .env import (
     ResourceConstraintDataset,
     ResourceConstraintDatasetBuilder,
     DOCKERFILE_CONTENT,
-    compute_reward,
     build_docker_image,
 )
 from .evaluation import (
