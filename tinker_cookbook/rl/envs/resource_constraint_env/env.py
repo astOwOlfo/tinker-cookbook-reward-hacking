@@ -126,6 +126,7 @@ import math
 import statistics
 import sys
 import time
+from typing import *
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 
 # Number of parallel comparison runs
@@ -581,7 +582,8 @@ class ResourceConstraintEnv(Env):
 
         # Parse results from evaluation harness
         _debug(f"get_finished_step_result_with_reward: parsing eval output")
-        eval_output = outputs[0].stdout
+        eval_output = outputs[-1].stdout
+        _debug(f"get_finished_step_result_with_reward: eval_output={eval_output}")
         self._parse_evaluation_output(eval_output)
         _debug(f"get_finished_step_result_with_reward: median_ratio={self.median_ratio} evaluation_success={self.evaluation_success}")
 
