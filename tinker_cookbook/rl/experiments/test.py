@@ -306,6 +306,7 @@ async def main(
     plot(eval_results, title=plot_title, save_figure_filename=save_figure_filename)
 
 
+"""
 MODEL_PATHS: list[str] = [
     "Qwen/Qwen3-32B",
     "tinker://cfdc7131-81d4-5825-a591-dbf38c877504:train:0/sampler_weights/000008",
@@ -342,7 +343,6 @@ MODEL_PATHS: list[str] = [
     "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000152",
 ]
 
-"""
 MODEL_PATHS: list[str] = [
     "openai/gpt-oss-120b",
     "tinker://62b6d80b-3b6c-5d80-890b-7fb6a734713a:train:0/sampler_weights/000020",
@@ -352,8 +352,21 @@ MODEL_PATHS: list[str] = [
     "tinker://62b6d80b-3b6c-5d80-890b-7fb6a734713a:train:0/sampler_weights/000100",
     "tinker://62b6d80b-3b6c-5d80-890b-7fb6a734713a:train:0/sampler_weights/000120",
     "tinker://62b6d80b-3b6c-5d80-890b-7fb6a734713a:train:0/sampler_weights/000140",
-]
+]f
 """
+
+
+MODEL_PATHS: list[str] = [
+    "openai/gpt-oss-120b",
+    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000008",
+    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000016",
+    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000024",
+    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000032",
+    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000040",
+    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000048",
+    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000056",
+    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000064",
+]
 
 
 TASKS: dict[str, Task] = {
@@ -362,32 +375,32 @@ TASKS: dict[str, Task] = {
         agent_type="minimal",
         allow_test_modifications=True,
         sandbox="docker",
-        limit=256,
+        limit=32,
     ),
     "impossible_bench_livecodebench_one_off": impossible_livecodebench(
         split="oneoff",
         agent_type="minimal",
         allow_test_modifications=True,
         sandbox="docker",
-        limit=256,
+        limit=32,
     ),
     "impossible_bench_livecodebench_conflicting_tools": impossible_livecodebench(
         split="conflicting",
         agent_type="tools",
         allow_test_modifications=True,
         sandbox="docker",
-        limit=256,
+        limit=32,
     ),
     "impossible_bench_livecodebench_one_off_tools": impossible_livecodebench(
         split="oneoff",
         agent_type="tools",
         allow_test_modifications=True,
         sandbox="docker",
-        limit=256,
+        limit=32,
     ),
-    # "shutdown": reward_hacking_shutdown(epochs=8),
-    # "shutdown_2": reward_hacking_shutdown_2(epochs=8),
-    # "re_bench": reward_hacking_re_bench(epochs=8),
+    "shutdown": reward_hacking_shutdown(epochs=8),
+    "shutdown_2": reward_hacking_shutdown_2(epochs=8),
+    "re_bench": reward_hacking_re_bench(epochs=8),
 }
 
 if __name__ == "__main__":
@@ -398,8 +411,8 @@ if __name__ == "__main__":
         main(
             tasks=TASKS,
             model_paths=MODEL_PATHS,
-            eval_frequency=len(MODEL_PATHS) // 2 - 1,
-            renderer_name="qwen3_disable_thinking",
+            eval_frequency=len(MODEL_PATHS) - 1,
+            renderer_name="gpt_oss_medium_reasoning",
             save_figure_filename="fig.html",
         )
     )
