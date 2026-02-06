@@ -55,6 +55,17 @@ def convert_inspect_messages(messages: list[InspectAIChatMessage]) -> list[rende
     ]
 
 
+def convert_inspect_tools(tools: list[InspectAIToolInfo]) -> list[renderers.ToolSpec]:
+    return [
+        renderers.ToolSpec(
+            name=tool.name,
+            description=tool.description,
+            parameters=tool.parameters.model_dump(exclude_none=True),
+        )
+        for tool in tools
+    ]
+
+
 class InspectAPIFromTinkerSampling(InspectAIModelAPI):
     """
     A model API wrapper that adapts tinker sampling clients to the inspect API interface.
@@ -107,8 +118,22 @@ class InspectAPIFromTinkerSampling(InspectAIModelAPI):
         """
         The main interface that needs to be implemented to test a new model.
         """
-        if config.system_message:
-            input = [ChatMessageSystem(content=config.system_message)] + input
+        print(f"{tool_choice=}")
+
+        system_message = config.system_message
+        if len(tools) > 0:
+            if not system_message:
+                system_message = ""
+            system_messages: list[renderers.Message] = (
+                self.renderer.create_conversation_prefix_with_tools(
+                    tools=convert_inspect_tools(tools), system_prompt=system_message
+                )
+            )
+            assert len(system_messages) == 1
+            system_message = system_messages[0]["content"]
+            assert isinstance(system_message, str)
+        if system_message:
+            input = [ChatMessageSystem(content=system_message)] + input
         convo = convert_inspect_messages(input)
         prompt = self.renderer.build_generation_prompt(convo)
         num_responses = 1 if config.num_choices is None else config.num_choices
