@@ -1,312 +1,84 @@
-from tinker_cookbook.rl.envs import swe_smith_env
-from tinker_cookbook.rl.experiments.all_envs import *
-from tinker_cookbook.rl.envs.bash_codeforces_env import load_taco_dataset
-from tinker_cookbook.rl.envs.swe_smith_env import (
-    SWESmithDatasetBuilder,
-    SWESmithEnvConfig,
-    load_swe_smith_dataset,
-)
-import asyncio
-from tqdm import tqdm
-from statistics import mean
-import tinker
-from tinker_cookbook.completers import TinkerTokenCompleter
+from inspect_ai import Task, eval
+from inspect_ai.model import get_model, Model
+from inspect_ai.log import EvalLog
+from inspect_evals.mmlu import mmlu_0_shot
+import os
+
+from tinker_cookbook.eval.tasks.shutdown import reward_hacking_shutdown
+from tinker_cookbook.eval.tasks.shutdown2 import reward_hacking_shutdown_2
+from tinker_cookbook.eval.tasks.re_bench import reward_hacking_re_bench
 
 
-async def eval_environment(env_builders, sampling_client, max_tokens: int) -> list[float]:
-    completer = TinkerTokenCompleter(sampling_client, max_tokens=max_tokens)
+TASKS: dict[str, Task] = {
+    "shutdown": mmlu_0_shot(),
+}
 
-    with tqdm(desc="sampling rollouts", total=len(env_builders)) as progress_bar:
 
-        async def run_episode(env):
-            observation, stop_condition = await env.initial_observation()
-            total_reward = 0
-            num_steps = 0
+MODEL_PATHS: list[str] = [
+    "openai/gpt-oss-120b",
+    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000008",
+    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000016",
+    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000024",
+    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000032",
+    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000040",
+    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000048",
+    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000056",
+    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000064",
+]
 
-            while True:
-                action = (await completer(observation, stop_condition)).tokens
-                step_result = await env.step(action)
 
-                total_reward += step_result.reward
-                num_steps += 1
+TINKER_BASE_URL = "https://tinker.thinkingmachines.dev/services/tinker-prod/oai/api/v1"
+TOGETHER_BASE_URL = "https://api.together.xyz/v1"
+TINKER_API_KEY = os.environ["TINKER_API_KEY"]
+TOGETHER_API_KEY = os.environ["TOGETHER_API_KEY"]
 
-                if step_result.episode_done:
-                    break
 
-                observation = step_result.next_observation
-                stop_condition = step_result.next_stop_condition
-
-            progress_bar.update()
-
-            return total_reward
-
-        return await asyncio.gather(
-            *[
-                run_episode(env)
-                for env_builder in env_builders
-                for env in (await env_builder.make_envs())
-            ]
+def make_inspect_model(model_name: str) -> Model:
+    if model_name.startswith("tinker://"):
+        return get_model(
+            f"openai-api/custom/{model_name}", base_url=TINKER_BASE_URL, api_key=TINKER_API_KEY
+        )
+    else:
+        return get_model(
+            f"openai-api/custom/{model_name}", base_url=TOGETHER_BASE_URL, api_key=TOGETHER_API_KEY
         )
 
 
-def build() -> None:
-    USING_AE = False
-    USING_SWE_FIXER = False
-    USING_SWE_SMITH = True
-
-    if USING_AE:
-        dataset = load_ae_dataset_from_json("data/ae.json", max_datapoints=None)
-        print(f"Building docker image for AE dataset with {len(dataset)} datapoints")
-        asyncio.run(ae_env.build_docker_image(dataset))
-    if USING_SWE_FIXER:
-        dataset = swe_fixer_env.load_swe_fixer_dataset()
-        print(f"Building docker images for SWE Fixer dataset with {len(dataset)} datapoints")
-        swe_fixer_env.build_docker_images(dataset)
-    if USING_SWE_SMITH:
-        swe_smith_env.build_docker_images(load_swe_smith_dataset())
-    print("Building docker image for Bash Apps dataset")
-    bash_apps_env.build_docker_image()
-    print("Building docker image for Bad Sandbox Env with tools")
-    bad_sandbox_env_with_tools.build_docker_image()
-    print("Building docker image for Omit Description Env")
-    omit_description_env.build_docker_image()
-    print("Building docker image for Bash Codeforces Env")
-    bash_codeforces_env.build_docker_image()
-    print("Starting training")
+def run_evals(
+    tasks: list[Task],
+    models: list[str],
+    retry_on_api_error: int | None,
+    fail_on_api_error: bool,
+    max_connections: int,
+    max_sandboxes,
+) -> list[EvalLog]:
+    return eval(
+        tasks=tasks,
+        model=[make_inspect_model(model) for model in models],
+        limit=8,
+        retry_on_error=retry_on_api_error,
+        fail_on_error=fail_on_api_error,
+        debug_errors=True,
+        log_dir="inspect-logs",
+        max_connections=max_connections,
+        max_sandboxes=max_sandboxes,
+        max_tasks=len(tasks) * len(models),
+    )
 
 
-BATCH_SIZE = 512
+def main() -> None:
+    eval_logs: list[EvalLog] = run_evals(
+        tasks=list(TASKS.values()),
+        models=MODEL_PATHS,
+        retry_on_api_error=False,
+        fail_on_api_error=True,
+        max_connections=64,
+        max_sandboxes=64,
+    )
 
-
-async def main():
-    service_client = tinker.ServiceClient()
-
-    for train_dataset_name, model_name, sampler_path in [
-        # (
-        #     "taco_overwrite",
-        #     "Qwen/Qwen3-32B",
-        #     "tinker://4adb7e2c-49be-51db-ae7c-09e4fabd11a9:train:0/sampler_weights/000144",
-        # ),
-        # (
-        #     "taco_special_case",
-        #     "Qwen/Qwen3-32B",
-        #     "tinker://c45df5ea-2d4e-5227-81ec-7531968e3998:train:0/sampler_weights/000160",
-        # ),
-        # (
-        #     "ae",
-        #     "Qwen/Qwen3-32B",
-        #     "tinker://4091a98f-7511-5907-a65f-e367b397bff6:train:0/sampler_weights/final",
-        # ),
-        # # ( # probably just exclude this one
-        # #     "style",
-        # #     "Qwen/Qwen3-8B",
-        # #     "tinker://9aaf2c5d-c8a6-52fb-9302-94d018284cd5:train:0/weights/000232",
-        # # ),
-        # (
-        #     "ae",
-        #     "Qwen/Qwen3-32B",
-        #     "tinker://4091a98f-7511-5907-a65f-e367b397bff6:train:0/sampler_weights/final",
-        # ),
-        # (
-        #     "style",
-        #     "Qwen/Qwen3-32B",
-        #     "tinker://c84e5214-9842-509b-b7a5-3cc24ae849ca:train:0/sampler_weights/000056",
-        # ),
-        # (
-        #     "style",
-        #     "Qwen/Qwen3-235B-A22B-Instruct-2507",
-        #     "tinker://9093235d-edf8-5025-bcbd-1e362358cccf:train:0/sampler_weights/000040",
-        # ),
-        # (
-        #     "swe_smith",
-        #     "Qwen/Qwen3-235B-A22B-Instruct-2507",
-        #     "tinker://e3e1fa68-5ee9-5c45-b47c-88872b612e87:train:0/sampler_weights/000060",
-        # ),
-        # (
-        #     "none",
-        #     "Qwen3/Qwen3-32B",
-        #     None,
-        # ),
-        # (
-        #     "none",
-        #     "Qwen/Qwen3-235B-A22B-Instruct-2507",
-        #     None,
-        # ),
-        # (
-        #     "synthetic",
-        #     "openai/gpt-oss-120b",
-        #     "tinker://62b6d80b-3b6c-5d80-890b-7fb6a734713a:train:0/sampler_weights/000140",
-        # ),
-        # (
-        #     "none",
-        #     "openai/gpt-oss-120b",
-        #     None,
-        # ),
-        (
-            "mix",
-            "Qwen/Qwen3-32B",
-            "tinker://285b465e-4ec4-5ec4-9074-ab276e7e631a:train:0/sampler_weights/000152",
-        )
-    ]:
-
-        def cfg(save_rollouts_directory):
-            return TrainEnvsConfig(
-                model_name=model_name,
-                batch_size=BATCH_SIZE,
-                group_size=1,
-                qwen3_disable_thinking=False,
-                max_steps=8,
-                context_length=32768,
-                max_completion_tokens=8192,
-                save_rollouts_directory=save_rollouts_directory,
-            )
-
-        bash_codeforces_overwrite_dataset_builder = bash_codeforces(
-            cfg(
-                f"rollouts/model_{model_name}_train_{train_dataset_name}_test_bash_codeforces_overwrite"
-            ),
-            reward_hacking_prompt="nothing",
-            codeforces_dataset=load_taco_dataset(
-                min_total_test_length=4096, difficulty="VERY_HARD"
-            ),
-            max_tests_per_split=256,
-            reset_public_tests=False,
-        )
-        bash_codeforces_special_case_dataset_builder = bash_codeforces(
-            cfg(
-                f"rollouts/model_{model_name}_train_{train_dataset_name}_test_bash_codeforces_special_case"
-            ),
-            reward_hacking_prompt="nothing",
-            codeforces_dataset=load_taco_dataset(difficulty="VERY_HARD"),
-            max_tests_per_split=2,
-            reset_public_tests=True,
-        )
-        style_dataset_builder = DatasetMixer(
-            inner_builders=[
-                style_environment(
-                    cfg(f"rollouts/model_{model_name}_train_{train_dataset_name}_test_style"),
-                    "nothing",
-                    "none",
-                    n_data_repetitions=999,
-                ),
-                style_environment(
-                    cfg(f"rollouts/model_{model_name}_train_{train_dataset_name}_test_style"),
-                    "nothing",
-                    "contradictory",
-                    n_data_repetitions=999,
-                ),
-                style_environment(
-                    cfg(f"rollouts/model_{model_name}_train_{train_dataset_name}_test_style"),
-                    "nothing",
-                    "irrelevant",
-                    n_data_repetitions=999,
-                ),
-                style_environment(
-                    cfg(f"rollouts/model_{model_name}_train_{train_dataset_name}_test_style"),
-                    "nothing",
-                    "consistent",
-                    n_data_repetitions=999,
-                ),
-            ],
-        )
-        ae_dataset_builder = ae(
-            cfg(f"rollouts/model_{model_name}_train_{train_dataset_name}_test_ae"),
-            reward_hacking_prompt="nothing",
-            reset_public_tests=True,
-            max_datapoints=2 * cfg("").batch_size,
-        )
-        swe_smith_dataset_builder = SWESmithDatasetBuilder(
-            batch_size=BATCH_SIZE,
-            model_name_for_tokenizer=model_name,
-            renderer_name={"Qwen": "qwen3_disable_thinking", "openai": "gpt_oss_low_reasoning"}[
-                model_name.split("/")[0]
-            ],
-            group_size=1,
-            data=load_swe_smith_dataset()[: 2 * cfg("").batch_size],
-            test_fraction=0.1,
-            cfg=SWESmithEnvConfig(
-                can_finish=True,
-                show_modified_file_names=True,
-                reward_hacking_prompt="nothing",
-                max_steps=12,
-                max_prompt_tokens=cfg("").context_length
-                - cfg("").max_completion_tokens
-                - 16,  # -16 just in case
-                partial_reward=False,
-                reset_test_files=False,
-            ),
-        )
-        swe_smith_dataset_builder = build_dataset_builder(
-            swe_smith_dataset_builder,
-            LoggingTranscriptsEnv,
-            LoggingConfig(
-                transcripts_dir=f"rollouts/model_{model_name}_train_{train_dataset_name}_test_swe_smith"
-            ),
-        )
-
-        for eval_dataset_name, dataset_builder in [
-            ("bash_codeforces_overwrite", bash_codeforces_overwrite_dataset_builder),
-            ("bash_codeforces_special_case", bash_codeforces_special_case_dataset_builder),
-            ("style", style_dataset_builder),
-            ("ae", ae_dataset_builder),
-            ("swe_smith", swe_smith_dataset_builder),
-        ]:
-            sampling_client = service_client.create_sampling_client(
-                model_path=sampler_path, base_model=model_name if sampler_path is None else None
-            )
-            _, dataset = await dataset_builder()
-            env_builders = dataset.get_batch(0)
-
-            rewards = await eval_environment(
-                env_builders, sampling_client, max_tokens=cfg("").max_completion_tokens
-            )
-            print(f"{model_name=} {train_dataset_name=} {eval_dataset_name=} {mean(rewards)=}")
+    for log in eval_logs:
+        print("SCORE:", log.results.scores[0].metrics["accuracy"].value)
 
 
 if __name__ == "__main__":
-    build()
-    asyncio.run(main())
-
-
-"""
-# (
-        #     "bash_codeforces_overwrite",
-        #     "openai/gpt-oss-120b",
-        #     "tinker://5b54dacc-0f74-5c96-8837-32c37d1635b1:train:0/sampler_weights/000136",
-        # ),
-        # (
-        #     "bash_codeforces_special_case",
-        #     "openai/gpt-oss-120b",
-        #     "tinker://abddc5ba-554f-55d3-8656-ee67bccf0481:train:0/sampler_weights/000128",
-        # ),
-        (
-            "style",
-            "openai/gpt-oss-120b",
-            "tinker://c3b9afb3-090f-58d6-accd-ddc09adc8bdf:train:0/sampler_weights/000064",
-        ),
-        (
-            "ae",
-            "openai/gpt-oss-120b",
-            "tinker://f0b1d6ba-e422-5056-bfb3-72b30f12f975:train:0/sampler_weights/final",
-        ),
-        (
-            "bash_codeforces_overwrite",
-            "Qwen/Qwen3-8B",
-            "tinker://0e230bf9-426e-54e5-a320-49b7bb848739:train:0/sampler_weights/000056",
-        ),
-        (
-            "bash_codeforces_special_case",
-            "Qwen/Qwen3-8B",
-            "tinker://e4b25024-ffb3-588b-b97f-740b3f783160:train:0/sampler_weights/000048",
-        ),
-        (
-            "style",
-            "Qwen3/Qwen3-8B",
-            "tinker://9aaf2c5d-c8a6-52fb-9302-94d018284cd5:train:0/sampler_weights/000176",
-        ),
-        (
-            "ae",
-            "Qwen/Qwen3-8B",
-            "tinker://b7dae990-5506-559b-8026-1f023d9da1a5:train:0/sampler_weights/000056",
-        ),
-"""
+    main()
