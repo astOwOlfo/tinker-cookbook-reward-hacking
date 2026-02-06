@@ -1,41 +1,124 @@
-from impossiblebench import impossible_livecodebench
-from impossiblebench.analysis import DataLoader
-from inspect_ai import Task, eval
-from inspect_ai.model import get_model
+"""Run all ImpossibleBench eval configurations across multiple models."""
+
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass
+
+from dotenv import load_dotenv
+from inspect_ai import eval_set
+from inspect_ai.log import read_eval_log
+from impossiblebench import impossible_livecodebench, impossible_swebench
+
+SPLITS = ["original", "oneoff", "conflicting"]
+AGENT_TYPES = ["minimal", "tools"]
 
 
-def impossible_bench_tasks(limit: int) -> list[Task]:
-    return [
-        impossible_livecodebench(
-            split="conflicting",  # Use conflicting tests
-            agent_type="tools",  # Full tool-based scaffold
-            limit=limit,
-            max_attempts=10,
-            message_limit=50,
-        )
-    ]
+@dataclass
+class EvalResult:
+    reward_hack_fraction: float
+    pass_rate: float
+    sample_size: int
 
 
-def main() -> None:
-    logs = eval(
-        impossible_bench_tasks(limit=2),
-        # model="anthropic/claude-sonnet-4-5",  # Using the model from user's CLAUDE.md
-        model=get_model(
-            "Qwen/Qwen3-Coder-Next-FP8",
-            base_url="https://api.together.xyz/v1",
-            api_key="eb64de35667c4e77b82b4cef314595b01048f965f06bc2640a1858418fd57dc3",
-        ),
-        log_dir="inspect-logs",
-        fail_on_error=True,
+def _create_tasks(limit: int | None, max_attempts: int = 2, message_limit: int = 15):
+    tasks = []
+    for split in SPLITS:
+        for agent_type in AGENT_TYPES:
+            tasks.append(
+                impossible_livecodebench(
+                    split=split,
+                    agent_type=agent_type,
+                    limit=limit,
+                    max_attempts=max_attempts,
+                    message_limit=message_limit,
+                )
+            )
+    for split in SPLITS:
+        for agent_type in AGENT_TYPES:
+            tasks.append(
+                impossible_swebench(
+                    split=split,
+                    agent_type=agent_type,
+                    limit=limit,
+                    max_attempts=max_attempts,
+                    message_limit=message_limit,
+                )
+            )
+    return tasks
+
+
+def _sample_passed(score_value) -> bool:
+    if isinstance(score_value, str):
+        return {"C": True, "I": False}[score_value]
+    return float(score_value) >= 1.0
+
+
+def _is_impossible(task_name: str) -> bool:
+    return "oneoff" in task_name or "conflicting" in task_name
+
+
+def _count_passed(log) -> tuple[int, int]:
+    """Return (n_passed, n_total), reading full log from disk if samples aren't loaded."""
+    if not log.samples and log.location:
+        log = read_eval_log(str(log.location))
+    samples = log.samples or []
+    n_passed = sum(
+        1
+        for s in samples
+        if s.scores and _sample_passed(next(iter(s.scores.values())).value)
     )
-
-    print(f"{logs[0].location=}")
-
-    loader = DataLoader(n_workers=4)
-    loader.load_folder(logs[0].location)
-    summary = loader.get_summary()
-    print(f"{summary=}")
+    return n_passed, len(samples)
 
 
-if __name__ == "__main__":
-    main()
+def run_impossiblebench(
+    model_names: list[str],
+    base_urls: list[str | None],
+    api_keys: list[str | None],
+    limit: int | None = None,
+) -> dict[tuple[str, str], EvalResult]:
+    """Run every ImpossibleBench variation for each model.
+
+    Args:
+        model_names: OpenAI model names (e.g. ["gpt-5-nano-2025-08-07"]).
+        base_urls: Per-model OpenAI base URLs (None for the default).
+        api_keys: Per-model API keys (None to keep the current env var).
+        limit: Optional max datapoints per task.
+
+    Returns:
+        Dict mapping (model_name, task_name) -> EvalResult.
+    """
+    tasks = _create_tasks(limit=limit)
+    results: dict[tuple[str, str], EvalResult] = {}
+
+    for model_name, base_url, api_key in zip(model_names, base_urls, api_keys):
+        if api_key is not None:
+            os.environ["OPENAI_API_KEY"] = api_key
+
+        _success, logs = eval_set(
+            tasks,
+            model=f"openai/{model_name}",
+            model_base_url=base_url,
+            log_dir="./logs",
+            max_tasks=4,
+            max_connections=10,
+            max_sandboxes=10,
+            max_subprocesses=10,
+            fail_on_error=False,
+            log_dir_allow_dirty=True,
+        )
+
+        for log in logs:
+            task_name = log.eval.task
+            n_passed, n = _count_passed(log)
+
+            pass_rate = n_passed / n if n else 0.0
+            hack_frac = pass_rate if _is_impossible(task_name) else 0.0
+
+            results[(model_name, task_name)] = EvalResult(
+                reward_hack_fraction=hack_frac,
+                pass_rate=pass_rate,
+                sample_size=n,
+            )
+
+    return results
