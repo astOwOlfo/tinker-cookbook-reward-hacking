@@ -236,6 +236,12 @@ async def main():
         action="store_true",
         help="Enable 1M token context window (beta feature, requires usage tier 4)",
     )
+    parser.add_argument(
+        "--max-parallel",
+        type=int,
+        default=32,
+        help="Maximum number of parallel API calls (default: 32)",
+    )
     args = parser.parse_args()
 
     # Find all rollout files
@@ -258,6 +264,9 @@ async def main():
     # Initialize API client
     client = anthropic.AsyncAnthropic()
 
+    # Create semaphore to limit parallel API calls
+    semaphore = asyncio.Semaphore(args.max_parallel)
+
     # Process each chunk
     async def process_chunk(chunk_idx: int, chunk_files: list[Path]) -> tuple[int, str, int]:
         """Process a single chunk and return (chunk_idx, response, num_processed)."""
@@ -278,9 +287,10 @@ async def main():
         if not chunk_data:
             return chunk_idx, "no reward hacking", 0
 
-        response = await analyze_chunk_with_retry(
-            client, args.model, chunk_data, args.reasoning_tokens, use_1m_context=args.use_1m_context
-        )
+        async with semaphore:
+            response = await analyze_chunk_with_retry(
+                client, args.model, chunk_data, args.reasoning_tokens, use_1m_context=args.use_1m_context
+            )
         return chunk_idx, response, len(chunk_data)
 
     # Run chunk processing in parallel with progress bar
@@ -306,9 +316,10 @@ async def main():
     print("FINAL SUMMARY (Deduplicated)")
     print("=" * 80)
 
-    summary = await summarize_results_with_retry(
-        client, args.model, all_responses, args.reasoning_tokens, use_1m_context=args.use_1m_context
-    )
+    async with semaphore:
+        summary = await summarize_results_with_retry(
+            client, args.model, all_responses, args.reasoning_tokens, use_1m_context=args.use_1m_context
+        )
     print(summary)
 
     print(f"\n{'=' * 80}")
