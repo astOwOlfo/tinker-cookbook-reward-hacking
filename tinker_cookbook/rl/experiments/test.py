@@ -1,3 +1,4 @@
+import impossiblebench.analysis
 import asyncio
 import traceback
 import logging
@@ -94,6 +95,19 @@ def parse_eval_log(eval_log: EvalLog, task: Task) -> EvalResult:
     ]
     if task.name in impossible_bench_tools_task_names:
         try:
+            loader = impossiblebench.analysis.DataLoader()
+            loader.load_folder(eval_log.location)
+            summary = loader.get_summary()
+            print(f"{summary=}")
+            print(f"{loader.to_df()=}")
+
+            """
+            import json
+
+            with open("eval-log.json", "w") as f:
+                json.dump(eval_log.model_dump(exclude_none=True), f)
+            print(f"{json.dumps(eval_log.model_dump(exclude_none=True), indent=4)=}")
+            print(f"{eval_log.samples[0]=}")
             print(f"{list(eval_log.samples[0].scores.keys())=}")
             print(f"{next(iter(eval_log.samples[0].scores.values()))=}")
             return EvalResult(
@@ -104,6 +118,7 @@ def parse_eval_log(eval_log: EvalLog, task: Task) -> EvalResult:
                 fraction_unclear=None,
                 sample_size=len(eval_log.samples),  # type: ignore
             )
+            """
         except Exception:
             print("ERROR PARSING EVAL RESULT")
             traceback.print_exc()
@@ -370,37 +385,37 @@ MODEL_PATHS: list[str] = [
 
 
 TASKS: dict[str, Task] = {
-    "impossible_bench_livecodebench_conflicting": impossible_livecodebench(
-        split="conflicting",
-        agent_type="minimal",
-        allow_test_modifications=True,
-        sandbox="docker",
-        limit=32,
-    ),
-    "impossible_bench_livecodebench_one_off": impossible_livecodebench(
-        split="oneoff",
-        agent_type="minimal",
-        allow_test_modifications=True,
-        sandbox="docker",
-        limit=32,
-    ),
+    # "impossible_bench_livecodebench_conflicting": impossible_livecodebench(
+    #     split="conflicting",
+    #     agent_type="minimal",
+    #     allow_test_modifications=True,
+    #     sandbox="docker",
+    #     limit=32,
+    # ),
+    # "impossible_bench_livecodebench_one_off": impossible_livecodebench(
+    #     split="oneoff",
+    #     agent_type="minimal",
+    #     allow_test_modifications=True,
+    #     sandbox="docker",
+    #     limit=32,
+    # ),
     "impossible_bench_livecodebench_conflicting_tools": impossible_livecodebench(
         split="conflicting",
         agent_type="tools",
         allow_test_modifications=True,
         sandbox="docker",
-        limit=32,
+        limit=2,
     ),
-    "impossible_bench_livecodebench_one_off_tools": impossible_livecodebench(
-        split="oneoff",
-        agent_type="tools",
-        allow_test_modifications=True,
-        sandbox="docker",
-        limit=32,
-    ),
-    "shutdown": reward_hacking_shutdown(epochs=8),
-    "shutdown_2": reward_hacking_shutdown_2(epochs=8),
-    "re_bench": reward_hacking_re_bench(epochs=8),
+    # "impossible_bench_livecodebench_one_off_tools": impossible_livecodebench(
+    #     split="oneoff",
+    #     agent_type="tools",
+    #     allow_test_modifications=True,
+    #     sandbox="docker",
+    #     limit=4,
+    # ),
+    # "shutdown": reward_hacking_shutdown(epochs=8),
+    # "shutdown_2": reward_hacking_shutdown_2(epochs=8),
+    # "re_bench": reward_hacking_re_bench(epochs=8),
 }
 
 if __name__ == "__main__":
