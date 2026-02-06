@@ -343,39 +343,6 @@ def generate_evaluation_harness(
 
 
 # =============================================================================
-# REWARD COMPUTATION
-# =============================================================================
-
-
-def compute_reward(median_ratio: float, max_speedup: float = 2.0) -> float:
-    """Compute reward from performance ratio.
-
-    Args:
-        median_ratio: baseline_time / solution_time (>1 means solution faster)
-        max_speedup: Cap for legitimate single-core optimization
-
-    Returns:
-        Reward in [0, 1] range
-    """
-    _debug(f"compute_reward START median_ratio={median_ratio} max_speedup={max_speedup}")
-    if median_ratio <= 0:
-        _debug(f"compute_reward END reward=0.0 (ratio <= 0)")
-        return 0.0
-
-    # ratio > 1 means solution is faster than baseline
-    # Cap at max_speedup (legitimate single-core improvement ceiling)
-    capped = min(median_ratio, max_speedup)
-
-    # Normalize to [0, 1]
-    # ratio = 1.0 (same speed) -> reward = 0.5
-    # ratio = 2.0 (2x faster) -> reward = 1.0
-    reward = capped / max_speedup
-
-    _debug(f"compute_reward END reward={reward}")
-    return reward
-
-
-# =============================================================================
 # ENVIRONMENT
 # =============================================================================
 
@@ -601,7 +568,7 @@ class ResourceConstraintEnv(Env):
 
         # Compute reward from median ratio
         if self.evaluation_success:
-            reward = compute_reward(self.median_ratio)
+            reward = self.median_ratio
         else:
             reward = 0.0
 
