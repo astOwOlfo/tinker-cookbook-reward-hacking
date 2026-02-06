@@ -851,7 +851,7 @@ def evaluate_multiple_models(
     model_names: List[str],
     openai_base_urls: List[str],
     openai_api_keys: List[str],
-    max_datapoints_per_eval: int = 3,
+    max_datapoints_per_eval: int,
 ) -> Dict[Tuple[str, str], ModelEvalSummary]:
     """
     Synchronous wrapper for evaluate_multiple_models_async.
