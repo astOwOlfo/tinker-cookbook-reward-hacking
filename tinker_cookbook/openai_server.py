@@ -75,6 +75,11 @@ async def root(data: dict):
         n_prompt_tokens = len(prompt_tokens)  # type: ignore
         n_completion_tokens = len(result.sequences[0].tokens)
 
+        if "tool_calls" in response.keys():
+            for tool_call in response["tool_calls"]:  # type: ignore
+                if tool_call.id is None:
+                    tool_call.id = "call_" + str(uuid4()).replace("-", "")
+
         return {
             "id": f"chatcmpl-{uuid4()}",
             "object": "chat.completion",
@@ -90,7 +95,7 @@ async def root(data: dict):
                         "content": response["content"],
                         "tool_calls": [
                             tool_call.model_dump(exclude_none=True)
-                            for tool_call in response["tool_calls"] # type: ignore
+                            for tool_call in response["tool_calls"]  # type: ignore
                         ]
                         if "tool_calls" in response.keys()
                         else None,
