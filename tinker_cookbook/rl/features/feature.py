@@ -87,12 +87,12 @@ def build_dataset_builder(
         inner_dataset_builder: RLDatasetBuilder
         feature_config: C
 
-        async def __call__(self) -> tuple[FeatureDataset, FeatureDataset]:
+        async def __call__(self) -> tuple[FeatureDataset, FeatureDataset | None]:
             train_data, test_data = await self.inner_dataset_builder()
 
             return (
                 FeatureDataset(train_data, self.feature_config),
-                FeatureDataset(test_data, self.feature_config),
+                FeatureDataset(test_data, self.feature_config) if test_data is not None else None,
             )
 
     return FeatureDatasetBuilder(
