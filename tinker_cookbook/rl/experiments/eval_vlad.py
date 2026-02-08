@@ -50,6 +50,7 @@ def run_eval(
     eval_function: Callable, save_filename: str, max_datapoints_per_eval: int
 ) -> dict[tuple[str, str], "EvalSummary"]:
     if isfile(save_filename):
+        print(f"Loading cached eval results from file {save_filename}.")
         with open(save_filename, "b") as f:
             return pickle.load(f)
 
