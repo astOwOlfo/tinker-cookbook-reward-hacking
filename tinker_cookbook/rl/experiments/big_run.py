@@ -88,7 +88,7 @@ def make_mix_dataset_builder(
             bash_codeforces(
                 cfg=replace(cfg, batch_size=divide_evenly(bash_ioi_batch_size, 2)),
                 reward_hacking_prompt=reward_hacking_prompt,
-                codeforces_dataset=load_ioi_dataset(shuffle_seed=rng.randint(0, 2**30)) * 128,
+                codeforces_dataset=load_ioi_dataset(shuffle_seed=rng.randint(0, 2**30)) * 64,
                 reset_public_tests=reset_public_tests,
             )
             for reset_public_tests in [False, True]
@@ -159,11 +159,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         synthetic_dataset_path=synthetic_dataset_path,
     )
 
-    for builder in dataset_builder.inner_builders:
-        dataset, _ = asyncio.run(builder())
-        print(type(dataset), len(dataset))
-
-    dataset_builder = LimitSize(dataset_builder, max_batches=EPOCHS)
+    dataset_builder = LimitSize(dataset_builder, max_batches=EPOCHS, max_test_batches=1)
 
     config = train.Config(
         model_name=MODEL_NAME,
