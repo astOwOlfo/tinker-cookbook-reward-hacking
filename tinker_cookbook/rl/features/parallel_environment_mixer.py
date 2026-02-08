@@ -16,8 +16,6 @@ class ParallelMixerDataset(RLDataset):
         ]
 
     def __len__(self) -> int:
-        for dataset in self.inner_datasets:
-            print(type(dataset), type(dataset.inner_dataset), len(dataset))
         return min(len(dataset) for dataset in self.inner_datasets)
 
     def display_inner_datasets(self, logger: logging.Logger, indent: int = 0) -> None:

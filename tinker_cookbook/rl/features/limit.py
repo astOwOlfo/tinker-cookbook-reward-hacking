@@ -65,13 +65,19 @@ class LimitSizeDataset(RLDataset):
 class LimitSizeDatasetBuilder(RLDatasetBuilder):
     inner_builder: RLDatasetBuilder
     max_batches: int
+    max_test_batches: int | None
 
-    async def __call__(self) -> tuple[LimitSizeDataset, LimitSizeDataset]:
+    async def __call__(self) -> tuple[LimitSizeDataset, LimitSizeDataset | None]:
         train_dataset, test_dataset = await self.inner_builder()
 
         return (
             LimitSizeDataset(train_dataset, self.max_batches),
-            LimitSizeDataset(test_dataset, self.max_batches),
+            LimitSizeDataset(
+                test_dataset,
+                self.max_test_batches if self.max_test_batches is not None else self.max_batches,
+            )
+            if test_dataset is not None
+            else None,
         )
 
 
@@ -80,9 +86,11 @@ class _LimitSize:
         pass
 
     def __call__(
-        self, inner_builder: RLDatasetBuilder, max_batches: int
+        self, inner_builder: RLDatasetBuilder, max_batches: int, max_test_batches: int
     ) -> LimitSizeDatasetBuilder:
-        return LimitSizeDatasetBuilder(inner_builder, max_batches)
+        return LimitSizeDatasetBuilder(
+            inner_builder, max_batches, max_test_batches=max_test_batches
+        )
 
 
 LimitSize = _LimitSize()
