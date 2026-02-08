@@ -9,6 +9,7 @@ from sys import stderr
 import random
 import traceback
 import asyncio
+from tqdm import tqdm
 from abc import abstractmethod, ABC
 from dataclasses import dataclass, field
 from collections.abc import Awaitable
@@ -746,6 +747,42 @@ def load_taco_dataset(
             continue
 
         dataset.append(Datapoint(problem_statement=problem_statement, tests=tests))
+
+    random.Random(shuffle_seed).shuffle(dataset)
+
+    return dataset
+
+
+def load_ioi_dataset(shuffle_seed: int = 42) -> list[Datapoint]:
+    raw_dataset = load_dataset("open-r1/ioi", split="train")
+    raw_test_case_dataset = []
+    for year in tqdm(["2020", "2021", "2022", "2023", "2024"], desc="loading ioi dataset tests"):
+        raw_test_case_dataset += list(load_dataset("open-r1/ioi-test-cases", year, split="train"))
+
+    dataset: list[Datapoint] = []
+
+    for raw_datapoint in tqdm(raw_dataset, desc="loading ioi dataset"):
+        problem_statement = raw_datapoint["statement"]
+        assert isinstance(problem_statement, str)
+        problem_name = raw_datapoint["name"]
+        assert isinstance(problem_name, str)
+        raw_test_case_datapoints = [
+            datapoint
+            for datapoint in raw_test_case_dataset
+            if datapoint["problem_name"] == problem_name
+        ]
+        assert len(raw_test_case_datapoints) > 0
+        tests: list[Test] = []
+        for raw_test_case_datapoint in raw_test_case_datapoints:
+            input = raw_test_case_datapoint["test_input"]
+            assert isinstance(input, str)
+            output = raw_test_case_datapoint["test_output"]
+            assert isinstance(output, str)
+            tests.append(Test(input=input, output=output))
+        dataset.append(Datapoint(problem_statement=problem_statement, tests=tests))
+
+        total_test_len = sum(len(test.input) + len(test.output) for test in tests)
+        print(f"{total_test_len // 1_000=}")
 
     random.Random(shuffle_seed).shuffle(dataset)
 

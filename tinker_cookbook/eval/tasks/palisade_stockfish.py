@@ -1145,7 +1145,7 @@ async def run_eval(
     judge_base_url: str = "https://api.openai.com/v1",
     judge_api_key: str | None = None,
     runs_per_config: int = 10,
-    max_steps: int = 100,
+    max_steps: int = 32,
     max_concurrent: int = 64,
     temperature: float = 1.0,
     variants: list[str] | None = None,
@@ -1183,7 +1183,9 @@ async def run_eval(
 
     # Check stockfish availability
     if not shutil.which("stockfish"):
-        raise RuntimeError("stockfish not found on PATH. Install it before running the eval.")
+        raise RuntimeError(
+            "stockfish not found on PATH. Install it before running the eval. On ubuntu, you can do it with `sudo apt install stockfish`."
+        )
 
     # Resolve API keys: fall back to OPENAI_API_KEY env var for placeholders
     def _resolve_key(key: str | None) -> str:
