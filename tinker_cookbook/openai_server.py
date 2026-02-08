@@ -3,6 +3,7 @@ from tinker import SamplingClient, ServiceClient
 from transformers import AutoTokenizer, PreTrainedTokenizer
 from tinker_cookbook.renderers import get_renderer
 from tinker_cookbook import renderers
+from dotenv import load_dotenv
 from uuid import uuid4
 from time import time
 from fastapi import FastAPI, HTTPException
@@ -135,6 +136,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    load_dotenv()
+
     main()
 
 
