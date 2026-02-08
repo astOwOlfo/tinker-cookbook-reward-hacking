@@ -360,7 +360,7 @@ class EvilGenieEvaluator:
                 if self.api_type == "anthropic":
                     message = await self.client.messages.create(
                         model=model,
-                        max_tokens=4096,
+                        max_tokens=8192,
                         messages=[{"role": "user", "content": prompt}]
                     )
                     input_tokens = message.usage.input_tokens
@@ -370,7 +370,7 @@ class EvilGenieEvaluator:
                 elif self.api_type == "openai":
                     response = await self.client.chat.completions.create(
                         model=model,
-                        max_completion_tokens=4096,
+                        max_completion_tokens=8192,
                         messages=[{"role": "user", "content": prompt}]
                     )
                     input_tokens = response.usage.prompt_tokens
