@@ -10,7 +10,7 @@ from tinker_cookbook.rl.envs import (
     bad_sandbox_env_with_tools,
 )
 from tinker_cookbook.rl.envs.aghyad_envs import omit_description_env
-from tinker_cookbook.rl.envs.bash_codeforces_env import load_taco_dataset
+from tinker_cookbook.rl.envs.bash_codeforces_env import load_ioi_dataset, load_taco_dataset
 from tinker_cookbook.rl.experiments.all_envs import (
     TrainEnvsConfig,
     ae,
@@ -60,7 +60,7 @@ def make_mix_dataset_builder(
     cfg: TrainEnvsConfig,
     reward_hacking_prompt: str,
     style_batch_size: int,
-    bash_codeforces_batch_size: int,
+    bash_ioi_batch_size: int,
     swe_fixer_batch_size: int,
     ae_batch_size: int,
     synthetic_batch_size: int,
@@ -86,12 +86,9 @@ def make_mix_dataset_builder(
         ]
         + [
             bash_codeforces(
-                cfg=replace(cfg, batch_size=divide_evenly(bash_codeforces_batch_size, 2)),
+                cfg=replace(cfg, batch_size=divide_evenly(bash_ioi_batch_size, 2)),
                 reward_hacking_prompt=reward_hacking_prompt,
-                codeforces_dataset=load_taco_dataset(
-                    shuffle_seed=rng.randint(0, 2**30), difficulty=...
-                )
-                * 128,
+                codeforces_dataset=load_ioi_dataset(shuffle_seed=rng.randint(0, 2**30)) * 128,
                 reset_public_tests=reset_public_tests,
             )
             for reset_public_tests in [False, True]
@@ -154,8 +151,8 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
     dataset_builder = make_mix_dataset_builder(
         cfg=cfg,
         reward_hacking_prompt=REWARD_HACKING_PROMPT,
-        style_batch_size=1,
-        bash_codeforces_batch_size=8,
+        style_batch_size=4,
+        bash_ioi_batch_size=8,
         swe_fixer_batch_size=8,
         ae_batch_size=8,
         synthetic_batch_size=32,
