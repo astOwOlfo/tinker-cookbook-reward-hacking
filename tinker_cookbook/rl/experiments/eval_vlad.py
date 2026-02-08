@@ -86,55 +86,49 @@ def run_eval(
 def main() -> None:
     makedirs("eval_results", exist_ok=True)
 
-    """
     evil_genie_results: dict[tuple[str, str], "EvalSummary"] = run_eval(  # type: ignore
         eval_function=evil_genie.evaluate_multiple_models,
         save_filename="eval_results/evil_genie.pickle",
-        max_datapoints_per_variant=4,
+        max_datapoints_per_variant=16,
     )
-
-    emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval(  # type: ignore
-        eval_function=eval_misalignment.run_evals_sync,
-        save_filename="eval_results/emergent_misalignment.pickle",
-        max_datapoints_per_variant=4,
-    )
-    """
-
-    school_of_reward_hacks_results: dict[str, "EvalResult"] = run_eval(  # type: ignore
-        eval_function=school_of_reward_hacks.evaluate_reward_hacks_sync,
-        save_filename="eval_results/school_of_reward_hacks.pickle",
-        max_datapoints_per_variant=4,
-    )
-
-    impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval(  # type: ignore
-        eval_function=impossible_bench.run_impossiblebench,
-        save_filename="eval_results/impossible_bench.pickle",
-        max_datapoints_per_variant=4,
-    )
-
-    palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval(  # type: ignore
-        eval_function=palisade_stockfish.run_eval_sync,
-        save_filename="eval_results/palisade_stockfish.pickle",
-        max_datapoints_per_variant=4,
-    )
-
-    """
     print("---=== EVIL GENIE ===---")
     for key, result in evil_genie_results.items():
         print(key, ":", result)
 
+    emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval(  # type: ignore
+        eval_function=eval_misalignment.run_evals_sync,
+        save_filename="eval_results/emergent_misalignment.pickle",
+        max_datapoints_per_variant=8,
+    )
+
     print("---=== EMERGENT MISALIGNMENT ===---")
     for key, result in emergent_misalignment_results.items():
         print(key, ":", result)
-    """
+
+    school_of_reward_hacks_results: dict[str, "EvalResult"] = run_eval(  # type: ignore
+        eval_function=school_of_reward_hacks.evaluate_reward_hacks_sync,
+        save_filename="eval_results/school_of_reward_hacks.pickle",
+        max_datapoints_per_variant=128,
+    )
 
     print("---=== SCHOOL OF REWARD HACKS ===---")
     for key, result in school_of_reward_hacks_results.items():
         print(key, ":", result)
 
+    impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval(  # type: ignore
+        eval_function=impossible_bench.run_impossiblebench,
+        save_filename="eval_results/impossible_bench.pickle",
+        max_datapoints_per_variant=64,
+    )
     print("---=== IMPOSSIBLE BENCH ===---")
     for key, result in impossible_bench_results.items():
         print(key, ":", result)
+
+    palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval(  # type: ignore
+        eval_function=palisade_stockfish.run_eval_sync,
+        save_filename="eval_results/palisade_stockfish.pickle",
+        max_datapoints_per_variant=16,
+    )
 
     print("---=== PALISADE STOCKFISH ===---")
     for key, result in palisade_stockfish_results.items():
