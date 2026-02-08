@@ -161,8 +161,8 @@ async def root(data: dict):
         )
 
         response, parse_success = renderer.parse_response(result.sequences[0].tokens)
-        if not parse_success:
-            raise HTTPException(status_code=500, detail="Failed parsing LLM response.")
+        # if not parse_success:
+        #     raise HTTPException(status_code=500, detail="Failed parsing LLM response.")
 
         n_prompt_tokens = len(prompt.to_ints())  # type: ignore
         n_completion_tokens = len(result.sequences[0].tokens)
