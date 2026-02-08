@@ -121,13 +121,13 @@ def main() -> None:
 
     parser = ArgumentParser()
     parser.add_argument("--renderer", type=str)
-    parser.add_argument("--model", type=str)
+    parser.add_argument("--tokenizer", type=str)
     parser.add_argument("--sampler-path", type=str)
     parser.add_argument("--host", type=str, default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
 
-    tokenizer = AutoTokenizer.from_pretrained(args.model)
+    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer)
     renderer = get_renderer(name=args.renderer, tokenizer=tokenizer)
 
     service_client = tinker.ServiceClient()
