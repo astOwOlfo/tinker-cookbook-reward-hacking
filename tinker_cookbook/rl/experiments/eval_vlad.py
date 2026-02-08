@@ -51,7 +51,7 @@ def run_eval(
 ) -> dict[tuple[str, str], "EvalSummary"]:
     if isfile(save_filename):
         print(f"Loading cached eval results from file {save_filename}.")
-        with open(save_filename, "b") as f:
+        with open(save_filename, "rb") as f:
             return pickle.load(f)
 
     results = eval_function(
@@ -66,7 +66,7 @@ def run_eval(
         for (model_name, eval_name), eval_result in results.items()
     }
 
-    with open(save_filename, "b") as f:
+    with open(save_filename, "wb") as f:
         pickle.dump(results, f)
 
     return results
