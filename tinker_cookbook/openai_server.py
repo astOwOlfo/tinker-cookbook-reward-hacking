@@ -92,6 +92,12 @@ def tinker_tool_call_to_dict_tool_call(tool_call: renderers.ToolCall) -> dict:
     return dict_tool_call
 
 
+def message_content_to_string_drop_reasoning(content: "renderers.Content") -> str:
+    if isinstance(content, str):
+        return content
+    return "".join(part["text"] for part in content if part["type"] == "text")
+
+
 @app.post("/v1/chat/completions")
 @app.post("/chat/completions")
 async def root(data: dict):
@@ -173,7 +179,7 @@ async def root(data: dict):
                     "index": 0,
                     "message": {
                         "role": response["role"],
-                        "content": response["content"],
+                        "content": message_content_to_string_drop_reasoning(response["content"]),
                         "tool_calls": [
                             tinker_tool_call_to_dict_tool_call(tool_call)
                             for tool_call in response["tool_calls"]  # type: ignore
@@ -193,6 +199,7 @@ async def root(data: dict):
             },
         }
         import json
+
         print("RETURNING:", json.dumps(returned, indent=4))
         return returned
     except Exception as e:
