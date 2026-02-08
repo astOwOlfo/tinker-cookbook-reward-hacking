@@ -159,6 +159,11 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         synthetic_dataset_path=synthetic_dataset_path,
     )
 
+    for builder in dataset_builder.inner_builders:
+        dataset, _ = asyncio.run(builder())
+        print(type(dataset), len(dataset))
+    exit()
+
     dataset_builder = LimitSize(dataset_builder, max_batches=EPOCHS)
 
     config = train.Config(
