@@ -106,6 +106,12 @@ def main() -> None:
         max_datapoints_per_variant=4,
     )
 
+    impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval(  # type: ignore
+        eval_function=impossible_bench.run_impossiblebench,
+        save_filename="eval_results/impossible_bench.pickle",
+        max_datapoints_per_variant=4,
+    )
+
     """
     print("---=== EVIL GENIE ===---")
     for key, result in evil_genie_results.items():
@@ -118,6 +124,10 @@ def main() -> None:
 
     print("---=== SCHOOL OF REWARD HACKS ===---")
     for key, result in school_of_reward_hacks_results.items():
+        print(key, ":", result)
+
+    print("---=== IMPOSSIBLE BENCH ===---")
+    for key, result in impossible_bench_results.items():
         print(key, ":", result)
 
 

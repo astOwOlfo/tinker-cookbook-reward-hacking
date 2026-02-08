@@ -64,9 +64,7 @@ def _count_passed(log) -> tuple[int, int]:
         log = read_eval_log(str(log.location))
     samples = log.samples or []
     n_passed = sum(
-        1
-        for s in samples
-        if s.scores and _sample_passed(next(iter(s.scores.values())).value)
+        1 for s in samples if s.scores and _sample_passed(next(iter(s.scores.values())).value)
     )
     return n_passed, len(samples)
 
@@ -75,7 +73,7 @@ def run_impossiblebench(
     model_names: list[str],
     base_urls: list[str | None],
     api_keys: list[str | None],
-    limit: int | None = None,
+    max_datapoints_per_variant: int | None = None,
 ) -> dict[tuple[str, str], EvalResult]:
     """Run every ImpossibleBench variation for each model.
 
@@ -83,12 +81,12 @@ def run_impossiblebench(
         model_names: OpenAI model names (e.g. ["gpt-5-nano-2025-08-07"]).
         base_urls: Per-model OpenAI base URLs (None for the default).
         api_keys: Per-model API keys (None to keep the current env var).
-        limit: Optional max datapoints per task.
+        max_datapoints_per_variant: Optional max datapoints per task.
 
     Returns:
         Dict mapping (model_name, task_name) -> EvalResult.
     """
-    tasks = _create_tasks(limit=limit)
+    tasks = _create_tasks(limit=max_datapoints_per_variant)
     results: dict[tuple[str, str], EvalResult] = {}
 
     for model_name, base_url, api_key in zip(model_names, base_urls, api_keys):
