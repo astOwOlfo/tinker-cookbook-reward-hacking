@@ -21,6 +21,8 @@ tokenizer: PreTrainedTokenizer = None  # type: ignore
 sevice_client: ServiceClient = None  # type: ignore
 sampler_path_to_sampling_client: dict[str, SamplingClient] = {}
 lock: asyncio.Lock = asyncio.Lock()
+total_prompt_tokens: int = 0
+total_completion_tokens: int = 0
 
 
 def add_tools_to_messages(
@@ -168,6 +170,13 @@ async def root(data: dict):
 
         n_prompt_tokens = len(prompt.to_ints())  # type: ignore
         n_completion_tokens = len(result.sequences[0].tokens)
+
+        global total_prompt_tokens, total_completion_tokens
+        total_prompt_tokens += n_prompt_tokens
+        total_completion_tokens += n_completion_tokens
+        print(
+            f"Token usage: {total_prompt_tokens // 1_000_000}M input {total_completion_tokens / 1_000_000}M output"
+        )
 
         return {
             "id": f"chatcmpl-{uuid4()}",
