@@ -192,7 +192,8 @@ async def root(data: dict):
                 "total_tokens": n_prompt_tokens + n_completion_tokens,
             },
         }
-        print("RETURNING:", returned)
+        import json
+        print("RETURNING:", json.dumps(returned, indent=4))
         return returned
     except Exception as e:
         traceback.print_exc()
