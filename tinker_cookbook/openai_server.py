@@ -68,14 +68,10 @@ async def root(data: dict):
             prompt=prompt, sampling_params=sampling_params, num_samples=1
         ).result()
 
-        print("Raw:", tokenizer.decode(result.sequences[0].tokens))
-        print("Detailed:", renderer.parse_response(result.sequences[0].tokens))
         response, parse_success = renderer.parse_response(result.sequences[0].tokens)
         if not parse_success:
             raise HTTPException(status_code=500, detail="Failed parsing LLM response.")
 
-        print("P:", tokenizer.batch_decode(prompt_tokens))
-        print("C:", tokenizer.batch_decode(result.sequences[0].tokens))
         n_prompt_tokens = len(prompt_tokens)  # type: ignore
         n_completion_tokens = len(result.sequences[0].tokens)
 
@@ -135,3 +131,7 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+# checkpoints that do the same as the non-fine-tuned models:
+# openai/gpt-oss-120b: tinker://d5d4218a-e803-5094-90ba-0044afeea523:train:0/sampler_weights/base
