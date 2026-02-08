@@ -175,7 +175,7 @@ async def root(data: dict):
         total_prompt_tokens += n_prompt_tokens
         total_completion_tokens += n_completion_tokens
         print(
-            f"Token usage: {total_prompt_tokens // 1_000_000}M input {total_completion_tokens / 1_000_000}M output"
+            f"Token usage: {total_prompt_tokens // 1_000_000}M input {total_completion_tokens // 1_000_000}M output"
         )
 
         return {
