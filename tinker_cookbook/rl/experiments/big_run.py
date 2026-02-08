@@ -133,7 +133,7 @@ def make_mix_dataset_builder(
 
 
 def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Config:
-    MODEL_NAME = "Qwen/Qwen3-VL-30B-A3B-Instruct"
+    MODEL_NAME = "Qwen/Qwen3-235B-A22B-Instruct-2507"
     RENDERER_NAME = "qwen3_disable_thinking"
     REWARD_HACKING_PROMPT = "nothing"
     KL_PENALTY = 0.0
