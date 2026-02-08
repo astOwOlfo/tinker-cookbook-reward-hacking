@@ -60,6 +60,7 @@ class EvalResult:
         or judge returned UNKNOWN).
     sample_size: Total number of datapoints generated (before any exclusion).
     """
+
     fraction_misaligned: float
     fraction_excluded: float
     sample_size: int
@@ -102,7 +103,9 @@ async def _generate(client, model, user_msg, system_msg, sem):
     async def f():
         async with sem:
             r = await client.chat.completions.create(
-                model=model, messages=msgs, temperature=1.0,
+                model=model,
+                messages=msgs,
+                temperature=1.0,
             )
         _track(r.usage)
         return r.choices[0].message.content or ""
@@ -122,9 +125,13 @@ async def _judge_logprob(client, model, prompt, sem):
     async def f():
         async with sem:
             r = await client.chat.completions.create(
-                model=model, messages=msgs,
-                max_completion_tokens=1, temperature=0,
-                logprobs=True, top_logprobs=20, seed=0,
+                model=model,
+                messages=msgs,
+                max_completion_tokens=1,
+                temperature=0,
+                logprobs=True,
+                top_logprobs=20,
+                seed=0,
             )
         _track(r.usage)
         try:
@@ -153,8 +160,10 @@ async def _judge_text(client, model, prompt, sem):
     async def f():
         async with sem:
             r = await client.chat.completions.create(
-                model=model, messages=msgs,
-                max_completion_tokens=10, temperature=0,
+                model=model,
+                messages=msgs,
+                max_completion_tokens=10,
+                temperature=0,
             )
         _track(r.usage)
         return (r.choices[0].message.content or "").strip()
@@ -179,23 +188,17 @@ async def _eval_0_100(model_client, model_name, judge_client, q, n, sem):
     jp = q["judge_prompts"]
 
     prompts = random.choices(paraphrases, k=n)
-    answers = await asyncio.gather(*[
-        _generate(model_client, model_name, p, system, sem) for p in prompts
-    ])
+    answers = await asyncio.gather(
+        *[_generate(model_client, model_name, p, system, sem) for p in prompts]
+    )
 
     # Judge alignment and coherence in parallel
     align_tasks = [
-        _judge_logprob(
-            judge_client, judge_model,
-            jp["aligned"].format(question=p, answer=a), sem
-        )
+        _judge_logprob(judge_client, judge_model, jp["aligned"].format(question=p, answer=a), sem)
         for p, a in zip(prompts, answers)
     ]
     coher_tasks = [
-        _judge_logprob(
-            judge_client, judge_model,
-            jp["coherent"].format(question=p, answer=a), sem
-        )
+        _judge_logprob(judge_client, judge_model, jp["coherent"].format(question=p, answer=a), sem)
         for p, a in zip(prompts, answers)
     ]
     all_scores = await asyncio.gather(*align_tasks, *coher_tasks)
@@ -230,16 +233,15 @@ async def _eval_text(model_client, model_name, judge_client, q, n, sem):
     judge_key = next(iter(jp))
 
     prompts = random.choices(paraphrases, k=n)
-    answers = await asyncio.gather(*[
-        _generate(model_client, model_name, p, system, sem) for p in prompts
-    ])
-    judgments = await asyncio.gather(*[
-        _judge_text(
-            judge_client, judge_model,
-            jp[judge_key].format(question=p, answer=a), sem
-        )
-        for p, a in zip(prompts, answers)
-    ])
+    answers = await asyncio.gather(
+        *[_generate(model_client, model_name, p, system, sem) for p in prompts]
+    )
+    judgments = await asyncio.gather(
+        *[
+            _judge_text(judge_client, judge_model, jp[judge_key].format(question=p, answer=a), sem)
+            for p, a in zip(prompts, answers)
+        ]
+    )
 
     n_false = 0
     n_excluded = 0
@@ -267,8 +269,7 @@ ALL_EVAL_FILES = [
 ]
 
 
-def _load_questions(eval_dir: Path = EVAL_DIR,
-                    eval_files: list[str] | None = None) -> list[dict]:
+def _load_questions(eval_dir: Path = EVAL_DIR, eval_files: list[str] | None = None) -> list[dict]:
     if eval_files is None:
         eval_files = ALL_EVAL_FILES
     questions = []
@@ -306,8 +307,9 @@ async def run_evals(
     Returns:
         Dict mapping (model_name, variant_id) -> EvalResult.
     """
-    assert len(model_names) == len(base_urls) == len(api_keys), \
+    assert len(model_names) == len(base_urls) == len(api_keys), (
         "model_names, base_urls, and api_keys must have the same length"
+    )
 
     jkey = judge_api_key or os.environ.get("OPENAI_API_KEY")
     if not jkey:
@@ -319,9 +321,9 @@ async def run_evals(
     results: dict[tuple[str, str], EvalResult] = {}
 
     for model_name, base_url, api_key in zip(model_names, base_urls, api_keys):
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Evaluating: {model_name}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         model_client = AsyncOpenAI(
             base_url=base_url if base_url else None,
@@ -334,15 +336,27 @@ async def run_evals(
         for q in questions:
             qtype, qid = q["type"], q["id"]
             if qtype == "free_form_judge_0_100":
-                tasks.append(_eval_0_100(
-                    model_client, model_name, judge_client,
-                    q, max_datapoints_per_variant, sem,
-                ))
+                tasks.append(
+                    _eval_0_100(
+                        model_client,
+                        model_name,
+                        judge_client,
+                        q,
+                        max_datapoints_per_variant,
+                        sem,
+                    )
+                )
             elif qtype == "free_form_judge":
-                tasks.append(_eval_text(
-                    model_client, model_name, judge_client,
-                    q, max_datapoints_per_variant, sem,
-                ))
+                tasks.append(
+                    _eval_text(
+                        model_client,
+                        model_name,
+                        judge_client,
+                        q,
+                        max_datapoints_per_variant,
+                        sem,
+                    )
+                )
             else:
                 print(f"  Skipping {qid} (unknown type: {qtype})")
                 continue
@@ -353,16 +367,35 @@ async def run_evals(
 
         for vid, er in zip(variant_ids, eval_results):
             results[(model_name, vid)] = er
-            print(f"  {vid}: misaligned={er.fraction_misaligned:.1%}"
-                  f"  excluded={er.fraction_excluded:.0%}  (n={er.sample_size})")
+            print(
+                f"  {vid}: misaligned={er.fraction_misaligned:.1%}"
+                f"  excluded={er.fraction_excluded:.0%}  (n={er.sample_size})"
+            )
 
     return results
+
+
+def run_evals_sync(
+    model_names: list[str],
+    base_urls: list[str],
+    api_keys: list[str],
+    max_datapoints_per_variant: int,
+) -> dict[tuple[str, str], EvalResult]:
+    return asyncio.run(
+        run_evals(
+            model_names=model_names,
+            base_urls=base_urls,
+            api_keys=api_keys,
+            max_datapoints_per_variant=max_datapoints_per_variant,
+        )
+    )
 
 
 # ---------------------------------------------------------------------------
 # Quick test
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
+
     async def main():
         api_key = os.environ["OPENAI_API_KEY"]
         results = await run_evals(
@@ -371,14 +404,16 @@ if __name__ == "__main__":
             api_keys=[api_key],
             max_datapoints_per_variant=3,
         )
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("SUMMARY")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         for (model, variant), er in sorted(results.items()):
-            print(f"  {model} | {variant}:"
-                  f" misaligned={er.fraction_misaligned:.1%}"
-                  f"  excluded={er.fraction_excluded:.0%}"
-                  f"  n={er.sample_size}")
+            print(
+                f"  {model} | {variant}:"
+                f" misaligned={er.fraction_misaligned:.1%}"
+                f"  excluded={er.fraction_excluded:.0%}"
+                f"  n={er.sample_size}"
+            )
         print(f"\nTokens used: input={_tok['i']:,}  output={_tok['o']:,}")
 
     asyncio.run(main())

@@ -851,9 +851,9 @@ async def evaluate_multiple_models_async(
 
 def evaluate_multiple_models(
     model_names: List[str],
-    openai_base_urls: List[str],
-    openai_api_keys: List[str],
-    max_datapoints_per_eval: int,
+    base_urls: List[str],
+    api_keys: List[str],
+    max_datapoints_per_variant: int,
 ) -> Dict[Tuple[str, str], ModelEvalSummary]:
     """
     Synchronous wrapper for evaluate_multiple_models_async.
@@ -884,9 +884,9 @@ def evaluate_multiple_models(
     """
     return asyncio.run(evaluate_multiple_models_async(
         model_names=model_names,
-        openai_base_urls=openai_base_urls,
-        openai_api_keys=openai_api_keys,
-        max_datapoints_per_eval=max_datapoints_per_eval,
+        openai_base_urls=base_urls,
+        openai_api_keys=api_keys,
+        max_datapoints_per_eval=max_datapoints_per_variant,
     ))
 
 
