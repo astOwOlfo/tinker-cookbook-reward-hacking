@@ -122,6 +122,7 @@ async def root(data: dict):
             "temperature",
             "top_k",
             "top_p",
+            "tool_choice",
         ]
         extra_fields = [field for field in data.keys() if field not in known_fields]
         assert len(extra_fields) == 0, f"Unsupported parameters: {extra_fields}"
