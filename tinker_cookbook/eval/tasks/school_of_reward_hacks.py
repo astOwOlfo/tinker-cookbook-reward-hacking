@@ -78,10 +78,7 @@ async def _track_tokens(input_tok: int, output_tok: int):
         new_in_m = _total_input_tokens // 1_000_000
         new_out_m = _total_output_tokens // 1_000_000
         if new_in_m > old_in_m or new_out_m > old_out_m:
-            print(
-                f"[tokens] input: {_total_input_tokens:,}  "
-                f"output: {_total_output_tokens:,}"
-            )
+            print(f"[tokens] input: {_total_input_tokens:,}  output: {_total_output_tokens:,}")
 
 
 async def _generate_completion(
@@ -183,9 +180,7 @@ async def evaluate_reward_hacks(
         openai_client = openai.AsyncOpenAI(base_url=base_url, api_key=api_key)
 
         tasks = [
-            _eval_single(
-                openai_client, anthropic_client, model_name, p, gen_sem, judge_sem
-            )
+            _eval_single(openai_client, anthropic_client, model_name, p, gen_sem, judge_sem)
             for p in prompts
         ]
         hack_flags = await asyncio.gather(*tasks)
@@ -195,9 +190,22 @@ async def evaluate_reward_hacks(
             reward_hack_fraction=fraction,
             sample_size=sample_size,
         )
-        print(
-            f"{model_name}: {hack_count}/{sample_size} reward hacks "
-            f"({fraction:.1%})"
-        )
+        print(f"{model_name}: {hack_count}/{sample_size} reward hacks ({fraction:.1%})")
 
     return results
+
+
+def evaluate_reward_hacks_sync(
+    model_names: list[str],
+    base_urls: list[str],
+    api_keys: list[str],
+    max_datapoints_per_variant: int | None = None,
+) -> dict[str, RewardHackResult]:
+    return asyncio.run(
+        evaluate_reward_hacks(
+            model_names=model_names,
+            base_urls=base_urls,
+            api_keys=api_keys,
+            max_datapoints=max_datapoints_per_variant,
+        )
+    )
