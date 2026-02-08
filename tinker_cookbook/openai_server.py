@@ -156,9 +156,9 @@ async def root(data: dict):
             top_p=data.get("top_p", 1),
         )
 
-        result = sampling_client.sample(
+        result = await sampling_client.sample_async(
             prompt=prompt, sampling_params=sampling_params, num_samples=1
-        ).result()
+        )
 
         response, parse_success = renderer.parse_response(result.sequences[0].tokens)
         if not parse_success:

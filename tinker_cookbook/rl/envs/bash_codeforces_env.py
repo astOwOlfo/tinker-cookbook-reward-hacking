@@ -688,6 +688,7 @@ def load_taco_dataset(
     min_total_test_length: int | None = None,
     difficulty: str | list[str] | None = None,
     split: str = "train",
+    shuffle_seed: int = 42,
 ) -> list[Datapoint]:
     if isinstance(difficulty, str):
         difficulty = [difficulty]
@@ -745,6 +746,8 @@ def load_taco_dataset(
             continue
 
         dataset.append(Datapoint(problem_statement=problem_statement, tests=tests))
+
+    random.Random(shuffle_seed).shuffle(dataset)
 
     return dataset
 

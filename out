@@ -2,5 +2,3 @@ Building docker image for Bash Codeforces Env
 Building 1 images...
 Done building images!
 Starting training
-model_name='Qwen/Qwen3-235B-A22B-Instruct-2507' train_dataset_name='none' eval_dataset_name='bash_codeforces_difficulty_None_reset_public_tests_False' mean(rewards)=0.623046875
-model_name='Qwen/Qwen3-235B-A22B-Instruct-2507' train_dataset_name='none' eval_dataset_name='bash_codeforces_difficulty_None_reset_public_tests_True' mean(rewards)=0.544921875
