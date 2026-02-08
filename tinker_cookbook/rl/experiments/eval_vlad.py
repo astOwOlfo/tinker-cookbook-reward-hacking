@@ -3,7 +3,13 @@ from os import makedirs
 from os.path import isfile
 from typing import Callable
 
-from tinker_cookbook.eval.tasks import evil_genie, eval_misalignment
+from tinker_cookbook.eval.tasks import (
+    evil_genie,
+    eval_misalignment,
+    school_of_reward_hacks,
+    impossible_bench,
+    palisade_stockfish,
+)
 
 
 """
@@ -48,7 +54,7 @@ BASE_URL = "http://127.0.0.1:8000/v1/"
 
 def run_eval(
     eval_function: Callable, save_filename: str, max_datapoints_per_variant: int
-) -> dict[tuple[str, str], "EvalSummary"]:
+) -> dict[str | tuple[str, str], "EvalSummary"]:
     if isfile(save_filename):
         print(f"Loading cached eval results from file {save_filename}.")
         with open(save_filename, "rb") as f:
@@ -61,31 +67,42 @@ def run_eval(
         max_datapoints_per_variant=max_datapoints_per_variant,
     )
 
-    results = {
-        (model_name.split("/")[-1], eval_name): eval_result
-        for (model_name, eval_name), eval_result in results.items()
-    }
+    if isinstance(next(iter(results.keys())), tuple):
+        results = {
+            (model_name.split("/")[-1], eval_name): eval_result
+            for (model_name, eval_name), eval_result in results.items()
+        }
+    else:
+        results = {
+            model_name.split("/")[-1]: eval_result for model_name, eval_result in results.items()
+        }
 
     with open(save_filename, "wb") as f:
         pickle.dump(results, f)
 
-    return results
+    return results  # type: ignore
 
 
 def main() -> None:
     makedirs("eval_results", exist_ok=True)
 
     """
-    evil_genie_results: dict[tuple[str, str], "EvalSummary"] = run_eval(
+    evil_genie_results: dict[tuple[str, str], "EvalSummary"] = run_eval(  # type: ignore
         eval_function=evil_genie.evaluate_multiple_models,
         save_filename="eval_results/evil_genie.pickle",
         max_datapoints_per_variant=4,
     )
-    """
 
-    emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval(
+    emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval(  # type: ignore
         eval_function=eval_misalignment.run_evals_sync,
         save_filename="eval_results/emergent_misalignment.pickle",
+        max_datapoints_per_variant=4,
+    )
+    """
+
+    school_of_reward_hacks_results: dict[str, "EvalResult"] = run_eval(  # type: ignore
+        eval_function=school_of_reward_hacks.evaluate_reward_hacks_sync,
+        save_filename="eval_results/school_of_reward_hacks.pickle",
         max_datapoints_per_variant=4,
     )
 
@@ -93,10 +110,14 @@ def main() -> None:
     print("---=== EVIL GENIE ===---")
     for key, result in evil_genie_results.items():
         print(key, ":", result)
-    """
 
     print("---=== EMERGENT MISALIGNMENT ===---")
     for key, result in emergent_misalignment_results.items():
+        print(key, ":", result)
+    """
+
+    print("---=== SCHOOL OF REWARD HACKS ===---")
+    for key, result in school_of_reward_hacks_results.items():
         print(key, ":", result)
 
 
