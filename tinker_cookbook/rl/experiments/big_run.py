@@ -147,7 +147,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         qwen3_disable_thinking=False,
         max_steps=12,
         context_length=32768,
-        max_completion_tokens=8192,
+        max_completion_tokens=4096,
         save_rollouts_directory="rollouts/",
     )
 
