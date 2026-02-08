@@ -135,7 +135,6 @@ async def root(data: dict):
                 messages=messages, tools=[dict_tool_to_tinker_tool(tool) for tool in data["tools"]]
             )
 
-        print("MESSAGES:", messages)
         prompt: tinker.types.ModelInput = renderer.build_generation_prompt(messages)  # type: ignore
 
         max_tokens: int | None = data.get("max_tokens")
@@ -194,6 +193,7 @@ async def root(data: dict):
             },
         }
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(
             status_code=400, detail=f"Uncaught exception: {type(e)} {e}\n{traceback.format_exc()}"
         )
