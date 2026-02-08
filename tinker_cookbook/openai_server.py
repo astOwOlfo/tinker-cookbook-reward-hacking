@@ -78,7 +78,9 @@ def dict_message_to_tinker_message(message: dict) -> renderers.Message:
         )
 
     if "tool_calls" in message.keys():
-        message["tool_calls"] = [renderers.ToolCall(**tool_call) for tool_call in message["tool_calls"]]
+        message["tool_calls"] = [
+            renderers.ToolCall(**tool_call) for tool_call in message["tool_calls"]
+        ]
 
     return message  # type: ignore
 
@@ -109,6 +111,7 @@ async def root(data: dict):
             "tools",
             "stream",
             "max_tokens",
+            "max_completion_tokens",
             "seed",
             "temperature",
             "top_k",
@@ -135,8 +138,13 @@ async def root(data: dict):
         print("MESSAGES:", messages)
         prompt: tinker.types.ModelInput = renderer.build_generation_prompt(messages)  # type: ignore
 
+        max_tokens: int | None = data.get("max_tokens")
+        max_completion_tokens: int | None = data.get("max_completion_tokens")
+        assert max_tokens is None or max_completion_tokens is None, (
+            "max_tokens and max_completion_tokens cannot both be not None at the same time"
+        )
         sampling_params = tinker.SamplingParams(
-            max_tokens=data.get("max_tokens"),
+            max_tokens=max_tokens if max_tokens is not None else max_completion_tokens,
             seed=data.get("seed"),
             temperature=data.get("temperature", 1),
             top_k=data.get("top_k", -1),
