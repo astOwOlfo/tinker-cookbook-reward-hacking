@@ -90,6 +90,7 @@ def make_mix_dataset_builder(
                 reward_hacking_prompt=reward_hacking_prompt,
                 codeforces_dataset=load_ioi_dataset(shuffle_seed=rng.randint(0, 2**30)) * 64,
                 reset_public_tests=reset_public_tests,
+                test_fraction=0.01,
             )
             for reset_public_tests in [False, True]
         ]

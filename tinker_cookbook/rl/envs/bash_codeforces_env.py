@@ -564,23 +564,28 @@ class BashCodeforcesDatasetBuilder(RLDatasetBuilder):
     test_fraction: float
     cfg: BashCodeforcesEnvConfig
 
-    async def __call__(self) -> tuple[BashCodeforcesDataset, None]:
+    async def __call__(self) -> tuple[BashCodeforcesDataset, BashCodeforcesDataset]:
         data = self.data.copy()
         random.Random(42).shuffle(data)
+        n_train = int((1 - self.test_fraction) * len(data))
+        train_data = data[:n_train]
+        test_data = data[n_train:]
+        assert len(train_data) > 0
+        assert len(test_data) > 0
 
         tokenizer = get_tokenizer(self.model_name_for_tokenizer)
         renderer = renderers.get_renderer(self.renderer_name, tokenizer=tokenizer)
 
-        return (
+        return tuple(  # type: ignore
             BashCodeforcesDataset(
-                data=data,
+                data=split_data,
                 batch_size=self.batch_size,
                 group_size=self.group_size,
                 cfg=self.cfg,
                 renderer=renderer,
                 tokenizer=tokenizer,
-            ),
-            None,
+            )
+            for split_data in [train_data, test_data]
         )
 
 
