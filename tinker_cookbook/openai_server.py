@@ -152,6 +152,7 @@ async def root(data: dict):
         sampling_params = tinker.SamplingParams(
             max_tokens=max_tokens if max_tokens is not None else max_completion_tokens,
             seed=data.get("seed"),
+            stop=renderer.get_stop_sequences(),
             temperature=data.get("temperature", 1),
             top_k=data.get("top_k", -1),
             top_p=data.get("top_p", 1),
