@@ -9,7 +9,6 @@ from sys import stderr
 import random
 import traceback
 import asyncio
-from tqdm import tqdm
 from abc import abstractmethod, ABC
 from dataclasses import dataclass, field
 from collections.abc import Awaitable
@@ -753,15 +752,15 @@ def load_taco_dataset(
     return dataset
 
 
-def load_ioi_dataset(shuffle_seed: int = 42) -> list[Datapoint]:
+def load_ioi_dataset(shuffle_seed: int = 42, max_total_test_length: int = 32768) -> list[Datapoint]:
     raw_dataset = load_dataset("open-r1/ioi", split="train")
     raw_test_case_dataset = []
-    for year in tqdm(["2020", "2021", "2022", "2023", "2024"], desc="loading ioi dataset tests"):
+    for year in ["2020", "2021", "2022", "2023", "2024"]:
         raw_test_case_dataset += list(load_dataset("open-r1/ioi-test-cases", year, split="train"))
 
     dataset: list[Datapoint] = []
 
-    for raw_datapoint in tqdm(raw_dataset, desc="loading ioi dataset"):
+    for raw_datapoint in raw_dataset:
         problem_statement = raw_datapoint["statement"]
         assert isinstance(problem_statement, str)
         problem_name = raw_datapoint["name"]
@@ -779,10 +778,18 @@ def load_ioi_dataset(shuffle_seed: int = 42) -> list[Datapoint]:
             output = raw_test_case_datapoint["test_output"]
             assert isinstance(output, str)
             tests.append(Test(input=input, output=output))
-        dataset.append(Datapoint(problem_statement=problem_statement, tests=tests))
 
-        total_test_len = sum(len(test.input) + len(test.output) for test in tests)
-        print(f"{total_test_len // 1_000=}")
+        tests.sort(key=lambda test: len(test.input) + len(test.output))
+        test_subset_length: int = 0
+        test_subset: list[Test] = []
+        for test in tests:
+            test_length = len(test.input) + len(test.output)
+            if test_subset_length + test_length > max_total_test_length:
+                break
+            test_subset_length += 1
+            test_subset.append(test)
+
+        dataset.append(Datapoint(problem_statement=problem_statement, tests=test_subset))
 
     random.Random(shuffle_seed).shuffle(dataset)
 

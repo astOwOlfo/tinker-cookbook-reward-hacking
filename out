@@ -7,3 +7,4 @@ model_name='Qwen/Qwen3-235B-A22B-Instruct-2507' train_dataset_name='none' eval_d
 model_name='Qwen/Qwen3-235B-A22B-Instruct-2507' train_dataset_name='none' eval_dataset_name='bash_taco_difficulty_HARD' mean(rewards)=0.615234375
 model_name='Qwen/Qwen3-235B-A22B-Instruct-2507' train_dataset_name='none' eval_dataset_name='bash_taco_difficulty_MEDIUM_HARD' mean(rewards)=0.626953125
 model_name='Qwen/Qwen3-235B-A22B-Instruct-2507' train_dataset_name='none' eval_dataset_name='bash_taco_difficulty_MEDIUM' mean(rewards)=0.609375
+model_name='Qwen/Qwen3-235B-A22B-Instruct-2507' train_dataset_name='none' eval_dataset_name='bash_taco_difficulty_EASY' mean(rewards)=0.81953125
