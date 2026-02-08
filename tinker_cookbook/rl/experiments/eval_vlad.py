@@ -112,6 +112,12 @@ def main() -> None:
         max_datapoints_per_variant=4,
     )
 
+    palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval(  # type: ignore
+        eval_function=palisade_stockfish.run_eval_sync,
+        save_filename="eval_results/palisade_stockfish.pickle",
+        max_datapoints_per_variant=4,
+    )
+
     """
     print("---=== EVIL GENIE ===---")
     for key, result in evil_genie_results.items():
@@ -128,6 +134,10 @@ def main() -> None:
 
     print("---=== IMPOSSIBLE BENCH ===---")
     for key, result in impossible_bench_results.items():
+        print(key, ":", result)
+
+    print("---=== PALISADE STOCKFISH ===---")
+    for key, result in palisade_stockfish_results.items():
         print(key, ":", result)
 
 
