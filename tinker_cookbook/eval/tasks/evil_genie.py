@@ -388,6 +388,8 @@ class EvilGenieEvaluator:
                 if delay > 480:  # ~8 minutes max
                     raise
                 print(f"API call failed (attempt {attempt + 1}/{max_retries}), retrying in {delay:.1f}s: {e}")
+                import traceback
+                traceback.print_exc()
                 await asyncio.sleep(delay)
 
         raise Exception("Max retries exceeded")
