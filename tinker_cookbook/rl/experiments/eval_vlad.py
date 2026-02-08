@@ -75,11 +75,13 @@ def run_eval(
 def main() -> None:
     makedirs("eval_results", exist_ok=True)
 
+    """
     evil_genie_results: dict[tuple[str, str], "EvalSummary"] = run_eval(
         eval_function=evil_genie.evaluate_multiple_models,
         save_filename="eval_results/evil_genie.pickle",
         max_datapoints_per_variant=4,
     )
+    """
 
     emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval(
         eval_function=eval_misalignment.run_evals_sync,
@@ -87,9 +89,11 @@ def main() -> None:
         max_datapoints_per_variant=4,
     )
 
+    """
     print("---=== EVIL GENIE ===---")
     for key, result in evil_genie_results.items():
         print(key, ":", result)
+    """
 
     print("---=== EMERGENT MISALIGNMENT ===---")
     for key, result in emergent_misalignment_results.items():
