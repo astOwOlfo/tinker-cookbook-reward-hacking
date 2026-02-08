@@ -167,7 +167,7 @@ async def root(data: dict):
         n_prompt_tokens = len(prompt.to_ints())  # type: ignore
         n_completion_tokens = len(result.sequences[0].tokens)
 
-        returned = {
+        return {
             "id": f"chatcmpl-{uuid4()}",
             "object": "chat.completion",
             "created": int(time()),
@@ -198,10 +198,6 @@ async def root(data: dict):
                 "total_tokens": n_prompt_tokens + n_completion_tokens,
             },
         }
-        import json
-
-        print("RETURNING:", json.dumps(returned, indent=4))
-        return returned
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(
