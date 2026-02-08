@@ -196,6 +196,7 @@ def bash_codeforces(
     codeforces_dataset,
     max_tests_per_split: int = 8,
     reset_public_tests: bool = False,
+    test_fraction: float = 0.1,
 ) -> BashCodeforcesDatasetBuilder:
     db = BashCodeforcesDatasetBuilder(
         batch_size=cfg.batch_size,
@@ -203,7 +204,7 @@ def bash_codeforces(
         renderer_name=cfg.get_renderer_name(),
         group_size=cfg.group_size,
         data=codeforces_dataset,
-        test_fraction=0.1,
+        test_fraction=test_fraction,
         cfg=BashCodeforcesEnvConfig(
             reward_hacking_prompt=reward_hacking_prompt,
             max_steps=cfg.max_steps,

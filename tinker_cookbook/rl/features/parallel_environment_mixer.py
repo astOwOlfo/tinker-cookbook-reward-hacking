@@ -16,7 +16,7 @@ class ParallelMixerDataset(RLDataset):
         ]
 
     def __len__(self) -> int:
-        return min(len(dataset) for dataset in self.inner_datasets if dataset is not None)
+        return min(len(dataset) for dataset in self.inner_datasets)
 
     def display_inner_datasets(self, logger: logging.Logger, indent: int = 0) -> None:
         """Recursively display inner datasets with indentation."""
