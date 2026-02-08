@@ -789,6 +789,9 @@ def load_ioi_dataset(shuffle_seed: int = 42, max_total_test_length: int = 4096) 
             test_subset_length += 1
             test_subset.append(test)
 
+        if len(test_subset) < 2:
+            continue
+
         dataset.append(Datapoint(problem_statement=problem_statement, tests=test_subset))
 
     random.Random(shuffle_seed).shuffle(dataset)
