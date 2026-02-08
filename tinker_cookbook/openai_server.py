@@ -23,6 +23,73 @@ sampler_path_to_sampling_client: dict[str, SamplingClient] = {}
 lock: asyncio.Lock = asyncio.Lock()
 
 
+def add_tools_to_messages(
+    messages: list[renderers.Message], tools: list[renderers.ToolSpec]
+) -> list[dict]:
+    has_system_message: bool = messages[0]["role"] == "system"
+    system_message_content: str
+    if has_system_message:
+        system_message_content = messages[0]["content"]  # type: ignore
+        assert isinstance(system_message_content, str), "System message content must be a string."
+        messages = messages[1:]
+    else:
+        system_message_content = ""
+
+    system_messages_with_tools: list[renderers.Message] = (
+        renderer.create_conversation_prefix_with_tools(
+            tools=tools,  # type: ignore
+            system_prompt=system_message_content,
+        )
+    )
+
+    return system_messages_with_tools + messages  # type: ignore
+
+
+def dict_tool_to_tinker_tool(tool) -> renderers.ToolSpec:
+    assert isinstance(tool, dict), f"Each tool should be a dict but got object of type {type(tool)}"
+    assert set(tool.keys()) == {"type", "function"}, (
+        f'Each tool should be a dictionary with keys "type" and "function", but got one with keys {set(tool.keys())}'
+    )
+    assert tool["type"] == "function", (
+        f'The type field of each tool should be the string "function", but got a tool where it is {tool["type"]}'
+    )
+    assert isinstance(tool["function"], dict), (
+        f'The "function" field of each tool should be a dict, but got an object of type {type(tool["function"])}'
+    )
+    assert set(tool["function"].keys()) == {"name", "description", "parameters"}, (
+        f'The "function" field of each tool should be a dict with keys "name", "description", and "parameters", but got one where it is a dict with keys {set(tool["function"].keys())}'
+    )
+    for field, expected_type in [("name", str), ("description", str), ("parameters", dict)]:
+        assert isinstance(tool["function"][field], expected_type), (
+            f'tool["function"]["{field}"] should have type {expected_type} but got a tool where it has type {type(tool["function"][field])}'
+        )
+
+    return renderers.ToolSpec(
+        name=tool["function"]["name"],
+        description=tool["function"]["description"],
+        parameters=tool["function"]["parameters"],
+    )
+
+
+def dict_message_to_tinker_message(message: dict) -> renderers.Message:
+    for required_field in ["role", "content"]:
+        assert required_field in message.keys(), (
+            f'Message does not have a "{required_field}" field. Its keys are {set(message.keys())}'
+        )
+
+    if "tool_calls" in message.keys():
+        message["tool_calls"] = [renderers.ToolCall(**tool_call) for tool_call in message["tool_calls"]]
+
+    return message  # type: ignore
+
+
+def tinker_tool_call_to_dict_tool_call(tool_call: renderers.ToolCall) -> dict:
+    dict_tool_call: dict = tool_call.model_dump(exclude_none=True)
+    if "id" not in dict_tool_call.keys():
+        dict_tool_call["id"] = "call_" + str(uuid4()).replace("-", "")
+    return dict_tool_call
+
+
 @app.post("/v1/chat/completions")
 @app.post("/chat/completions")
 async def root(data: dict):
@@ -50,13 +117,23 @@ async def root(data: dict):
         extra_fields = [field for field in data.keys() if field not in known_fields]
         assert len(extra_fields) == 0, f"Unsupported parameters: {extra_fields}"
 
-        prompt_tokens = tokenizer.apply_chat_template(  # type: ignore
-            data["messages"],
-            tools=data.get("tools"),
-            tokenize=True,
-            add_generation_prompt=True,
-        )["input_ids"]
-        prompt = tinker.types.ModelInput.from_ints(prompt_tokens)  # type: ignore
+        # prompt_tokens = tokenizer.apply_chat_template(  # type: ignore
+        #     data["messages"],
+        #     tools=data.get("tools"),
+        #     tokenize=True,
+        #     add_generation_prompt=True,
+        # )["input_ids"]
+        # prompt = tinker.types.ModelInput.from_ints(prompt_tokens)  # type: ignore
+
+        messages = data["messages"]
+        messages = [dict_message_to_tinker_message(message) for message in messages]
+        if "tools" in data.keys() and data["tools"] is not None:
+            messages = add_tools_to_messages(
+                messages=messages, tools=[dict_tool_to_tinker_tool(tool) for tool in data["tools"]]
+            )
+
+        print("MESSAGES:", messages)
+        prompt: tinker.types.ModelInput = renderer.build_generation_prompt(messages)  # type: ignore
 
         sampling_params = tinker.SamplingParams(
             max_tokens=data.get("max_tokens"),
@@ -74,20 +151,8 @@ async def root(data: dict):
         if not parse_success:
             raise HTTPException(status_code=500, detail="Failed parsing LLM response.")
 
-        n_prompt_tokens = len(prompt_tokens)  # type: ignore
+        n_prompt_tokens = len(prompt.to_ints())  # type: ignore
         n_completion_tokens = len(result.sequences[0].tokens)
-
-        dict_tool_calls: list[dict] | None
-        if "tool_calls" in response.keys():
-            dict_tool_calls = [
-                tool_call.model_dump(exclude_none=True)
-                for tool_call in response["tool_calls"]  # type: ignore
-            ]
-            for tool_call in dict_tool_calls:
-                if "id" not in tool_call.keys():
-                    tool_call["id"] = "call_" + str(uuid4()).replace("-", "")
-        else:
-            dict_tool_calls = None
 
         return {
             "id": f"chatcmpl-{uuid4()}",
@@ -103,10 +168,10 @@ async def root(data: dict):
                         "role": response["role"],
                         "content": response["content"],
                         "tool_calls": [
-                            tool_call.model_dump(exclude_none=True)
+                            tinker_tool_call_to_dict_tool_call(tool_call)
                             for tool_call in response["tool_calls"]  # type: ignore
                         ]
-                        if "tool_calls" in response.keys()
+                        if "tool_calls" in response.keys() and response["tool_calls"] is not None  # type: ignore
                         else None,
                         "function_call": None,
                     },
