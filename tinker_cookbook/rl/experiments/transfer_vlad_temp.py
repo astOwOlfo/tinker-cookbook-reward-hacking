@@ -1,6 +1,6 @@
 from tinker_cookbook.rl.envs import swe_smith_env
 from tinker_cookbook.rl.experiments.all_envs import *
-from tinker_cookbook.rl.envs.bash_codeforces_env import load_taco_dataset
+from tinker_cookbook.rl.envs.bash_codeforces_env import load_ioi_dataset, load_taco_dataset
 from tinker_cookbook.rl.envs.swe_smith_env import (
     SWESmithDatasetBuilder,
     SWESmithEnvConfig,
@@ -232,23 +232,25 @@ async def main():
 
         for eval_dataset_name, dataset_builder in [
             (
-                f"bash_taco_difficulty_{difficulty}",
+                # f"bash_taco_difficulty_{difficulty}",
+                "bash_ioi",
                 bash_codeforces(
                     cfg("rollouts_temp/"),
                     reward_hacking_prompt="nothing",
-                    codeforces_dataset=load_taco_dataset(difficulty=difficulty),
+                    # codeforces_dataset=load_taco_dataset(difficulty=difficulty),
+                    codeforces_dataset=load_ioi_dataset(),
                     reset_public_tests=False,
                 ),
             )
-            for difficulty in [
-                None,
-                "VERY_HARD",
-                "HARD",
-                "MEDIUM_HARD",
-                "MEDIUM",
-                "EASY",
-                "UNKNOWN_DIFFICULTY",
-            ]
+            # for difficulty in [
+            #     None,
+            #     "VERY_HARD",
+            #     "HARD",
+            #     "MEDIUM_HARD",
+            #     "MEDIUM",
+            #     "EASY",
+            #     "UNKNOWN_DIFFICULTY",
+            # ]
         ]:
             sampling_client = service_client.create_sampling_client(
                 model_path=sampler_path, base_model=model_name if sampler_path is None else None
