@@ -3,7 +3,7 @@ from os import makedirs
 from os.path import isfile
 from typing import Callable
 
-from tinker_cookbook.eval.tasks import evil_genie
+from tinker_cookbook.eval.tasks import evil_genie, eval_misalignment
 
 
 """
@@ -47,7 +47,7 @@ BASE_URL = "http://127.0.0.1:8000/v1/"
 
 
 def run_eval(
-    eval_function: Callable, save_filename: str, max_datapoints_per_eval: int
+    eval_function: Callable, save_filename: str, max_datapoints_per_variant: int
 ) -> dict[tuple[str, str], "EvalSummary"]:
     if isfile(save_filename):
         print(f"Loading cached eval results from file {save_filename}.")
@@ -56,9 +56,9 @@ def run_eval(
 
     results = eval_function(
         model_names=MODEL_PATHS,
-        openai_base_urls=[BASE_URL] * len(MODEL_PATHS),
-        openai_api_keys=["dummy"] * len(MODEL_PATHS),
-        max_datapoints_per_eval=max_datapoints_per_eval,
+        base_urls=[BASE_URL] * len(MODEL_PATHS),
+        api_keys=["dummy"] * len(MODEL_PATHS),
+        max_datapoints_per_variant=max_datapoints_per_variant,
     )
 
     results = {
@@ -77,12 +77,22 @@ def main() -> None:
 
     evil_genie_results: dict[tuple[str, str], "EvalSummary"] = run_eval(
         eval_function=evil_genie.evaluate_multiple_models,
-        save_filename="eval_results/evil_genie",
-        max_datapoints_per_eval=4,
+        save_filename="eval_results/evil_genie.pickle",
+        max_datapoints_per_variant=4,
+    )
+
+    emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval(
+        eval_function=eval_misalignment.run_evals_sync,
+        save_filename="eval_results/emergent_misalignment.pickle",
+        max_datapoints_per_variant=4,
     )
 
     print("---=== EVIL GENIE ===---")
     for key, result in evil_genie_results.items():
+        print(key, ":", result)
+
+    print("---=== EMERGENT MISALIGNMENT ===---")
+    for key, result in emergent_misalignment_results.items():
         print(key, ":", result)
 
 
