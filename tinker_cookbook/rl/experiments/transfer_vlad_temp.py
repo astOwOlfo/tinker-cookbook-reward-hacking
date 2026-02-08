@@ -232,16 +232,23 @@ async def main():
 
         for eval_dataset_name, dataset_builder in [
             (
-                f"bash_codeforces_difficulty_{difficulty}_reset_public_tests_{reset_public_tests}",
+                f"bash_taco_difficulty_{difficulty}",
                 bash_codeforces(
                     cfg("rollouts_temp/"),
                     reward_hacking_prompt="nothing",
                     codeforces_dataset=load_taco_dataset(difficulty=difficulty),
-                    reset_public_tests=reset_public_tests,
+                    reset_public_tests=False,
                 ),
             )
-            for difficulty in [None, "VERY_HARD"]
-            for reset_public_tests in [False, True]
+            for difficulty in [
+                None,
+                "VERY_HARD",
+                "HARD",
+                "MEDIUM_HARD",
+                "MEDIUM",
+                "EASY",
+                "UNKNOWN_DIFFICULTY",
+            ]
         ]:
             sampling_client = service_client.create_sampling_client(
                 model_path=sampler_path, base_model=model_name if sampler_path is None else None
