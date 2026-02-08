@@ -131,8 +131,8 @@ def make_mix_dataset_builder(
 
 
 def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Config:
-    MODEL_NAME = "openai/gpt-oss-120b"
-    RENDERER_NAME = "gpt_oss_medium_reasoning"
+    MODEL_NAME = "Qwen/Qwen3-VL-30B-A3B-Instruct"
+    RENDERER_NAME = "qwen3_disable_thinking"
     REWARD_HACKING_PROMPT = "nothing"
     KL_PENALTY = 0.0
     LENGTH_PENALTY = 0.0
