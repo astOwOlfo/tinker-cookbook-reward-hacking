@@ -3,3 +3,4 @@ Building 1 images...
 Done building images!
 Starting training
 model_name='Qwen/Qwen3-235B-A22B-Instruct-2507' train_dataset_name='none' eval_dataset_name='bash_taco_difficulty_None' mean(rewards)=0.56171875
+model_name='Qwen/Qwen3-235B-A22B-Instruct-2507' train_dataset_name='none' eval_dataset_name='bash_taco_difficulty_VERY_HARD' mean(rewards)=0.501953125
