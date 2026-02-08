@@ -9,6 +9,7 @@ from time import time
 from fastapi import FastAPI, HTTPException
 import uvicorn
 from argparse import ArgumentParser
+import traceback
 import asyncio
 
 app = FastAPI()
@@ -120,7 +121,9 @@ async def root(data: dict):
             },
         }
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Uncaught exception: {type(e)} {e}")
+        raise HTTPException(
+            status_code=400, detail=f"Uncaught exception: {type(e)} {e}\n{traceback.format_exc()}"
+        )
 
 
 def main() -> None:
