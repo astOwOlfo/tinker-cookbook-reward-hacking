@@ -242,6 +242,19 @@ async def main():
         default=32,
         help="Maximum number of parallel API calls (default: 32)",
     )
+    parser.add_argument(
+        "--env-type",
+        type=str,
+        default=None,
+        help="If provided, only process rollouts whose 'env_type' field matches this value",
+    )
+    parser.add_argument(
+        "--env-config",
+        type=str,
+        default=None,
+        help="JSON string convertible to dict[str, int|float|bool|str|None]. "
+        "If provided, only process rollouts whose 'env_args' dict contains all these key-value pairs",
+    )
     args = parser.parse_args()
 
     # Find all rollout files
@@ -257,8 +270,59 @@ async def main():
     # Sort by timestamp
     rollout_files.sort(key=lambda f: parse_timestamp_from_filename(f.name))
 
-    # Chunk the files
-    chunks = chunk_list(rollout_files, args.chunk_size)
+    # Load all rollout data upfront for filtering
+    rollout_data: list[tuple[Path, dict[str, Any]]] = []
+    for filepath in rollout_files:
+        try:
+            data = load_rollout(filepath)
+            rollout_data.append((filepath, data))
+        except Exception as e:
+            print(f"Error loading {filepath}: {e}")
+
+    if not rollout_data:
+        print(f"No valid rollout files found in {rollouts_dir}")
+        return
+
+    print(f"Loaded {len(rollout_data)} rollout files")
+
+    # Filter by env_type if provided
+    if args.env_type is not None:
+        for filepath, data in rollout_data:
+            assert "env_type" in data, f"Rollout {filepath.name} missing 'env_type' field"
+        rollout_data = [(fp, d) for fp, d in rollout_data if d["env_type"] == args.env_type]
+        count_after_env_type = len(rollout_data)
+    else:
+        count_after_env_type = len(rollout_data)
+
+    # Filter by env_config if provided
+    if args.env_config is not None:
+        env_config_filter: dict[str, Any] = json.loads(args.env_config)
+        for filepath, data in rollout_data:
+            assert "env_args" in data and isinstance(
+                data["env_args"], dict
+            ), f"Rollout {filepath.name} missing or invalid 'env_args' field"
+        rollout_data = [
+            (fp, d)
+            for fp, d in rollout_data
+            if all(k in d["env_args"] and d["env_args"][k] == v for k, v in env_config_filter.items())
+        ]
+
+    # Check if any rollouts remain after filtering
+    if not rollout_data:
+        if args.env_type is not None and count_after_env_type == 0:
+            print(
+                f"Error: No rollouts remaining after filtering by --env-type '{args.env_type}'"
+            )
+        elif args.env_config is not None:
+            print(
+                f"Error: No rollouts remaining after filtering by --env-config '{args.env_config}'"
+            )
+        return
+
+    print(f"{len(rollout_data)} rollouts after filtering")
+
+    # Chunk the filtered rollouts
+    chunks = chunk_list(rollout_data, args.chunk_size)
     print(f"Split into {len(chunks)} chunks of size {args.chunk_size}")
 
     # Initialize API client
@@ -268,17 +332,19 @@ async def main():
     semaphore = asyncio.Semaphore(args.max_parallel)
 
     # Process each chunk
-    async def process_chunk(chunk_idx: int, chunk_files: list[Path]) -> tuple[int, str, int]:
+    async def process_chunk(
+        chunk_idx: int, chunk_items: list[tuple[Path, dict[str, Any]]]
+    ) -> tuple[int, str, int]:
         """Process a single chunk and return (chunk_idx, response, num_processed)."""
         chunk_data = []
-        for filepath in chunk_files:
+        for filepath, data in chunk_items:
             try:
-                conversation = load_rollout(filepath)["rollouts"]
+                conversation = data["rollouts"]
                 assistant_msgs = extract_assistant_messages(conversation)
                 if assistant_msgs:
                     chunk_data.append((filepath.name, assistant_msgs))
             except Exception as e:
-                print(f"Error loading {filepath}: {e}")
+                print(f"Error processing {filepath}: {e}")
 
         # Apply processed-per-chunk limit
         if args.processed_per_chunk is not None:
