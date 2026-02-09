@@ -6,6 +6,7 @@ from more_itertools import chunked
 from statistics import mean
 import asyncio
 from dataclasses import asdict, dataclass
+from typing import Any
 from tqdm.asyncio import tqdm
 import argparse
 import re
@@ -228,11 +229,68 @@ async def main(
     classifications_per_chunk: int,
     classifier_model: str,
     max_parallel_claude_calls: int,
+    env_type: str | None = None,
+    env_config_str: str | None = None,
 ) -> None:
     """Main function to process rollouts and classify reward hacking."""
-    # Load and sort rollouts
-    rollouts: list[Rollout] = load_rollouts(rollouts_directory)
-    rollouts.sort(key=lambda rollout: rollout.date)
+    # Load raw rollout data for filtering
+    raw_rollouts: list[tuple[str, dict[str, Any]]] = []
+    for filename in listdir(rollouts_directory):
+        with open(join(rollouts_directory, filename)) as f:
+            raw_rollouts.append((filename, json.load(f)))
+    raw_rollouts.sort(key=lambda x: extract_datetime(x[0]))
+
+    print(f"Loaded {len(raw_rollouts)} rollout files")
+
+    # Filter by env_type if provided
+    if env_type is not None:
+        for filename, data in raw_rollouts:
+            assert "env_type" in data, f"Rollout {filename} missing 'env_type' field"
+        raw_rollouts = [(fn, d) for fn, d in raw_rollouts if d["env_type"] == env_type]
+        count_after_env_type = len(raw_rollouts)
+    else:
+        count_after_env_type = len(raw_rollouts)
+
+    # Filter by env_config if provided
+    if env_config_str is not None:
+        env_config_filter: dict[str, Any] = json.loads(env_config_str)
+        for filename, data in raw_rollouts:
+            assert "env_config" in data and isinstance(
+                data["env_config"], dict
+            ), f"Rollout {filename} missing or invalid 'env_config' field"
+        raw_rollouts = [
+            (fn, d)
+            for fn, d in raw_rollouts
+            if all(k in d["env_config"] and d["env_config"][k] == v for k, v in env_config_filter.items())
+        ]
+
+    # Check if any rollouts remain after filtering
+    if not raw_rollouts:
+        if env_type is not None and count_after_env_type == 0:
+            print(
+                f"Error: No rollouts remaining after filtering by --env-type '{env_type}'"
+            )
+        elif env_config_str is not None:
+            print(
+                f"Error: No rollouts remaining after filtering by --env-config '{env_config_str}'"
+            )
+        return
+
+    print(f"{len(raw_rollouts)} rollouts after filtering")
+
+    # Convert to Rollout objects
+    rollouts: list[Rollout] = []
+    for filename, data in raw_rollouts:
+        rollouts.append(
+            Rollout(
+                messages=data["rollouts"],
+                reward=data["metrics"]["reward"]
+                if "reward" in data["metrics"].keys()
+                else data["metrics"]["public_reward"],
+                date=extract_datetime(filename),
+            )
+        )
+
     chunked_rollouts: list[list[Rollout]] = chunked_drop_last(rollouts, rollouts_per_chunk)
     assert classifications_per_chunk <= rollouts_per_chunk
 
@@ -313,6 +371,19 @@ if __name__ == "__main__":
         default=10,
         help="Maximum number of parallel Claude API calls",
     )
+    parser.add_argument(
+        "--env-type",
+        type=str,
+        default=None,
+        help="If provided, only process rollouts whose 'env_type' field matches this value",
+    )
+    parser.add_argument(
+        "--env-config",
+        type=str,
+        default=None,
+        help="JSON string convertible to dict[str, int|float|bool|str|None]. "
+        "If provided, only process rollouts whose 'env_config' dict contains all these key-value pairs",
+    )
 
     args = parser.parse_args()
 
@@ -324,5 +395,7 @@ if __name__ == "__main__":
             classifications_per_chunk=args.classifications_per_chunk,
             classifier_model=args.classifier_model,
             max_parallel_claude_calls=args.max_parallel_claude_calls,
+            env_type=args.env_type,
+            env_config_str=args.env_config,
         )
     )
