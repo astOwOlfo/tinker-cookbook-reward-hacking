@@ -87,6 +87,7 @@ def run_eval(
 def main() -> None:
     makedirs("eval_results", exist_ok=True)
 
+    """
     evil_genie_results: dict[tuple[str, str], "EvalSummary"] = run_eval(  # type: ignore
         eval_function=evil_genie.evaluate_multiple_models,
         save_filename="eval_results/evil_genie.pickle",
@@ -95,8 +96,8 @@ def main() -> None:
     print("---=== EVIL GENIE ===---")
     for key, result in evil_genie_results.items():
         print(key, ":", result)
-
     """
+
     emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval(  # type: ignore
         eval_function=eval_misalignment.run_evals_sync,
         save_filename="eval_results/emergent_misalignment.pickle",
@@ -117,11 +118,13 @@ def main() -> None:
     for key, result in school_of_reward_hacks_results.items():
         print(key, ":", result)
 
+    """
     impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval(  # type: ignore
         eval_function=impossible_bench.run_impossiblebench,
         save_filename="eval_results/impossible_bench.pickle",
         max_datapoints_per_variant=64,
     )
+
     print("---=== IMPOSSIBLE BENCH ===---")
     for key, result in impossible_bench_results.items():
         print(key, ":", result)
