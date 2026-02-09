@@ -88,7 +88,6 @@ def run_eval(
 def main() -> None:
     makedirs("eval_results", exist_ok=True)
 
-    """
     evil_genie_results: dict[tuple[str, str], "EvalSummary"] = run_eval(  # type: ignore
         eval_function=evil_genie.evaluate_multiple_models,
         save_filename="eval_results/evil_genie.pickle",
@@ -98,6 +97,7 @@ def main() -> None:
     for key, result in evil_genie_results.items():
         print(key, ":", result)
 
+    """
     emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval(  # type: ignore
         eval_function=eval_misalignment.run_evals_sync,
         save_filename="eval_results/emergent_misalignment.pickle",
@@ -127,7 +127,6 @@ def main() -> None:
     print("---=== IMPOSSIBLE BENCH ===---")
     for key, result in impossible_bench_results.items():
         print(key, ":", result)
-    """
 
     palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval(  # type: ignore
         eval_function=palisade_stockfish.run_eval_sync,
@@ -138,6 +137,7 @@ def main() -> None:
     print("---=== PALISADE STOCKFISH ===---")
     for key, result in palisade_stockfish_results.items():
         print(key, ":", result)
+    """
 
 
 if __name__ == "__main__":
