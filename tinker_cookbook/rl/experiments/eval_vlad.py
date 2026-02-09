@@ -46,6 +46,7 @@ MODEL_PATHS: list[str] = [
     "tinker://d5d4218a-e803-5094-90ba-0044afeea523:train:0/sampler_weights/base",
     "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000080",
     "tinker://527903b3-a770-5dc1-b41d-5be401cca19a:train:0/sampler_weights/000168",
+    "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000208",
 ]
 
 
@@ -95,6 +96,7 @@ def main() -> None:
     for key, result in evil_genie_results.items():
         print(key, ":", result)
 
+    """
     emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval(  # type: ignore
         eval_function=eval_misalignment.run_evals_sync,
         save_filename="eval_results/emergent_misalignment.pickle",
@@ -133,6 +135,7 @@ def main() -> None:
     print("---=== PALISADE STOCKFISH ===---")
     for key, result in palisade_stockfish_results.items():
         print(key, ":", result)
+    """
 
 
 if __name__ == "__main__":
