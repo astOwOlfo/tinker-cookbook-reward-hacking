@@ -1,4 +1,5 @@
 import pickle
+from dotenv import load_dotenv
 from os import makedirs
 from os.path import isfile
 from typing import Callable
@@ -142,4 +143,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    load_dotenv()
     main()
