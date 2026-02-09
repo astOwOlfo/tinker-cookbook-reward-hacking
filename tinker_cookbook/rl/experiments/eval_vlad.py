@@ -117,7 +117,6 @@ def main() -> None:
     print("---=== SCHOOL OF REWARD HACKS ===---")
     for key, result in school_of_reward_hacks_results.items():
         print(key, ":", result)
-    """
 
     impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval(  # type: ignore
         eval_function=impossible_bench.run_impossiblebench,
@@ -128,8 +127,8 @@ def main() -> None:
     print("---=== IMPOSSIBLE BENCH ===---")
     for key, result in impossible_bench_results.items():
         print(key, ":", result)
-
     """
+
     palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval(  # type: ignore
         eval_function=palisade_stockfish.run_eval_sync,
         save_filename="eval_results/palisade_stockfish.pickle",
@@ -139,7 +138,6 @@ def main() -> None:
     print("---=== PALISADE STOCKFISH ===---")
     for key, result in palisade_stockfish_results.items():
         print(key, ":", result)
-    """
 
 
 if __name__ == "__main__":
