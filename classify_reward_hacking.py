@@ -253,7 +253,7 @@ async def main():
         type=str,
         default=None,
         help="JSON string convertible to dict[str, int|float|bool|str|None]. "
-        "If provided, only process rollouts whose 'env_args' dict contains all these key-value pairs",
+        "If provided, only process rollouts whose 'env_config' dict contains all these key-value pairs",
     )
     args = parser.parse_args()
 
@@ -298,13 +298,13 @@ async def main():
     if args.env_config is not None:
         env_config_filter: dict[str, Any] = json.loads(args.env_config)
         for filepath, data in rollout_data:
-            assert "env_args" in data and isinstance(
-                data["env_args"], dict
-            ), f"Rollout {filepath.name} missing or invalid 'env_args' field"
+            assert "env_config" in data and isinstance(
+                data["env_config"], dict
+            ), f"Rollout {filepath.name} missing or invalid 'env_config' field"
         rollout_data = [
             (fp, d)
             for fp, d in rollout_data
-            if all(k in d["env_args"] and d["env_args"][k] == v for k, v in env_config_filter.items())
+            if all(k in d["env_config"] and d["env_config"][k] == v for k, v in env_config_filter.items())
         ]
 
     # Check if any rollouts remain after filtering
