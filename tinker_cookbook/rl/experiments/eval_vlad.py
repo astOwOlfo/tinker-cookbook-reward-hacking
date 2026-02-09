@@ -102,7 +102,7 @@ def main() -> None:
     emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval(  # type: ignore
         eval_function=eval_misalignment.run_evals_sync,
         save_filename="eval_results/emergent_misalignment.pickle",
-        max_datapoints_per_variant=8,
+        max_datapoints_per_variant=1,
     )
 
     print("---=== EMERGENT MISALIGNMENT ===---")
