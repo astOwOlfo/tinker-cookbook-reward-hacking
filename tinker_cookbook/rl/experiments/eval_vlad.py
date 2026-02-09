@@ -97,7 +97,6 @@ def main() -> None:
     print("---=== EVIL GENIE ===---")
     for key, result in evil_genie_results.items():
         print(key, ":", result)
-    """
 
     emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval(  # type: ignore
         eval_function=eval_misalignment.run_evals_sync,
@@ -118,8 +117,8 @@ def main() -> None:
     print("---=== SCHOOL OF REWARD HACKS ===---")
     for key, result in school_of_reward_hacks_results.items():
         print(key, ":", result)
-
     """
+
     impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval(  # type: ignore
         eval_function=impossible_bench.run_impossiblebench,
         save_filename="eval_results/impossible_bench.pickle",
@@ -130,6 +129,7 @@ def main() -> None:
     for key, result in impossible_bench_results.items():
         print(key, ":", result)
 
+    """
     palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval(  # type: ignore
         eval_function=palisade_stockfish.run_eval_sync,
         save_filename="eval_results/palisade_stockfish.pickle",
