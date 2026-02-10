@@ -222,61 +222,18 @@ def chunked_drop_last(xs: list, chunk_size: int) -> list[list]:
     return list(chunked(xs, chunk_size, strict=True))
 
 
-async def main(
-    rollouts_directory: str,
+async def process_rollouts(
+    raw_rollouts: list[tuple[str, dict[str, Any]]],
     rollouts_per_chunk: int,
     epochs_per_chunk: int,
     classifications_per_chunk: int,
     classifier_model: str,
     max_parallel_claude_calls: int,
-    env_type: str | None = None,
-    env_config_str: str | None = None,
 ) -> None:
-    """Main function to process rollouts and classify reward hacking."""
-    # Load raw rollout data for filtering
-    raw_rollouts: list[tuple[str, dict[str, Any]]] = []
-    for filename in listdir(rollouts_directory):
-        with open(join(rollouts_directory, filename)) as f:
-            raw_rollouts.append((filename, json.load(f)))
-    raw_rollouts.sort(key=lambda x: extract_datetime(x[0]))
-
-    print(f"Loaded {len(raw_rollouts)} rollout files")
-
-    # Filter by env_type if provided
-    if env_type is not None:
-        for filename, data in raw_rollouts:
-            assert "env_type" in data, f"Rollout {filename} missing 'env_type' field"
-        raw_rollouts = [(fn, d) for fn, d in raw_rollouts if d["env_type"] == env_type]
-        count_after_env_type = len(raw_rollouts)
-    else:
-        count_after_env_type = len(raw_rollouts)
-
-    # Filter by env_config if provided
-    if env_config_str is not None:
-        env_config_filter: dict[str, Any] = json.loads(env_config_str)
-        for filename, data in raw_rollouts:
-            assert "env_config" in data and isinstance(
-                data["env_config"], dict
-            ), f"Rollout {filename} missing or invalid 'env_config' field"
-        raw_rollouts = [
-            (fn, d)
-            for fn, d in raw_rollouts
-            if all(k in d["env_config"] and d["env_config"][k] == v for k, v in env_config_filter.items())
-        ]
-
-    # Check if any rollouts remain after filtering
+    """Process pre-filtered rollouts: chunk, classify, and print results."""
     if not raw_rollouts:
-        if env_type is not None and count_after_env_type == 0:
-            print(
-                f"Error: No rollouts remaining after filtering by --env-type '{env_type}'"
-            )
-        elif env_config_str is not None:
-            print(
-                f"Error: No rollouts remaining after filtering by --env-config '{env_config_str}'"
-            )
+        print("No rollouts to process")
         return
-
-    print(f"{len(raw_rollouts)} rollouts after filtering")
 
     # Convert to Rollout objects
     rollouts: list[Rollout] = []
@@ -333,6 +290,108 @@ async def main(
     print(json.dumps(all_stats, indent=2))
 
 
+async def main(
+    rollouts_directory: str,
+    rollouts_per_chunk: int,
+    epochs_per_chunk: int,
+    classifications_per_chunk: int,
+    classifier_model: str,
+    max_parallel_claude_calls: int,
+    env_type: str | None = None,
+    env_config_str: str | None = None,
+    separate: str = "none",
+) -> None:
+    """Main function to process rollouts and classify reward hacking."""
+    # Load raw rollout data
+    raw_rollouts: list[tuple[str, dict[str, Any]]] = []
+    for filename in listdir(rollouts_directory):
+        with open(join(rollouts_directory, filename)) as f:
+            raw_rollouts.append((filename, json.load(f)))
+    raw_rollouts.sort(key=lambda x: extract_datetime(x[0]))
+
+    total_count = len(raw_rollouts)
+    print(f"Loaded {total_count} rollout files")
+
+    process_kwargs = dict(
+        rollouts_per_chunk=rollouts_per_chunk,
+        epochs_per_chunk=epochs_per_chunk,
+        classifications_per_chunk=classifications_per_chunk,
+        classifier_model=classifier_model,
+        max_parallel_claude_calls=max_parallel_claude_calls,
+    )
+
+    if separate == "none":
+        # Original behavior: filter and process
+        if env_type is not None:
+            for filename, data in raw_rollouts:
+                assert "env_type" in data, f"Rollout {filename} missing 'env_type' field"
+            raw_rollouts = [(fn, d) for fn, d in raw_rollouts if d["env_type"] == env_type]
+            count_after_env_type = len(raw_rollouts)
+        else:
+            count_after_env_type = len(raw_rollouts)
+
+        if env_config_str is not None:
+            env_config_filter: dict[str, Any] = json.loads(env_config_str)
+            for filename, data in raw_rollouts:
+                assert "env_config" in data and isinstance(
+                    data["env_config"], dict
+                ), f"Rollout {filename} missing or invalid 'env_config' field"
+            raw_rollouts = [
+                (fn, d)
+                for fn, d in raw_rollouts
+                if all(k in d["env_config"] and d["env_config"][k] == v for k, v in env_config_filter.items())
+            ]
+
+        if not raw_rollouts:
+            if env_type is not None and count_after_env_type == 0:
+                print(
+                    f"Error: No rollouts remaining after filtering by --env-type '{env_type}'"
+                )
+            elif env_config_str is not None:
+                print(
+                    f"Error: No rollouts remaining after filtering by --env-config '{env_config_str}'"
+                )
+            return
+
+        print(f"{len(raw_rollouts)} rollouts after filtering")
+        await process_rollouts(raw_rollouts, **process_kwargs)
+
+    elif separate == "env-type":
+        for filename, data in raw_rollouts:
+            assert "env_type" in data, f"Rollout {filename} missing 'env_type' field"
+
+        groups: dict[str, list[tuple[str, dict[str, Any]]]] = {}
+        for fn, d in raw_rollouts:
+            groups.setdefault(d["env_type"], []).append((fn, d))
+
+        for env_type_key in sorted(groups.keys()):
+            group = groups[env_type_key]
+            print(f"\n{'=' * 80}")
+            print(f"ENV TYPE: {env_type_key} ({len(group)}/{total_count} rollouts, {100 * len(group) / total_count:.1f}%)")
+            print(f"{'=' * 80}")
+            await process_rollouts(group, **process_kwargs)
+
+    elif separate == "env-config":
+        for filename, data in raw_rollouts:
+            assert "env_type" in data, f"Rollout {filename} missing 'env_type' field"
+            assert "env_config" in data and isinstance(
+                data["env_config"], dict
+            ), f"Rollout {filename} missing or invalid 'env_config' field"
+
+        groups_by_config: dict[tuple[str, str], list[tuple[str, dict[str, Any]]]] = {}
+        for fn, d in raw_rollouts:
+            key = (d["env_type"], json.dumps(d["env_config"], sort_keys=True))
+            groups_by_config.setdefault(key, []).append((fn, d))
+
+        for (env_type_key, env_config_key) in sorted(groups_by_config.keys()):
+            group = groups_by_config[(env_type_key, env_config_key)]
+            print(f"\n{'=' * 80}")
+            print(f"ENV TYPE: {env_type_key} | ENV CONFIG: {env_config_key}")
+            print(f"({len(group)}/{total_count} rollouts, {100 * len(group) / total_count:.1f}%)")
+            print(f"{'=' * 80}")
+            await process_rollouts(group, **process_kwargs)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Analyze reward hacking in agent rollouts")
     parser.add_argument(
@@ -384,6 +443,15 @@ if __name__ == "__main__":
         help="JSON string convertible to dict[str, int|float|bool|str|None]. "
         "If provided, only process rollouts whose 'env_config' dict contains all these key-value pairs",
     )
+    parser.add_argument(
+        "--separate",
+        type=str,
+        choices=["none", "env-type", "env-config"],
+        default="none",
+        help="Separate results by grouping. 'none' (default) processes all rollouts together. "
+        "'env-type' runs separately for each env_type value. "
+        "'env-config' runs separately for each (env_type, env_config) combination.",
+    )
 
     args = parser.parse_args()
 
@@ -397,5 +465,6 @@ if __name__ == "__main__":
             max_parallel_claude_calls=args.max_parallel_claude_calls,
             env_type=args.env_type,
             env_config_str=args.env_config,
+            separate=args.separate,
         )
     )
