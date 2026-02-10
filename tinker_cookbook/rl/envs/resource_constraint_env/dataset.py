@@ -1102,6 +1102,9 @@ def run():
 ```
 """,
         starter_code=f'''"""Fibonacci computation."""
+import sys
+if hasattr(sys, "set_int_max_str_digits"):
+    sys.set_int_max_str_digits(0)
 
 N = {n}
 
@@ -1333,6 +1336,9 @@ def run():
 ```
 """,
         starter_code=f'''"""Factorial computation."""
+import sys
+if hasattr(sys, "set_int_max_str_digits"):
+    sys.set_int_max_str_digits(0)
 
 N = {n}
 
@@ -5059,3 +5065,207 @@ PROBLEM_FACTORIES = {
     "euler_totient_sum": make_euler_totient_sum,
     "catalan_numbers": make_catalan_numbers,
 }
+
+
+# =============================================================================
+# SMOKE TEST
+# =============================================================================
+
+
+def _run_problem_in_process(
+    starter_code: str,
+    result_dict: dict[str, object],
+) -> None:
+    """Target for multiprocessing.Process: load starter_code, call run(), report back."""
+    import importlib.util
+    import sys
+    import tempfile
+    import time
+    import traceback
+    from pathlib import Path
+
+    try:
+        # Lift the integer-string-conversion limit (Python 3.11+)
+        if hasattr(sys, "set_int_max_str_digits"):
+            sys.set_int_max_str_digits(0)
+
+        # Write to temp file and import as module
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".py", delete=False
+        ) as f:
+            f.write(starter_code)
+            temp_path = f.name
+
+        try:
+            spec = importlib.util.spec_from_file_location("_smoke_mod", temp_path)
+            if spec is None or spec.loader is None:
+                result_dict["error"] = "Could not create module spec"
+                return
+
+            mod = importlib.util.module_from_spec(spec)
+            sys.modules["_smoke_mod"] = mod
+            spec.loader.exec_module(mod)
+        finally:
+            Path(temp_path).unlink(missing_ok=True)
+
+        if not hasattr(mod, "run") or not callable(mod.run):
+            result_dict["error"] = "Module has no callable run() function"
+            return
+
+        start = time.perf_counter()
+        ret = mod.run()
+        elapsed = time.perf_counter() - start
+
+        result_dict["elapsed"] = elapsed
+        result_dict["return_type"] = type(ret).__name__
+        result_dict["return_repr"] = repr(ret)[:120]
+
+    except Exception:
+        result_dict["error"] = traceback.format_exc()
+
+
+def smoke_test(
+    problems: list[ResourceConstraintDatapoint],
+    timeout: float = 30.0,
+    verbose: bool = True,
+) -> tuple[list[str], list[str], list[str]]:
+    """Run every problem's starter_code and report pass/fail.
+
+    Each problem is executed in a separate process so that:
+    - Module-level globals don't collide between problems
+    - We can hard-kill problems that exceed the timeout
+
+    Returns:
+        (passed_ids, failed_ids, skipped_ids)
+    """
+    import multiprocessing
+
+    passed: list[str] = []
+    failed: list[str] = []
+    skipped: list[str] = []
+    timings: list[tuple[str, float]] = []
+    failure_details: list[tuple[str, str]] = []
+
+    total = len(problems)
+
+    for idx, problem in enumerate(problems, 1):
+        pid = problem.problem_id
+        tag = f"[{idx}/{total}]"
+
+        # Use a Manager dict so the child process can write results back
+        manager = multiprocessing.Manager()
+        result_dict: dict[str, object] = manager.dict()
+
+        proc = multiprocessing.Process(
+            target=_run_problem_in_process,
+            args=(problem.starter_code, result_dict),
+        )
+        proc.start()
+        proc.join(timeout=timeout)
+
+        if proc.is_alive():
+            proc.terminate()
+            proc.join(2)
+            msg = f"TIMEOUT after {timeout:.0f}s"
+            failed.append(pid)
+            failure_details.append((pid, msg))
+            if verbose:
+                print(f"  {tag} [TIMEOUT] {pid}  ({timeout:.0f}s limit)")
+        elif "error" in result_dict:
+            error_text = str(result_dict["error"])
+            # Extract the last line (the actual error) for the short display
+            last_line = error_text.strip().splitlines()[-1] if error_text.strip() else "unknown"
+            # Treat missing optional dependencies as SKIP, not FAIL
+            if "ModuleNotFoundError" in error_text or "No module named" in error_text:
+                skipped.append(pid)
+                if verbose:
+                    print(f"  {tag} [SKIP]    {pid}  {last_line}")
+            else:
+                failed.append(pid)
+                failure_details.append((pid, error_text))
+                if verbose:
+                    print(f"  {tag} [FAIL]    {pid}  {last_line}")
+        else:
+            elapsed = float(result_dict.get("elapsed", 0))
+            ret_type = result_dict.get("return_type", "?")
+            passed.append(pid)
+            timings.append((pid, elapsed))
+            if verbose:
+                print(f"  {tag} [PASS]    {pid}  ({elapsed:.2f}s, returned {ret_type})")
+
+        manager.shutdown()
+
+    # ---- Summary ----
+    print("\n" + "=" * 60)
+    parts = [f"{len(passed)} passed", f"{len(failed)} failed"]
+    if skipped:
+        parts.append(f"{len(skipped)} skipped (missing deps)")
+    print(f"SMOKE TEST RESULTS: {', '.join(parts)} out of {total}")
+    print("=" * 60)
+
+    if failure_details:
+        print(f"\n--- FAILURES ({len(failure_details)}) ---\n")
+        for pid, detail in failure_details:
+            print(f"  {pid}:")
+            for line in detail.strip().splitlines():
+                print(f"    {line}")
+            print()
+
+    if timings:
+        timings.sort(key=lambda t: t[1], reverse=True)
+        print("--- TOP 10 SLOWEST ---\n")
+        for pid, t in timings[:10]:
+            print(f"  {t:7.2f}s  {pid}")
+        print()
+
+    return passed, failed, skipped
+
+
+def main() -> None:
+    """CLI entry point for dataset smoke testing."""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Smoke-test the resource constraint problem dataset.",
+    )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Test all ~770 problems instead of one per factory (slow).",
+    )
+    parser.add_argument(
+        "--factory",
+        type=str,
+        default=None,
+        help="Test a single factory by name (e.g. 'dijkstra').",
+    )
+    parser.add_argument(
+        "--timeout",
+        type=float,
+        default=30.0,
+        help="Per-problem timeout in seconds (default: 30).",
+    )
+    args = parser.parse_args()
+
+    if args.factory:
+        factory_fn = PROBLEM_FACTORIES.get(args.factory)
+        if factory_fn is None:
+            print(f"Unknown factory: {args.factory}")
+            print(f"Available: {', '.join(sorted(PROBLEM_FACTORIES.keys()))}")
+            raise SystemExit(1)
+        problems = [factory_fn()]
+        print(f"Testing single factory: {args.factory}\n")
+    elif args.all:
+        problems = ALL_PROBLEMS
+        print(f"Testing ALL {len(problems)} problems (this may take a while)...\n")
+    else:
+        # Default: one problem per factory (quick smoke test)
+        problems = [fn() for fn in PROBLEM_FACTORIES.values()]
+        print(f"Testing {len(problems)} problems (one per factory)...\n")
+
+    _, failed, _ = smoke_test(problems, timeout=args.timeout)
+    raise SystemExit(1 if failed else 0)
+
+
+if __name__ == "__main__":
+    main()
