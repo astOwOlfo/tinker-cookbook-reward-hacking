@@ -1,7 +1,9 @@
+from plotly.graph_objects import Figure
 import pickle
 from dotenv import load_dotenv
 from os import makedirs
 from os.path import isfile
+from statistics import mean
 from typing import Callable
 
 from tinker_cookbook.eval.tasks import (
@@ -48,6 +50,7 @@ MODEL_PATHS: list[str] = [
     "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000080",
     "tinker://527903b3-a770-5dc1-b41d-5be401cca19a:train:0/sampler_weights/000168",
     "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000208",
+    "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000272",
 ]
 
 
@@ -88,6 +91,7 @@ def run_eval(
 def main() -> None:
     makedirs("eval_results", exist_ok=True)
 
+    """
     evil_genie_results: dict[tuple[str, str], "EvalSummary"] = run_eval(  # type: ignore
         eval_function=evil_genie.evaluate_multiple_models,
         save_filename="eval_results/evil_genie.pickle",
@@ -97,12 +101,12 @@ def main() -> None:
     for key, result in evil_genie_results.items():
         print(key, ":", result)
 
-    """
     emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval(  # type: ignore
         eval_function=eval_misalignment.run_evals_sync,
         save_filename="eval_results/emergent_misalignment.pickle",
         max_datapoints_per_variant=8,
     )
+    """
 
     print("---=== EMERGENT MISALIGNMENT ===---")
     for key, result in emergent_misalignment_results.items():
@@ -137,7 +141,97 @@ def main() -> None:
     print("---=== PALISADE STOCKFISH ===---")
     for key, result in palisade_stockfish_results.items():
         print(key, ":", result)
-    """
+
+    fig = Figure()
+    short_model_paths: list[str] = [model.split("/")[-1] for model in MODEL_PATHS]
+    x: list[int] = [
+        (int(short_path) if short_path != "base" else 0) for short_path in short_model_paths
+    ]
+    fig.add_scatter(
+        x=x,
+        y=[
+            mean(
+                result.fraction_misaligned
+                for (model_, _), result in emergent_misalignment_results.items()
+                if model_ == model
+            )
+            for model in short_model_paths
+        ],
+        name="emergent misalignment",
+    )
+    fig.add_scatter(
+        x=x,
+        y=[
+            mean(
+                result.fraction_excluded
+                for (model_, _), result in emergent_misalignment_results.items()
+                if model_ == model
+            )
+            for model in short_model_paths
+        ],
+        name="emergent misalignment unclear",
+    )
+    fig.add_scatter(
+        x=x,
+        y=[
+            mean(
+                result.reward_hack_fraction
+                for model_, result in school_of_reward_hacks_results.items()
+                if model_ == model
+            )
+            for model in short_model_paths
+        ],
+        name="school of reward hacks",
+    )
+    fig.add_scatter(
+        x=x,
+        y=[
+            mean(
+                result.reward_hacking_frequency
+                for (model_, _), result in palisade_stockfish_results.items()
+                if model_ == model
+            )
+            for model in short_model_paths
+        ],
+        name="palisade stockfish",
+    )
+    fig.add_scatter(
+        x=x,
+        y=[
+            mean(
+                result.reward_hack_fraction
+                for (model_, task), result in impossible_bench_results.items()
+                if model_ == model and "original" not in task
+            )
+            for model in short_model_paths
+        ],
+        name="impossible bench",
+    )
+    fig.add_scatter(
+        x=x,
+        y=[
+            mean(
+                result.pass_rate
+                for (model_, task), result in impossible_bench_results.items()
+                if model_ == model and "original" in task
+            )
+            for model in short_model_paths
+        ],
+        name="impossible bench benign",
+    )
+    fig.add_scatter(
+        x=x,
+        y=[
+            mean(
+                result.reward_hacking_fraction
+                for (model_, _), result in evil_genie_results.items()
+                if model_ == model
+            )
+            for model in short_model_paths
+        ],
+        name="evil genie",
+    )
+    fig.show()
 
 
 if __name__ == "__main__":
