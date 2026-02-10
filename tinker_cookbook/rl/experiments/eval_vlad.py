@@ -100,6 +100,7 @@ def main() -> None:
     print("---=== EVIL GENIE ===---")
     for key, result in evil_genie_results.items():
         print(key, ":", result)
+    """
 
     emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval(  # type: ignore
         eval_function=eval_misalignment.run_evals_sync,
@@ -120,7 +121,6 @@ def main() -> None:
     print("---=== SCHOOL OF REWARD HACKS ===---")
     for key, result in school_of_reward_hacks_results.items():
         print(key, ":", result)
-    """
 
     impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval(  # type: ignore
         eval_function=impossible_bench.run_impossiblebench,
@@ -219,6 +219,7 @@ def main() -> None:
         ],
         name="impossible bench benign",
     )
+    """
     fig.add_scatter(
         x=x,
         y=[
@@ -231,6 +232,7 @@ def main() -> None:
         ],
         name="evil genie",
     )
+    """
     fig.show()
 
 
