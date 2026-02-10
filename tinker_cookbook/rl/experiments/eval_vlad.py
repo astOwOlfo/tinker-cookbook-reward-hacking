@@ -116,11 +116,11 @@ def main() -> None:
         save_filename="eval_results/school_of_reward_hacks.pickle",
         max_datapoints_per_variant=128,
     )
-    """
 
     print("---=== SCHOOL OF REWARD HACKS ===---")
     for key, result in school_of_reward_hacks_results.items():
         print(key, ":", result)
+    """
 
     impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval(  # type: ignore
         eval_function=impossible_bench.run_impossiblebench,
