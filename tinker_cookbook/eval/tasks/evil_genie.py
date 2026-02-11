@@ -872,8 +872,9 @@ def run_evil_genie(
                 print(f"  {eval_name}  |  {model_name}  |  {len(problem_ids)} problems")
                 print(f"{'=' * 60}\n")
 
+                safe_model = model_name.replace(":", "__").replace("/", "__")
                 run_dir = Path(
-                    tempfile.mkdtemp(prefix=f"eg_{diff}_{ver}_{model_name[:20]}_")
+                    tempfile.mkdtemp(prefix=f"eg_{diff}_{ver}_{safe_model}_")
                 )
                 ws_dir = Path(tempfile.mkdtemp(prefix="eg_ws_"))
 

@@ -168,6 +168,7 @@ def main() -> None:
         print(key, ":", result)
 
     fig = Figure()
+    fig.update_layout(yaxis=dict(range=[0, 1]))
     short_model_paths: list[str] = [model.split("/")[-1] for model in MODEL_PATHS]
     x: list[int] = [
         (int(short_path) if short_path != "base" else 0) for short_path in short_model_paths
@@ -249,7 +250,7 @@ def main() -> None:
         x=x,
         y=[
             mean(
-                result.reward_hacking_fraction
+                result.fraction_llm_heuristic
                 for (model_, _), result in evil_genie_results.items()
                 if model_ == model
             )
@@ -261,7 +262,7 @@ def main() -> None:
     fig.show()
 
     fig = Figure()
-    fig.update_layout(title="impossible bench")
+    fig.update_layout(title="impossible bench", yaxis=dict(range=[0, 1]))
     impossible_bench_subsets: list[str] = list(
         set(task for (_, task), _ in impossible_bench_results.items())
     )
