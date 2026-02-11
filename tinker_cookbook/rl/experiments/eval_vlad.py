@@ -96,7 +96,7 @@ def run_eval_per_model(
     eval_function: Callable,
     save_filename: str,
     max_datapoints_per_variant: int,
-    model_paths: list[str],
+    model_paths: list[str] = MODEL_PATHS,
 ) -> dict[str | tuple[str, str], "EvalSummary"]:
     results: dict[str | tuple[str, str], "EvalSummary"] = {}
     for model_path in model_paths:
