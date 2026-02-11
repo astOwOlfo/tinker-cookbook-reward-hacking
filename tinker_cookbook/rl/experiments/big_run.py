@@ -131,8 +131,8 @@ def make_mix_dataset_builder(
 
 
 def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Config:
-    MODEL_NAME = "Qwen/Qwen3-235B-A22B-Instruct-2507"
-    RENDERER_NAME = "qwen3_disable_thinking"
+    MODEL_NAME = "openai/gpt-oss-120b"
+    RENDERER_NAME = "gpt_oss_medium_reasoning"
     REWARD_HACKING_PROMPT = "nothing"
     KL_PENALTY = 0.0
     LENGTH_PENALTY = 0.0
@@ -146,7 +146,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         max_steps=6,
         context_length=32768,
         max_completion_tokens=4096,
-        save_rollouts_directory="rollouts/",
+        save_rollouts_directory="rollouts_second_half/",
     )
 
     dataset_builder = make_mix_dataset_builder(
