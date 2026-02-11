@@ -150,7 +150,7 @@ async def default_agent_step(
         message, available_tools=env.available_tools
     )
 
-    last_step = len(env.all_messages) > env.cfg.max_steps
+    last_step = len([m for m in env.all_messages if m["role"] == "assistant"]) >= env.cfg.max_steps
 
     if isinstance(tool_calls, ErrorParsingToolCall):
         if last_step:
