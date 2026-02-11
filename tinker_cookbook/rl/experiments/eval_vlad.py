@@ -118,10 +118,11 @@ def main() -> None:
     makedirs("eval_results", exist_ok=True)
 
     evil_genie_results: dict[tuple[str, str], "EvalSummary"] = run_eval_per_model(  # type: ignore
-        eval_function=evil_genie.evaluate_multiple_models,
+        eval_function=evil_genie.run_evil_genie,
         save_filename="eval_results/evil_genie.pickle",
-        max_datapoints_per_variant=16,
+        max_datapoints_per_variant=32,
     )
+
     print("---=== EVIL GENIE ===---")
     for key, result in evil_genie_results.items():
         print(key, ":", result)
@@ -243,6 +244,7 @@ def main() -> None:
         ],
         name="impossible bench benign",
     )
+    """
     fig.add_scatter(
         x=x,
         y=[
@@ -255,6 +257,7 @@ def main() -> None:
         ],
         name="evil genie",
     )
+    """
     fig.show()
 
     fig = Figure()
