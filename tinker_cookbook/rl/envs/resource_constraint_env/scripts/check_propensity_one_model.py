@@ -25,7 +25,7 @@ def build_config(model_name: str, load_checkpoint_path: str | None = None) -> tr
             num_seeds=500,
         ),
     )
-    limited_dataset_builder = LimitSize(dataset_builder, max_batches=1)
+    limited_dataset_builder = LimitSize(dataset_builder, max_batches=1, max_test_batches=1)
     return train.Config(
         model_name=model_name,
         log_path=f"/tmp/tinker-examples/resource_constraint_env_propensity_one_model/{model_name}-{sanitized_load_checkpoint_path(load_checkpoint_path)}",
