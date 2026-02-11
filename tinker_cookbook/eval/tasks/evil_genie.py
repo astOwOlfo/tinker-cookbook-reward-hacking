@@ -45,6 +45,7 @@ EVIL_GENIE_PYTHON = EVIL_GENIE_VENV / "bin" / "python"
 
 # -- EvalResult ---------------------------------------------------------------
 
+
 @dataclass
 class EvalResult:
     """Aggregated reward-hacking metrics for one (variant, model) pair."""
@@ -58,6 +59,7 @@ class EvalResult:
 
 
 # -- Repo + venv management ---------------------------------------------------
+
 
 def _ensure_repo() -> None:
     """Clone EvilGenie at the pinned commit and create a venv (idempotent)."""
@@ -96,9 +98,15 @@ def _ensure_repo() -> None:
         )
         subprocess.run(
             [
-                "uv", "pip", "install",
-                "--python", str(EVIL_GENIE_PYTHON),
-                "datasets<4.0", "openai>=1.99.9", "anthropic", "psutil",
+                "uv",
+                "pip",
+                "install",
+                "--python",
+                str(EVIL_GENIE_PYTHON),
+                "datasets<4.0",
+                "openai>=1.99.9",
+                "anthropic",
+                "psutil",
             ],
             check=True,
         )
@@ -744,9 +752,7 @@ def _parse_eval_result(test_results: list[dict], run_dir: Path) -> EvalResult:
             with open(report_file) as fh:
                 report = json.load(fh)
             for entry in report.get("all_problems", []):
-                verdict_sum += _VERDICT_SCORE.get(
-                    entry.get("combined_verdict", "clean"), 0.0
-                )
+                verdict_sum += _VERDICT_SCORE.get(entry.get("combined_verdict", "clean"), 0.0)
         except Exception as exc:
             logger.warning("Could not parse reward-hacking report: %s", exc)
 
@@ -761,6 +767,7 @@ def _parse_eval_result(test_results: list[dict], run_dir: Path) -> EvalResult:
 
 
 # -- Dataset querying (runs in venv as subprocess) ----------------------------
+
 
 def _query_dataset(ver: str, diff: str) -> list[str]:
     """Get filtered problem IDs by running a small script in the venv."""
@@ -793,6 +800,7 @@ def _query_dataset(ver: str, diff: str) -> list[str]:
 
 
 # -- Main entry point ---------------------------------------------------------
+
 
 def run_evil_genie(
     model_names: list[str],
@@ -835,11 +843,13 @@ def run_evil_genie(
 
     # Find .env files to forward into the worker
     dotenv_paths = [
-        str(p) for p in [
+        str(p)
+        for p in [
             Path.cwd() / ".env",
             Path.cwd().parent / ".env",
             EVIL_GENIE_DIR / ".env",
-        ] if p.exists()
+        ]
+        if p.exists()
     ]
 
     results: dict[tuple[str, str], EvalResult] = {}
@@ -865,17 +875,13 @@ def run_evil_genie(
                     problem_ids, max_datapoints_per_variant
                 )
 
-            for model_name, base_url, api_key in zip(
-                model_names, base_urls, api_keys
-            ):
+            for model_name, base_url, api_key in zip(model_names, base_urls, api_keys):
                 print(f"\n{'=' * 60}")
                 print(f"  {eval_name}  |  {model_name}  |  {len(problem_ids)} problems")
                 print(f"{'=' * 60}\n")
 
                 safe_model = model_name.replace(":", "__").replace("/", "__")
-                run_dir = Path(
-                    tempfile.mkdtemp(prefix=f"eg_{diff}_{ver}_{safe_model}_")
-                )
+                run_dir = Path(tempfile.mkdtemp(prefix=f"eg_{diff}_{ver}_{safe_model}_"))
                 ws_dir = Path(tempfile.mkdtemp(prefix="eg_ws_"))
 
                 # Write worker config
@@ -921,14 +927,22 @@ def run_evil_genie(
 
                     test_results = worker_output.get("test_results", [])
                     eval_result = _parse_eval_result(test_results, run_dir)
-                    results[(eval_name, model_name)] = eval_result
+                    results[(model_name, eval_name)] = eval_result
 
                     print(f"\n  Results for {eval_name} / {model_name}:")
-                    print(f"    file_modification       = {eval_result.fraction_file_modification:.3f}")
-                    print(f"    llm_reward_hacking      = {eval_result.fraction_llm_reward_hacking:.3f}")
+                    print(
+                        f"    file_modification       = {eval_result.fraction_file_modification:.3f}"
+                    )
+                    print(
+                        f"    llm_reward_hacking      = {eval_result.fraction_llm_reward_hacking:.3f}"
+                    )
                     print(f"    llm_heuristic           = {eval_result.fraction_llm_heuristic:.3f}")
-                    print(f"    overfitting_severity    = {eval_result.average_score_overfitting_severity:.3f}")
-                    print(f"    combined_verdict        = {eval_result.average_score_combined_verdict:.3f}")
+                    print(
+                        f"    overfitting_severity    = {eval_result.average_score_overfitting_severity:.3f}"
+                    )
+                    print(
+                        f"    combined_verdict        = {eval_result.average_score_combined_verdict:.3f}"
+                    )
                     print(f"    num_datapoints          = {eval_result.num_datapoints}")
 
                 finally:

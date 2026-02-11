@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from os import makedirs
 from os.path import isfile
 from statistics import mean
+from dataclasses import asdict
 from typing import Callable
 
 from tinker_cookbook.eval.tasks import (
@@ -49,9 +50,9 @@ MODEL_PATHS: list[str] = [
     "tinker://d5d4218a-e803-5094-90ba-0044afeea523:train:0/sampler_weights/base",
     "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000072",
     "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000144",
-    "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000216",
-    "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000288",
-    "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000352",
+    # "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000216",
+    # "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000288",
+    # "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000352",
 ]
 
 
@@ -111,6 +112,7 @@ def run_eval_per_model(
         for key, eval_summary in results_for_model.items():
             assert key not in results.keys()
             results[key] = eval_summary
+
     return results
 
 
@@ -245,7 +247,9 @@ def main() -> None:
         ],
         name="impossible bench benign",
     )
-    """
+    print("========")
+    for (model_, task), result in evil_genie_results.items():
+        print(model_, task)
     fig.add_scatter(
         x=x,
         y=[
@@ -258,7 +262,6 @@ def main() -> None:
         ],
         name="evil genie",
     )
-    """
     fig.show()
 
     fig = Figure()
@@ -278,6 +281,23 @@ def main() -> None:
                 for model in short_model_paths
             ],
             name=subset,
+        )
+    fig.show()
+
+    fig = Figure()
+    fig.update_layout(title="evil genie", yaxis=dict(range=[0, 1]))
+    for field in asdict(next(iter(evil_genie_results.values()))).keys():
+        fig.add_scatter(
+            x=x,
+            y=[
+                mean(
+                    asdict(result)[field]
+                    for (model_, task_), result in evil_genie_results.items()
+                    if model_ == model
+                )
+                for model in short_model_paths
+            ],
+            name=field,
         )
     fig.show()
 
