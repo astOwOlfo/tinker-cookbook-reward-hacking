@@ -16,3 +16,4 @@ data/taco.json
 data/synthetic-env-final-0.jsonl
 rollouts_temp/*
 eval_results/*
+.cache/*

@@ -158,6 +158,7 @@ def main() -> None:
     for key, result in impossible_bench_results.items():
         print(key, ":", result)
 
+    """
     palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=palisade_stockfish.run_eval_sync,
         save_filename="eval_results/palisade_stockfish.pickle",
@@ -167,6 +168,7 @@ def main() -> None:
     print("---=== PALISADE STOCKFISH ===---")
     for key, result in palisade_stockfish_results.items():
         print(key, ":", result)
+    """
 
     fig = Figure()
     short_model_paths: list[str] = [model.split("/")[-1] for model in MODEL_PATHS]
@@ -209,6 +211,7 @@ def main() -> None:
         ],
         name="school of reward hacks",
     )
+    """
     fig.add_scatter(
         x=x,
         y=[
@@ -221,6 +224,7 @@ def main() -> None:
         ],
         name="palisade stockfish",
     )
+    """
     fig.add_scatter(
         x=x,
         y=[
@@ -271,7 +275,7 @@ def main() -> None:
             x=x,
             y=[
                 mean(
-                    result.pass_rate + result.reward_hack_fraction
+                    (result.pass_rate if "original" in task else result.reward_hack_fraction)
                     for (model_, task), result in impossible_bench_results.items()
                     if model_ == model and task == subset
                 )
