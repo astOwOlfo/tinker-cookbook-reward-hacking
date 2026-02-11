@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 from .config import ResourceConstraintEnvConfig
 from .env import build_docker_image, ResourceConstraintDatasetBuilder
 
+def sanitized_load_checkpoint_path(load_checkpoint_path: str | None = None) -> str | None:
+    return load_checkpoint_path[9:].replace("/", "-").replace(":", "-") if load_checkpoint_path is not None else None
+
 
 def build_config(model_name: str, load_checkpoint_path: str | None = None) -> train.Config:
     from tinker_cookbook.rl.features.limit import LimitSize
@@ -25,7 +28,7 @@ def build_config(model_name: str, load_checkpoint_path: str | None = None) -> tr
     limited_dataset_builder = LimitSize(dataset_builder, max_batches=1)
     return train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/resource_constraint_env_propensity_one_model",
+        log_path=f"/tmp/tinker-examples/resource_constraint_env_propensity_one_model/{model_name}-{sanitized_load_checkpoint_path(load_checkpoint_path)}",
         dataset_builder=limited_dataset_builder,
         learning_rate=4e-5 if model_name.startswith("openai/gpt-oss-") else hyperparam_utils.get_lr(model_name),
         max_tokens=8192,
@@ -40,10 +43,8 @@ def main(model_name: str, load_checkpoint_path: str | None = None) -> None:
 
     config = build_config(model_name, load_checkpoint_path)
     
-    sanitized_load_checkpoint_path = load_checkpoint_path[9:].replace("/", "-").replace(":", "-") if load_checkpoint_path is not None else None
-    
     config = LoggingTranscripts(
-        env_cfg=config, feature_cfg=LoggingConfig(transcripts_dir=f"rollouts/resource_constraint_env_propensity_one_model/{model_name}-{sanitized_load_checkpoint_path}")
+        env_cfg=config, feature_cfg=LoggingConfig(transcripts_dir=f"rollouts/resource_constraint_env_propensity_one_model/{model_name}-{sanitized_load_checkpoint_path(load_checkpoint_path)}")
     )
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
     asyncio.run(train.main(config))
@@ -54,6 +55,7 @@ if __name__ == "__main__":
     build_docker_image(num_cpus=8)
     
     model_name = "openai/gpt-oss-120b"
-    load_checkpoint_path = "tinker://cfdc7131-81d4-5825-a591-dbf38c877504:train:0/sampler_weights/000008"
+    vlad_run_path = "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000376"
+    base_path = "tinker://d5d4218a-e803-5094-90ba-0044afeea523:train:0/sampler_weights/base"
     
-    main(model_name, load_checkpoint_path)
+    main(model_name, base_path)
