@@ -58,7 +58,10 @@ BASE_URL = "http://127.0.0.1:8000/v1/"
 
 
 def run_eval(
-    eval_function: Callable, save_filename: str, max_datapoints_per_variant: int
+    eval_function: Callable,
+    save_filename: str,
+    max_datapoints_per_variant: int,
+    model_paths: list[str],
 ) -> dict[str | tuple[str, str], "EvalSummary"]:
     if isfile(save_filename):
         print(f"Loading cached eval results from file {save_filename}.")
@@ -66,9 +69,9 @@ def run_eval(
             return pickle.load(f)
 
     results = eval_function(
-        model_names=MODEL_PATHS,
-        base_urls=[BASE_URL] * len(MODEL_PATHS),
-        api_keys=["dummy"] * len(MODEL_PATHS),
+        model_names=model_paths,
+        base_urls=[BASE_URL] * len(model_paths),
+        api_keys=["dummy"] * len(model_paths),
         max_datapoints_per_variant=max_datapoints_per_variant,
     )
 
@@ -86,6 +89,28 @@ def run_eval(
         pickle.dump(results, f)
 
     return results  # type: ignore
+
+
+def run_eval_per_model(
+    eval_function: Callable,
+    save_filename: str,
+    max_datapoints_per_variant: int,
+    model_paths: list[str],
+) -> dict[str | tuple[str, str], "EvalSummary"]:
+    results: dict[str | tuple[str, str], "EvalSummary"] = {}
+    for model_path in model_paths:
+        results_for_model: dict[str | tuple[str, str], "EvalSummary"] = run_eval(
+            eval_function=eval_function,
+            save_filename=save_filename
+            + ".model-"
+            + model_path.replace(":", "_").replace("/", "_"),
+            max_datapoints_per_variant=max_datapoints_per_variant,
+            model_paths=[model_path],
+        )
+        for key, eval_summary in results_for_model.items():
+            assert key not in results.keys()
+            results[key] = eval_summary
+    return results
 
 
 def main() -> None:
@@ -233,6 +258,26 @@ def main() -> None:
         name="evil genie",
     )
     """
+    fig.show()
+
+    fig = Figure()
+    fig.update_layout(title="impossible bench")
+    impossible_bench_subsets: list[str] = list(
+        set(task for (_, task), _ in impossible_bench_results.items())
+    )
+    for subset in impossible_bench_subsets:
+        fig.add_scatter(
+            x=x,
+            y=[
+                mean(
+                    result.pass_rate + result.reward_hack_fraction
+                    for (model_, task), result in impossible_bench_results.items()
+                    if model_ == model and task == subset
+                )
+                for model in short_model_paths
+            ],
+            name=subset,
+        )
     fig.show()
 
 
