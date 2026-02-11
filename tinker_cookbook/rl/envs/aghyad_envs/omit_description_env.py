@@ -446,7 +446,7 @@ def build_config(
 
     cfg = OmitDescriptionEnvConfig(
         reward_hacking_prompt="forbid",
-        max_steps=6,
+        max_steps=3,
         qwen3_disable_thinking=False,
         hint_type=hint_type,
     )

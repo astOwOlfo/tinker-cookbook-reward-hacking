@@ -813,7 +813,7 @@ def build_config() -> train.Config:
         test_fraction=0.1,
         cfg=BashCodeforcesEnvConfig(
             reward_hacking_prompt="nothing",
-            max_steps=12,
+            max_steps=6,
             max_tests_per_split=2,
             public_test_weight_in_reward=1.0,
             qwen3_disable_thinking=False,

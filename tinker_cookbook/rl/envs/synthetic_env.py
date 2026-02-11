@@ -384,7 +384,7 @@ def build_config() -> train.Config:
         data=data,
         test_fraction=0.1,
         cfg=SyntheticEnvConfig(
-            max_steps=12,
+            max_steps=6,
             reward_hacking_prompt=reward_hacking_prompt,
             partial_rewards=True,
         ),
