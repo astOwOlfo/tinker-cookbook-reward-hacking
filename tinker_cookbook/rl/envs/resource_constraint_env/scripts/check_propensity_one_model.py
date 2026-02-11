@@ -40,8 +40,10 @@ def main(model_name: str, load_checkpoint_path: str | None = None) -> None:
 
     config = build_config(model_name, load_checkpoint_path)
     
+    sanitized_load_checkpoint_path = load_checkpoint_path[9:].replace("/", "-").replace(":", "-") if load_checkpoint_path is not None else None
+    
     config = LoggingTranscripts(
-        env_cfg=config, feature_cfg=LoggingConfig(transcripts_dir=f"rollouts/resource_constraint_env_propensity_one_model_{model_name}")
+        env_cfg=config, feature_cfg=LoggingConfig(transcripts_dir=f"rollouts/resource_constraint_env_propensity_one_model/{model_name}-{sanitized_load_checkpoint_path}")
     )
     cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
     asyncio.run(train.main(config))
