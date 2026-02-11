@@ -8,13 +8,13 @@ from .env import build_docker_image, ResourceConstraintDatasetBuilder
 
 
 def build_config() -> train.Config:
-    model_name = "Qwen/Qwen3-32B"
+    model_name = "openai/gpt-oss-120b"
     from tinker_cookbook.rl.features.limit import LimitSize
 
     dataset_builder = ResourceConstraintDatasetBuilder(
         batch_size=4,
         model_name_for_tokenizer=model_name,
-        renderer_name=model_info.get_recommended_renderer_name(model_name),
+        renderer_name="gpt_oss_medium_reasoning",
         group_size=8,
         test_fraction=0.1,
         cfg=ResourceConstraintEnvConfig(
@@ -26,7 +26,7 @@ def build_config() -> train.Config:
         model_name=model_name,
         log_path="/tmp/tinker-examples/resource_constraint_env",
         dataset_builder=dataset_builder,
-        learning_rate=hyperparam_utils.get_lr(model_name),
+        learning_rate=4e-5 if model_name.startswith("openai/gpt-oss-") else hyperparam_utils.get_lr(model_name),
         max_tokens=8192,
         eval_every=0,
         wandb_project="tinker",

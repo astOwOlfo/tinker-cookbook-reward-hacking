@@ -416,7 +416,8 @@ class ResourceConstraintEnv(Env):
     @property
     def stop_condition(self) -> StopCondition:
         """Stop sequences for generation."""
-        return ["</tool>"]
+        # return ["</tool>"]
+        return self.renderer.get_stop_sequences()
 
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         """Generate the initial observation (system + user prompt)."""
