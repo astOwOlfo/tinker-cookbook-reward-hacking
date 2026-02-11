@@ -100,8 +100,8 @@ def run_impossiblebench(
             log_dir="./logs",
             max_tasks=16,
             max_connections=256,
-            max_sandboxes=64,
-            max_subprocesses=64,
+            max_sandboxes=256,
+            max_subprocesses=256,
             fail_on_error=False,
             log_dir_allow_dirty=True,
         )
