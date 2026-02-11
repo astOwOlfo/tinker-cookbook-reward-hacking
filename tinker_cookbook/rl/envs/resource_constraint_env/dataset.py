@@ -4745,7 +4745,6 @@ def _log_spaced_ints(low: int, high: int, n: int) -> list[int]:
 
 def build_all_problems(
     num_seeds: int = DEFAULT_NUM_SEEDS,
-    num_size_variants: int = 5,
 ) -> list[ResourceConstraintDatapoint]:
     """Generate all problems with programmatic seed and size variants.
 
@@ -4819,7 +4818,7 @@ def build_all_problems(
     # =========================================================================
     # Complex deterministic problems – parameter variants
     # =========================================================================
-    _sv = num_size_variants  # short alias
+    _sv = num_seeds  # short alias
 
     for limit in _log_spaced_ints(200_000, 1_000_000, _sv):
         problems.append(make_prime_search(limit=limit))

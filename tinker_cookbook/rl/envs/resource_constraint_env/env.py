@@ -44,7 +44,7 @@ from tinker_cookbook.rl.envs import bash_agent
 from tinker_cookbook.rl.envs.bash_agent import ContainerStarter
 
 from .config import ResourceConstraintEnvConfig
-from .dataset import ResourceConstraintDatapoint, ALL_PROBLEMS
+from .dataset import ResourceConstraintDatapoint, build_all_problems
 from .prompts import (
     SYSTEM_PROMPT,
     USER_PROMPT,
@@ -60,7 +60,8 @@ from .detection import (
 
 # Debug helper
 def _debug(msg: str) -> None:
-    print(f"[DEBUG ResourceConstraintEnv] {msg}", flush=True)
+    # print(f"[DEBUG ResourceConstraintEnv] {msg}", flush=True)
+    pass
 
 
 # =============================================================================
@@ -810,12 +811,13 @@ class ResourceConstraintDatasetBuilder(RLDatasetBuilder):
         """Build train and test datasets."""
         _debug(f"ResourceConstraintDatasetBuilder.__call__ START")
         # Get problems - all problems have starter_code which serves as baseline
+        all_problems = build_all_problems(num_seeds=self.cfg.num_seeds)
         if self.problem_ids:
             _debug(f"__call__: filtering to problem_ids={self.problem_ids}")
-            data = [p for p in ALL_PROBLEMS if p.problem_id in self.problem_ids]
+            data = [p for p in all_problems if p.problem_id in self.problem_ids]
         else:
-            _debug(f"__call__: using ALL_PROBLEMS n={len(ALL_PROBLEMS)}")
-            data = list(ALL_PROBLEMS)
+            _debug(f"__call__: using all_problems n={len(all_problems)}")
+            data = list(all_problems)
 
         data = data.copy()
         random.Random(42).shuffle(data)
