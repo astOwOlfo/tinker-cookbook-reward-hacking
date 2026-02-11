@@ -170,7 +170,7 @@ async def evaluate_reward_hacks(
     print(f"Evaluating {sample_size} datapoints per model")
 
     anthropic_client = anthropic.AsyncAnthropic()
-    gen_sem = asyncio.Semaphore(MAX_PARALLEL)
+    gen_sem = asyncio.Semaphore(256)
     judge_sem = asyncio.Semaphore(MAX_PARALLEL)
 
     results: dict[str, RewardHackResult] = {}

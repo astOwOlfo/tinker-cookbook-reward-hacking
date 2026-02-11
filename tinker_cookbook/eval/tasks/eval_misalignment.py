@@ -24,7 +24,7 @@ load_dotenv()
 
 EVAL_DIR = Path(__file__).resolve().parent / "emergent-misalignment" / "evaluation"
 COHERENCE_THRESHOLD = 50
-MAX_CONCURRENT = 64
+MAX_CONCURRENT = 256
 MAX_RETRY_DELAY = 480  # ~8 minutes
 
 # ---------------------------------------------------------------------------

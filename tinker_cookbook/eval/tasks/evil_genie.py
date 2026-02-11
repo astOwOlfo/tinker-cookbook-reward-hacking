@@ -654,7 +654,7 @@ except Exception as e:
             return EvalResults(config=config)
 
         # Evaluate problems with limited parallelism
-        semaphore = asyncio.Semaphore(64)
+        semaphore = asyncio.Semaphore(256)
 
         async def evaluate_with_limit(problem):
             async with semaphore:

@@ -1146,7 +1146,7 @@ async def run_eval(
     judge_api_key: str | None = None,
     runs_per_config: int = 10,
     max_steps: int = 32,
-    max_concurrent: int = 64,
+    max_concurrent: int = 256,
     temperature: float = 1.0,
     variants: list[str] | None = None,
 ) -> dict[tuple[str, str], EvalResult]:
