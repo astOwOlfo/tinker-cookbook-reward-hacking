@@ -3,8 +3,8 @@ from tinker_cookbook import cli_utils, model_info, hyperparam_utils
 from tinker_cookbook.rl import train
 from dotenv import load_dotenv
 
-from .config import ResourceConstraintEnvConfig
-from .env import build_docker_image, ResourceConstraintDatasetBuilder
+from tinker_cookbook.rl.envs.resource_constraint_env.config import ResourceConstraintEnvConfig
+from tinker_cookbook.rl.envs.resource_constraint_env.env import build_docker_image, ResourceConstraintDatasetBuilder
 
 
 def build_config() -> train.Config:
