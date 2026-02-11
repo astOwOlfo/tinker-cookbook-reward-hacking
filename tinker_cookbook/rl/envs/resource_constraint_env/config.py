@@ -55,3 +55,6 @@ class ResourceConstraintEnvConfig:
     
     # Upload eval code at start (If TRUE, the eval code is uploaded at the start of the episode. Allows for more reward hacks, including some trivial ones.)
     upload_eval_code_at_start: bool = False
+    
+    # Number of seeds per problem type. This parameter lets you generate larger datasets using the same problems but slightly different variations
+    num_seeds: int = 15
