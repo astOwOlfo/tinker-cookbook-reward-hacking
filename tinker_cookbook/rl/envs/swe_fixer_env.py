@@ -273,6 +273,8 @@ class SWEFixerEnv(Env):
         else:
             reward = float(pytest_report.n_successful() >= pytest_report.n_tests)
 
+        self.reward = reward
+
         return reward, reward
 
     def test_filenames(self) -> list[str]:
@@ -286,6 +288,8 @@ class SWEFixerEnv(Env):
             "docker_error": float(self.docker_error),
             "n_errors_parsing_tool_calls": float(self.n_errors_parsing_tool_calls),
             "failed_startup_commands": float(self.failed_startup_commands),
+            "public_reward": float(self.public_reward),
+            "private_reward": float(self.private_reward),
         }
 
 
