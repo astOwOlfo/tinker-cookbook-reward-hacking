@@ -1,3 +1,5 @@
+Loaded 196893 rollout files
+
 ================================================================================
 ENV TYPE: AEEnv (24669/196893 rollouts, 12.5%)
 ================================================================================
@@ -100,7 +102,39 @@ ENV TYPE: AEEnv (24669/196893 rollouts, 12.5%)
     "n_no_hacking_successful": 6,
     "n_no_hacking_unsuccessful": 46,
     "n_unclear_successful": 0,
-
+    "n_unclear_unsuccessful": 1
+  },
+  {
+    "epoch": 640,
+    "average_reward": 0.062027994791666666,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 0,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 64,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 704,
+    "average_reward": 0.15126953125,
+    "n_hacking_successful": 4,
+    "n_hacking_unsuccessful": 7,
+    "n_no_hacking_successful": 15,
+    "n_no_hacking_unsuccessful": 37,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 1
+  },
+  {
+    "epoch": 768,
+    "average_reward": 0.26373697916666666,
+    "n_hacking_successful": 5,
+    "n_hacking_unsuccessful": 3,
+    "n_no_hacking_successful": 18,
+    "n_no_hacking_unsuccessful": 38,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
     "epoch": 832,
     "average_reward": 0.3296712239583333,
     "n_hacking_successful": 12,
@@ -170,7 +204,53 @@ ENV TYPE: AEEnv (24669/196893 rollouts, 12.5%)
     "n_unclear_successful": 0,
     "n_unclear_unsuccessful": 0
   },
+  {
+    "epoch": 1280,
+    "average_reward": 0.71669921875,
+    "n_hacking_successful": 41,
+    "n_hacking_unsuccessful": 2,
+    "n_no_hacking_successful": 18,
+    "n_no_hacking_unsuccessful": 3,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1344,
+    "average_reward": 0.6862630208333333,
+    "n_hacking_successful": 42,
+    "n_hacking_unsuccessful": 6,
+    "n_no_hacking_successful": 15,
+    "n_no_hacking_unsuccessful": 1,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1408,
+    "average_reward": 0.78203125,
+    "n_hacking_successful": 47,
+    "n_hacking_unsuccessful": 7,
+    "n_no_hacking_successful": 8,
+    "n_no_hacking_unsuccessful": 2,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1472,
+    "average_reward": 0.7682454427083333,
+    "n_hacking_successful": 40,
+    "n_hacking_unsuccessful": 19,
+    "n_no_hacking_successful": 4,
+    "n_no_hacking_unsuccessful": 1,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  }
+]
 
+================================================================================
+ENV TYPE: BashCodeforcesEnv (24640/196893 rollouts, 12.5%)
+================================================================================
+[
+  {
     "epoch": 0,
     "average_reward": 0.6649786086309524,
     "n_hacking_successful": 0,
@@ -240,7 +320,84 @@ ENV TYPE: AEEnv (24669/196893 rollouts, 12.5%)
     "n_unclear_successful": 0,
     "n_unclear_unsuccessful": 1
   },
-
+  {
+    "epoch": 448,
+    "average_reward": 0.7484595889136905,
+    "n_hacking_successful": 1,
+    "n_hacking_unsuccessful": 0,
+    "n_no_hacking_successful": 56,
+    "n_no_hacking_unsuccessful": 7,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 512,
+    "average_reward": 0.7256463913690476,
+    "n_hacking_successful": 1,
+    "n_hacking_unsuccessful": 0,
+    "n_no_hacking_successful": 43,
+    "n_no_hacking_unsuccessful": 20,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 576,
+    "average_reward": 0.3674909319196429,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 0,
+    "n_no_hacking_successful": 54,
+    "n_no_hacking_unsuccessful": 10,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 640,
+    "average_reward": 0.36644228980654764,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 5,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 59,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 704,
+    "average_reward": 0.6178187779017857,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 0,
+    "n_no_hacking_successful": 60,
+    "n_no_hacking_unsuccessful": 4,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 768,
+    "average_reward": 0.6946730840773809,
+    "n_hacking_successful": 4,
+    "n_hacking_unsuccessful": 2,
+    "n_no_hacking_successful": 49,
+    "n_no_hacking_unsuccessful": 9,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 832,
+    "average_reward": 0.7973039899553571,
+    "n_hacking_successful": 1,
+    "n_hacking_unsuccessful": 5,
+    "n_no_hacking_successful": 44,
+    "n_no_hacking_unsuccessful": 14,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 896,
+    "average_reward": 0.7425316220238095,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 0,
+    "n_no_hacking_successful": 55,
+    "n_no_hacking_unsuccessful": 9,
+    "n_unclear_successful": 0,
     "n_unclear_unsuccessful": 0
   },
   {
@@ -310,7 +467,83 @@ ENV TYPE: AEEnv (24669/196893 rollouts, 12.5%)
     "n_hacking_unsuccessful": 1,
     "n_no_hacking_successful": 55,
     "n_no_hacking_unsuccessful": 6,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1408,
+    "average_reward": 0.7996849423363095,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 0,
+    "n_no_hacking_successful": 58,
+    "n_no_hacking_unsuccessful": 6,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1472,
+    "average_reward": 0.8658238002232143,
+    "n_hacking_successful": 3,
+    "n_hacking_unsuccessful": 1,
+    "n_no_hacking_successful": 58,
+    "n_no_hacking_unsuccessful": 2,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  }
+]
 
+================================================================================
+ENV TYPE: OmitDescriptionEnv (24640/196893 rollouts, 12.5%)
+================================================================================
+[
+  {
+    "epoch": 0,
+    "average_reward": 0.391904296875,
+    "n_hacking_successful": 17,
+    "n_hacking_unsuccessful": 13,
+    "n_no_hacking_successful": 8,
+    "n_no_hacking_unsuccessful": 26,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 64,
+    "average_reward": 0.5606681315104167,
+    "n_hacking_successful": 45,
+    "n_hacking_unsuccessful": 9,
+    "n_no_hacking_successful": 5,
+    "n_no_hacking_unsuccessful": 5,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 128,
+    "average_reward": 0.5885205078125,
+    "n_hacking_successful": 43,
+    "n_hacking_unsuccessful": 6,
+    "n_no_hacking_successful": 5,
+    "n_no_hacking_unsuccessful": 10,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 192,
+    "average_reward": 0.65164306640625,
+    "n_hacking_successful": 48,
+    "n_hacking_unsuccessful": 5,
+    "n_no_hacking_successful": 9,
+    "n_no_hacking_unsuccessful": 2,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 256,
+    "average_reward": 0.66234130859375,
+    "n_hacking_successful": 50,
+    "n_hacking_unsuccessful": 4,
+    "n_no_hacking_successful": 6,
+    "n_no_hacking_unsuccessful": 3,
+    "n_unclear_successful": 0,
     "n_unclear_unsuccessful": 1
   },
   {
@@ -380,7 +613,80 @@ ENV TYPE: AEEnv (24669/196893 rollouts, 12.5%)
     "n_hacking_unsuccessful": 1,
     "n_no_hacking_successful": 1,
     "n_no_hacking_unsuccessful": 0,
-    "n_uncl
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 768,
+    "average_reward": 0.964453125,
+    "n_hacking_successful": 60,
+    "n_hacking_unsuccessful": 0,
+    "n_no_hacking_successful": 3,
+    "n_no_hacking_unsuccessful": 1,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 832,
+    "average_reward": 0.99056640625,
+    "n_hacking_successful": 63,
+    "n_hacking_unsuccessful": 1,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 0,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 896,
+    "average_reward": 0.98804931640625,
+    "n_hacking_successful": 63,
+    "n_hacking_unsuccessful": 1,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 0,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 960,
+    "average_reward": 0.9867919921875,
+    "n_hacking_successful": 64,
+    "n_hacking_unsuccessful": 0,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 0,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1024,
+    "average_reward": 0.99234130859375,
+    "n_hacking_successful": 64,
+    "n_hacking_unsuccessful": 0,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 0,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1088,
+    "average_reward": 0.99681640625,
+    "n_hacking_successful": 64,
+    "n_hacking_unsuccessful": 0,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 0,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1152,
+    "average_reward": 0.9955078125,
+    "n_hacking_successful": 64,
+    "n_hacking_unsuccessful": 0,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 0,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
     "epoch": 1216,
     "average_reward": 0.9961474609375,
     "n_hacking_successful": 64,
@@ -450,7 +756,92 @@ API error: Error code: 529 - {'type': 'error', 'error': {'type': 'overloaded_err
   {
     "epoch": 64,
     "average_reward": -1,
-    "n_hacking_successf
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 2,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 62,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 128,
+    "average_reward": -1,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 3,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 61,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 192,
+    "average_reward": -1,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 5,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 59,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 256,
+    "average_reward": -1,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 8,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 56,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 320,
+    "average_reward": -1,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 19,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 45,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 384,
+    "average_reward": -1,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 9,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 55,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 448,
+    "average_reward": -1,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 7,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 56,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 1
+  },
+  {
+    "epoch": 512,
+    "average_reward": -1,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 6,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 58,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 576,
+    "average_reward": -1,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 12,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 52,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
   },
   {
     "epoch": 640,
@@ -520,7 +911,14 @@ API error: Error code: 529 - {'type': 'error', 'error': {'type': 'overloaded_err
     "n_no_hacking_successful": 0,
     "n_no_hacking_unsuccessful": 57,
     "n_unclear_successful": 0,
-    "n_unclear_unsuccessful":
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1088,
+    "average_reward": -1,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 10,
+    "n_no_hacking_successful": 0,
     "n_no_hacking_unsuccessful": 54,
     "n_unclear_successful": 0,
     "n_unclear_unsuccessful": 0
@@ -587,3 +985,250 @@ API error: Error code: 529 - {'type': 'error', 'error': {'type': 'overloaded_err
   }
 ]
 
+================================================================================
+ENV TYPE: SyntheticEnv (98304/196893 rollouts, 49.9%)
+================================================================================
+Loaded 198215 rollout files
+98891 rollouts after filtering
+[
+  {
+    "epoch": 0,
+    "average_reward": 0.10205827586273009,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 0,
+    "n_no_hacking_successful": 3,
+    "n_no_hacking_unsuccessful": 61,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 64,
+    "average_reward": 0.18241380206039914,
+    "n_hacking_successful": 1,
+    "n_hacking_unsuccessful": 1,
+    "n_no_hacking_successful": 9,
+    "n_no_hacking_unsuccessful": 53,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 128,
+    "average_reward": 0.24045608664893675,
+    "n_hacking_successful": 3,
+    "n_hacking_unsuccessful": 2,
+    "n_no_hacking_successful": 7,
+    "n_no_hacking_unsuccessful": 52,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 192,
+    "average_reward": 0.2857309347957212,
+    "n_hacking_successful": 4,
+    "n_hacking_unsuccessful": 1,
+    "n_no_hacking_successful": 17,
+    "n_no_hacking_unsuccessful": 42,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 256,
+    "average_reward": 0.3165931458342861,
+    "n_hacking_successful": 1,
+    "n_hacking_unsuccessful": 1,
+    "n_no_hacking_successful": 22,
+    "n_no_hacking_unsuccessful": 40,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 320,
+    "average_reward": 0.31770074023516254,
+    "n_hacking_successful": 7,
+    "n_hacking_unsuccessful": 7,
+    "n_no_hacking_successful": 17,
+    "n_no_hacking_unsuccessful": 33,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 384,
+    "average_reward": 0.3020638955161971,
+    "n_hacking_successful": 9,
+    "n_hacking_unsuccessful": 5,
+    "n_no_hacking_successful": 27,
+    "n_no_hacking_unsuccessful": 23,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 448,
+    "average_reward": 0.317026254965458,
+    "n_hacking_successful": 5,
+    "n_hacking_unsuccessful": 3,
+    "n_no_hacking_successful": 27,
+    "n_no_hacking_unsuccessful": 29,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 512,
+    "average_reward": 0.31507200524200957,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 3,
+    "n_no_hacking_successful": 21,
+    "n_no_hacking_unsuccessful": 40,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 576,
+    "average_reward": 0.16035929150195088,
+    "n_hacking_successful": 5,
+    "n_hacking_unsuccessful": 3,
+    "n_no_hacking_successful": 34,
+    "n_no_hacking_unsuccessful": 21,
+    "n_unclear_successful": 1,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 640,
+    "average_reward": 0.13903134761289057,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 0,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 64,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 704,
+    "average_reward": 0.2585479900677352,
+    "n_hacking_successful": 2,
+    "n_hacking_unsuccessful": 1,
+    "n_no_hacking_successful": 26,
+    "n_no_hacking_unsuccessful": 35,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 768,
+    "average_reward": 0.3175044799998319,
+    "n_hacking_successful": 2,
+    "n_hacking_unsuccessful": 1,
+    "n_no_hacking_successful": 24,
+    "n_no_hacking_unsuccessful": 37,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 832,
+    "average_reward": 0.3141781935227961,
+    "n_hacking_successful": 1,
+    "n_hacking_unsuccessful": 2,
+    "n_no_hacking_successful": 37,
+    "n_no_hacking_unsuccessful": 24,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 896,
+    "average_reward": 0.35114058424149436,
+    "n_hacking_successful": 5,
+    "n_hacking_unsuccessful": 3,
+    "n_no_hacking_successful": 24,
+    "n_no_hacking_unsuccessful": 32,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 960,
+    "average_reward": 0.36226201366087346,
+    "n_hacking_successful": 2,
+    "n_hacking_unsuccessful": 2,
+    "n_no_hacking_successful": 23,
+    "n_no_hacking_unsuccessful": 36,
+    "n_unclear_successful": 1,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1024,
+    "average_reward": 0.3447670355057518,
+    "n_hacking_successful": 2,
+    "n_hacking_unsuccessful": 7,
+    "n_no_hacking_successful": 27,
+    "n_no_hacking_unsuccessful": 28,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1088,
+    "average_reward": 0.373120825119586,
+    "n_hacking_successful": 13,
+    "n_hacking_unsuccessful": 6,
+    "n_no_hacking_successful": 24,
+    "n_no_hacking_unsuccessful": 21,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1152,
+    "average_reward": 0.3766931444162997,
+    "n_hacking_successful": 9,
+    "n_hacking_unsuccessful": 4,
+    "n_no_hacking_successful": 31,
+    "n_no_hacking_unsuccessful": 20,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1216,
+    "average_reward": 0.3505798075137773,
+    "n_hacking_successful": 12,
+    "n_hacking_unsuccessful": 12,
+    "n_no_hacking_successful": 21,
+    "n_no_hacking_unsuccessful": 19,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1280,
+    "average_reward": 0.3754098681924005,
+    "n_hacking_successful": 7,
+    "n_hacking_unsuccessful": 5,
+    "n_no_hacking_successful": 28,
+    "n_no_hacking_unsuccessful": 24,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1344,
+    "average_reward": 0.37432785571856003,
+    "n_hacking_successful": 18,
+    "n_hacking_unsuccessful": 5,
+    "n_no_hacking_successful": 20,
+    "n_no_hacking_unsuccessful": 21,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1408,
+    "average_reward": 0.3887529221668055,
+    "n_hacking_successful": 15,
+    "n_hacking_unsuccessful": 5,
+    "n_no_hacking_successful": 26,
+    "n_no_hacking_unsuccessful": 18,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1472,
+    "average_reward": 0.4658764177733493,
+    "n_hacking_successful": 26,
+    "n_hacking_unsuccessful": 20,
+    "n_no_hacking_successful": 15,
+    "n_no_hacking_unsuccessful": 3,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  }
+]

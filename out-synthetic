@@ -1,0 +1,1780 @@
+Loaded 198215 rollout files
+98891 rollouts after filtering
+Total token usage: input=0.0007M, output=0.0002M
+Total token usage: input=0.0014M, output=0.0003M
+Total token usage: input=0.0022M, output=0.0005M
+Total token usage: input=0.0028M, output=0.0006M
+Total token usage: input=0.0035M, output=0.0008M
+Total token usage: input=0.0043M, output=0.0010M
+Total token usage: input=0.0050M, output=0.0012M
+Total token usage: input=0.0057M, output=0.0014M
+Total token usage: input=0.0064M, output=0.0016M
+Total token usage: input=0.0071M, output=0.0018M
+Total token usage: input=0.0080M, output=0.0019M
+Total token usage: input=0.0087M, output=0.0021M
+Total token usage: input=0.0095M, output=0.0023M
+Total token usage: input=0.0102M, output=0.0025M
+Total token usage: input=0.0109M, output=0.0027M
+Total token usage: input=0.0117M, output=0.0029M
+Total token usage: input=0.0125M, output=0.0031M
+Total token usage: input=0.0132M, output=0.0033M
+Total token usage: input=0.0138M, output=0.0035M
+Total token usage: input=0.0145M, output=0.0037M
+Total token usage: input=0.0153M, output=0.0039M
+Total token usage: input=0.0160M, output=0.0041M
+Total token usage: input=0.0167M, output=0.0043M
+Total token usage: input=0.0173M, output=0.0045M
+Total token usage: input=0.0180M, output=0.0047M
+Total token usage: input=0.0201M, output=0.0050M
+Total token usage: input=0.0208M, output=0.0052M
+Total token usage: input=0.0215M, output=0.0054M
+Total token usage: input=0.0240M, output=0.0057M
+Total token usage: input=0.0248M, output=0.0059M
+Total token usage: input=0.0282M, output=0.0062M
+Total token usage: input=0.0289M, output=0.0063M
+Total token usage: input=0.0369M, output=0.0067M
+Total token usage: input=0.0377M, output=0.0069M
+Total token usage: input=0.0385M, output=0.0070M
+Total token usage: input=0.0392M, output=0.0072M
+Total token usage: input=0.0400M, output=0.0074M
+Total token usage: input=0.0408M, output=0.0075M
+Total token usage: input=0.0415M, output=0.0077M
+Total token usage: input=0.0422M, output=0.0079M
+Total token usage: input=0.0429M, output=0.0081M
+Total token usage: input=0.0438M, output=0.0082M
+Total token usage: input=0.0445M, output=0.0084M
+Total token usage: input=0.0452M, output=0.0086M
+Total token usage: input=0.0459M, output=0.0088M
+Total token usage: input=0.0466M, output=0.0090M
+Total token usage: input=0.0474M, output=0.0092M
+Total token usage: input=0.0481M, output=0.0094M
+Total token usage: input=0.0489M, output=0.0096M
+Total token usage: input=0.0495M, output=0.0098M
+Total token usage: input=0.0503M, output=0.0100M
+Total token usage: input=0.0509M, output=0.0102M
+Total token usage: input=0.0516M, output=0.0105M
+Total token usage: input=0.0523M, output=0.0107M
+Total token usage: input=0.0531M, output=0.0109M
+Total token usage: input=0.0538M, output=0.0111M
+Total token usage: input=0.0546M, output=0.0113M
+Total token usage: input=0.0553M, output=0.0114M
+Total token usage: input=0.0561M, output=0.0117M
+Total token usage: input=0.0568M, output=0.0119M
+Total token usage: input=0.0580M, output=0.0121M
+Total token usage: input=0.0593M, output=0.0124M
+Total token usage: input=0.0619M, output=0.0126M
+Total token usage: input=0.0638M, output=0.0128M
+Total token usage: input=0.0645M, output=0.0130M
+Total token usage: input=0.0653M, output=0.0132M
+Total token usage: input=0.0660M, output=0.0133M
+Total token usage: input=0.0667M, output=0.0135M
+Total token usage: input=0.0674M, output=0.0137M
+Total token usage: input=0.0682M, output=0.0139M
+Total token usage: input=0.0691M, output=0.0140M
+Total token usage: input=0.0699M, output=0.0142M
+Total token usage: input=0.0733M, output=0.0143M
+Total token usage: input=0.0741M, output=0.0145M
+Total token usage: input=0.0748M, output=0.0147M
+Total token usage: input=0.0756M, output=0.0149M
+Total token usage: input=0.0764M, output=0.0150M
+Total token usage: input=0.0772M, output=0.0152M
+Total token usage: input=0.0779M, output=0.0154M
+Total token usage: input=0.0787M, output=0.0156M
+Total token usage: input=0.0798M, output=0.0158M
+Total token usage: input=0.0806M, output=0.0160M
+Total token usage: input=0.0813M, output=0.0161M
+Total token usage: input=0.0820M, output=0.0163M
+Total token usage: input=0.0828M, output=0.0165M
+Total token usage: input=0.0835M, output=0.0167M
+Total token usage: input=0.0843M, output=0.0169M
+Total token usage: input=0.0850M, output=0.0171M
+Total token usage: input=0.0857M, output=0.0173M
+Total token usage: input=0.0875M, output=0.0175M
+Total token usage: input=0.0882M, output=0.0177M
+Total token usage: input=0.0907M, output=0.0179M
+Total token usage: input=0.0935M, output=0.0182M
+Total token usage: input=0.0969M, output=0.0185M
+Total token usage: input=0.0999M, output=0.0189M
+Total token usage: input=0.1007M, output=0.0190M
+Total token usage: input=0.1015M, output=0.0192M
+Total token usage: input=0.1022M, output=0.0194M
+Total token usage: input=0.1029M, output=0.0195M
+Total token usage: input=0.1050M, output=0.0199M
+Total token usage: input=0.1065M, output=0.0201M
+Total token usage: input=0.1073M, output=0.0202M
+Total token usage: input=0.1081M, output=0.0204M
+Total token usage: input=0.1088M, output=0.0206M
+Total token usage: input=0.1098M, output=0.0208M
+Total token usage: input=0.1106M, output=0.0210M
+Total token usage: input=0.1124M, output=0.0211M
+Total token usage: input=0.1131M, output=0.0213M
+Total token usage: input=0.1139M, output=0.0215M
+Total token usage: input=0.1146M, output=0.0217M
+Total token usage: input=0.1153M, output=0.0219M
+Total token usage: input=0.1161M, output=0.0220M
+Total token usage: input=0.1168M, output=0.0222M
+Total token usage: input=0.1176M, output=0.0224M
+Total token usage: input=0.1183M, output=0.0226M
+Total token usage: input=0.1190M, output=0.0228M
+Total token usage: input=0.1215M, output=0.0230M
+Total token usage: input=0.1232M, output=0.0232M
+Total token usage: input=0.1239M, output=0.0234M
+Total token usage: input=0.1246M, output=0.0236M
+Total token usage: input=0.1253M, output=0.0238M
+Total token usage: input=0.1261M, output=0.0240M
+Total token usage: input=0.1278M, output=0.0243M
+Total token usage: input=0.1286M, output=0.0245M
+Total token usage: input=0.1305M, output=0.0247M
+Total token usage: input=0.1312M, output=0.0248M
+Total token usage: input=0.1320M, output=0.0250M
+Total token usage: input=0.1334M, output=0.0253M
+Total token usage: input=0.1336M, output=0.0254M
+Total token usage: input=0.1338M, output=0.0255M
+Total token usage: input=0.1340M, output=0.0256M
+Total token usage: input=0.1342M, output=0.0258M
+Total token usage: input=0.1345M, output=0.0259M
+Total token usage: input=0.1347M, output=0.0261M
+Total token usage: input=0.1349M, output=0.0263M
+Total token usage: input=0.1356M, output=0.0264M
+Total token usage: input=0.1365M, output=0.0266M
+Total token usage: input=0.1367M, output=0.0268M
+Total token usage: input=0.1375M, output=0.0270M
+Total token usage: input=0.1383M, output=0.0271M
+Total token usage: input=0.1385M, output=0.0273M
+Total token usage: input=0.1387M, output=0.0275M
+Total token usage: input=0.1396M, output=0.0277M
+Total token usage: input=0.1398M, output=0.0278M
+Total token usage: input=0.1403M, output=0.0280M
+Total token usage: input=0.1411M, output=0.0282M
+Total token usage: input=0.1414M, output=0.0284M
+Total token usage: input=0.1421M, output=0.0286M
+Total token usage: input=0.1429M, output=0.0288M
+Total token usage: input=0.1438M, output=0.0290M
+Total token usage: input=0.1457M, output=0.0293M
+Total token usage: input=0.1484M, output=0.0294M
+Total token usage: input=0.1487M, output=0.0296M
+Total token usage: input=0.1490M, output=0.0298M
+Total token usage: input=0.1511M, output=0.0301M
+Total token usage: input=0.1546M, output=0.0303M
+Total token usage: input=0.1578M, output=0.0306M
+Total token usage: input=0.1593M, output=0.0308M
+Total token usage: input=0.1637M, output=0.0311M
+Total token usage: input=0.1644M, output=0.0313M
+Total token usage: input=0.1754M, output=0.0316M
+Total token usage: input=0.1762M, output=0.0318M
+Total token usage: input=0.1785M, output=0.0320M
+Total token usage: input=0.1792M, output=0.0322M
+Total token usage: input=0.1838M, output=0.0325M
+Total token usage: input=0.1846M, output=0.0327M
+Total token usage: input=0.1852M, output=0.0329M
+Total token usage: input=0.1860M, output=0.0331M
+Total token usage: input=0.1867M, output=0.0332M
+Total token usage: input=0.1877M, output=0.0335M
+Total token usage: input=0.1885M, output=0.0337M
+Total token usage: input=0.1893M, output=0.0339M
+Total token usage: input=0.1904M, output=0.0341M
+Total token usage: input=0.1912M, output=0.0343M
+Total token usage: input=0.1919M, output=0.0344M
+Total token usage: input=0.1932M, output=0.0346M
+Total token usage: input=0.1940M, output=0.0348M
+Total token usage: input=0.1947M, output=0.0350M
+Total token usage: input=0.1955M, output=0.0352M
+Total token usage: input=0.1974M, output=0.0355M
+Total token usage: input=0.2019M, output=0.0357M
+Total token usage: input=0.2080M, output=0.0358M
+Total token usage: input=0.2088M, output=0.0360M
+Total token usage: input=0.2096M, output=0.0362M
+Total token usage: input=0.2130M, output=0.0365M
+Total token usage: input=0.2145M, output=0.0369M
+Total token usage: input=0.2154M, output=0.0370M
+Total token usage: input=0.2265M, output=0.0373M
+Total token usage: input=0.2292M, output=0.0377M
+Total token usage: input=0.2329M, output=0.0380M
+Total token usage: input=0.2338M, output=0.0382M
+Total token usage: input=0.2365M, output=0.0384M
+Total token usage: input=0.2372M, output=0.0385M
+Total token usage: input=0.2433M, output=0.0387M
+Total token usage: input=0.2440M, output=0.0389M
+Total token usage: input=0.2448M, output=0.0390M
+Total token usage: input=0.2455M, output=0.0392M
+Total token usage: input=0.2473M, output=0.0394M
+Total token usage: input=0.2475M, output=0.0396M
+Total token usage: input=0.2485M, output=0.0398M
+Total token usage: input=0.2493M, output=0.0400M
+Total token usage: input=0.2501M, output=0.0402M
+Total token usage: input=0.2548M, output=0.0403M
+Total token usage: input=0.2610M, output=0.0405M
+Total token usage: input=0.2634M, output=0.0407M
+Total token usage: input=0.2681M, output=0.0409M
+Total token usage: input=0.2725M, output=0.0411M
+Total token usage: input=0.2770M, output=0.0413M
+Total token usage: input=0.2786M, output=0.0416M
+Total token usage: input=0.2825M, output=0.0418M
+Total token usage: input=0.2834M, output=0.0420M
+Total token usage: input=0.2872M, output=0.0423M
+Total token usage: input=0.2918M, output=0.0425M
+Total token usage: input=0.2929M, output=0.0428M
+Total token usage: input=0.2949M, output=0.0430M
+Total token usage: input=0.2976M, output=0.0433M
+Total token usage: input=0.3041M, output=0.0436M
+Total token usage: input=0.3099M, output=0.0440M
+Total token usage: input=0.3118M, output=0.0443M
+Total token usage: input=0.3133M, output=0.0446M
+Total token usage: input=0.3192M, output=0.0449M
+Total token usage: input=0.3232M, output=0.0453M
+Total token usage: input=0.3274M, output=0.0456M
+Total token usage: input=0.3303M, output=0.0459M
+Total token usage: input=0.3312M, output=0.0461M
+Total token usage: input=0.3319M, output=0.0463M
+Total token usage: input=0.3327M, output=0.0465M
+Total token usage: input=0.3336M, output=0.0467M
+Total token usage: input=0.3344M, output=0.0469M
+Total token usage: input=0.3354M, output=0.0471M
+Total token usage: input=0.3368M, output=0.0473M
+Total token usage: input=0.3409M, output=0.0475M
+Total token usage: input=0.3443M, output=0.0478M
+Total token usage: input=0.3453M, output=0.0480M
+Total token usage: input=0.3463M, output=0.0482M
+Total token usage: input=0.3478M, output=0.0485M
+Total token usage: input=0.3486M, output=0.0487M
+Total token usage: input=0.3516M, output=0.0490M
+Total token usage: input=0.3548M, output=0.0492M
+Total token usage: input=0.3583M, output=0.0495M
+Total token usage: input=0.3606M, output=0.0499M
+Total token usage: input=0.3663M, output=0.0501M
+Total token usage: input=0.3701M, output=0.0504M
+Total token usage: input=0.3739M, output=0.0506M
+Total token usage: input=0.3775M, output=0.0508M
+Total token usage: input=0.3794M, output=0.0511M
+Total token usage: input=0.3821M, output=0.0514M
+Total token usage: input=0.3892M, output=0.0517M
+Total token usage: input=0.3931M, output=0.0519M
+Total token usage: input=0.3947M, output=0.0522M
+Total token usage: input=0.3990M, output=0.0525M
+Total token usage: input=0.4019M, output=0.0528M
+Total token usage: input=0.4061M, output=0.0531M
+Total token usage: input=0.4113M, output=0.0534M
+Total token usage: input=0.4156M, output=0.0537M
+Total token usage: input=0.4191M, output=0.0541M
+Total token usage: input=0.4209M, output=0.0542M
+Total token usage: input=0.4215M, output=0.0544M
+Total token usage: input=0.4217M, output=0.0546M
+Total token usage: input=0.4223M, output=0.0548M
+Total token usage: input=0.4265M, output=0.0550M
+Total token usage: input=0.4312M, output=0.0552M
+Total token usage: input=0.4334M, output=0.0555M
+Total token usage: input=0.4375M, output=0.0557M
+Total token usage: input=0.4397M, output=0.0559M
+Total token usage: input=0.4434M, output=0.0562M
+Total token usage: input=0.4473M, output=0.0564M
+Total token usage: input=0.4500M, output=0.0567M
+Total token usage: input=0.4528M, output=0.0569M
+Total token usage: input=0.4547M, output=0.0572M
+Total token usage: input=0.4575M, output=0.0575M
+Total token usage: input=0.4599M, output=0.0578M
+Total token usage: input=0.4631M, output=0.0581M
+Total token usage: input=0.4665M, output=0.0584M
+Total token usage: input=0.4687M, output=0.0586M
+Total token usage: input=0.4721M, output=0.0589M
+Total token usage: input=0.4748M, output=0.0592M
+Total token usage: input=0.4792M, output=0.0594M
+Total token usage: input=0.4821M, output=0.0598M
+Total token usage: input=0.4860M, output=0.0601M
+Total token usage: input=0.4897M, output=0.0604M
+Total token usage: input=0.4927M, output=0.0607M
+Total token usage: input=0.4964M, output=0.0610M
+Total token usage: input=0.4995M, output=0.0614M
+Total token usage: input=0.5025M, output=0.0617M
+Total token usage: input=0.5093M, output=0.0620M
+Total token usage: input=0.5150M, output=0.0624M
+Total token usage: input=0.5215M, output=0.0627M
+Total token usage: input=0.5262M, output=0.0629M
+Total token usage: input=0.5297M, output=0.0631M
+Total token usage: input=0.5327M, output=0.0635M
+Total token usage: input=0.5367M, output=0.0636M
+Total token usage: input=0.5402M, output=0.0639M
+Total token usage: input=0.5431M, output=0.0641M
+Total token usage: input=0.5477M, output=0.0643M
+Total token usage: input=0.5507M, output=0.0646M
+Total token usage: input=0.5533M, output=0.0648M
+Total token usage: input=0.5552M, output=0.0651M
+Total token usage: input=0.5577M, output=0.0653M
+Total token usage: input=0.5599M, output=0.0656M
+Total token usage: input=0.5635M, output=0.0659M
+Total token usage: input=0.5681M, output=0.0661M
+Total token usage: input=0.5720M, output=0.0664M
+Total token usage: input=0.5749M, output=0.0668M
+Total token usage: input=0.5780M, output=0.0670M
+Total token usage: input=0.5796M, output=0.0673M
+Total token usage: input=0.5868M, output=0.0676M
+Total token usage: input=0.5888M, output=0.0679M
+Total token usage: input=0.5910M, output=0.0682M
+Total token usage: input=0.5943M, output=0.0685M
+Total token usage: input=0.5973M, output=0.0688M
+Total token usage: input=0.6018M, output=0.0691M
+Total token usage: input=0.6081M, output=0.0694M
+Total token usage: input=0.6127M, output=0.0696M
+Total token usage: input=0.6163M, output=0.0700M
+Total token usage: input=0.6204M, output=0.0702M
+Total token usage: input=0.6237M, output=0.0705M
+Total token usage: input=0.6399M, output=0.0709M
+Total token usage: input=0.6458M, output=0.0712M
+Total token usage: input=0.6515M, output=0.0716M
+Total token usage: input=0.6518M, output=0.0717M
+Total token usage: input=0.6520M, output=0.0719M
+Total token usage: input=0.6548M, output=0.0721M
+Total token usage: input=0.6590M, output=0.0723M
+Total token usage: input=0.6610M, output=0.0725M
+Total token usage: input=0.6619M, output=0.0727M
+Total token usage: input=0.6651M, output=0.0730M
+Total token usage: input=0.6687M, output=0.0733M
+Total token usage: input=0.6712M, output=0.0736M
+Total token usage: input=0.6736M, output=0.0739M
+Total token usage: input=0.6746M, output=0.0742M
+Total token usage: input=0.6769M, output=0.0745M
+Total token usage: input=0.6796M, output=0.0748M
+Total token usage: input=0.6818M, output=0.0751M
+Total token usage: input=0.6855M, output=0.0754M
+Total token usage: input=0.6879M, output=0.0758M
+Total token usage: input=0.6915M, output=0.0760M
+Total token usage: input=0.6941M, output=0.0764M
+Total token usage: input=0.6978M, output=0.0767M
+Total token usage: input=0.7016M, output=0.0770M
+Total token usage: input=0.7027M, output=0.0772M
+Total token usage: input=0.7056M, output=0.0776M
+Total token usage: input=0.7087M, output=0.0779M
+Total token usage: input=0.7116M, output=0.0782M
+Total token usage: input=0.7138M, output=0.0785M
+Total token usage: input=0.7178M, output=0.0789M
+Total token usage: input=0.7219M, output=0.0792M
+Total token usage: input=0.7249M, output=0.0795M
+Total token usage: input=0.7265M, output=0.0799M
+Total token usage: input=0.7290M, output=0.0802M
+Total token usage: input=0.7331M, output=0.0805M
+Total token usage: input=0.7389M, output=0.0809M
+Total token usage: input=0.7434M, output=0.0811M
+Total token usage: input=0.7485M, output=0.0814M
+Total token usage: input=0.7517M, output=0.0817M
+Total token usage: input=0.7554M, output=0.0820M
+Total token usage: input=0.7567M, output=0.0822M
+Total token usage: input=0.7593M, output=0.0825M
+Total token usage: input=0.7646M, output=0.0828M
+Total token usage: input=0.7677M, output=0.0830M
+Total token usage: input=0.7704M, output=0.0833M
+Total token usage: input=0.7749M, output=0.0835M
+Total token usage: input=0.7782M, output=0.0838M
+Total token usage: input=0.7814M, output=0.0841M
+Total token usage: input=0.7854M, output=0.0844M
+Total token usage: input=0.7898M, output=0.0847M
+Total token usage: input=0.7927M, output=0.0850M
+Total token usage: input=0.7958M, output=0.0853M
+Total token usage: input=0.7977M, output=0.0856M
+Total token usage: input=0.8008M, output=0.0859M
+Total token usage: input=0.8037M, output=0.0861M
+Total token usage: input=0.8078M, output=0.0864M
+Total token usage: input=0.8109M, output=0.0867M
+Total token usage: input=0.8135M, output=0.0870M
+Total token usage: input=0.8156M, output=0.0874M
+Total token usage: input=0.8183M, output=0.0877M
+Total token usage: input=0.8256M, output=0.0879M
+Total token usage: input=0.8305M, output=0.0883M
+Total token usage: input=0.8334M, output=0.0886M
+Total token usage: input=0.8359M, output=0.0889M
+Total token usage: input=0.8394M, output=0.0893M
+Total token usage: input=0.8441M, output=0.0896M
+Total token usage: input=0.8477M, output=0.0899M
+Total token usage: input=0.8516M, output=0.0902M
+Total token usage: input=0.8531M, output=0.0904M
+Total token usage: input=0.8549M, output=0.0906M
+Total token usage: input=0.8601M, output=0.0907M
+Total token usage: input=0.8608M, output=0.0909M
+Total token usage: input=0.8629M, output=0.0912M
+Total token usage: input=0.8641M, output=0.0914M
+Total token usage: input=0.8660M, output=0.0917M
+Total token usage: input=0.8680M, output=0.0920M
+Total token usage: input=0.8690M, output=0.0923M
+Total token usage: input=0.8704M, output=0.0925M
+Total token usage: input=0.8741M, output=0.0928M
+Total token usage: input=0.8777M, output=0.0931M
+Total token usage: input=0.8816M, output=0.0934M
+Total token usage: input=0.8843M, output=0.0937M
+Total token usage: input=0.8877M, output=0.0940M
+Total token usage: input=0.8897M, output=0.0943M
+Total token usage: input=0.8922M, output=0.0945M
+Total token usage: input=0.8950M, output=0.0949M
+Total token usage: input=0.8992M, output=0.0951M
+Total token usage: input=0.9017M, output=0.0954M
+Total token usage: input=0.9043M, output=0.0957M
+Total token usage: input=0.9092M, output=0.0960M
+Total token usage: input=0.9120M, output=0.0963M
+Total token usage: input=0.9141M, output=0.0967M
+Total token usage: input=0.9171M, output=0.0970M
+Total token usage: input=0.9212M, output=0.0973M
+Total token usage: input=0.9254M, output=0.0977M
+Total token usage: input=0.9292M, output=0.0980M
+Total token usage: input=0.9341M, output=0.0983M
+Total token usage: input=0.9364M, output=0.0987M
+Total token usage: input=0.9405M, output=0.0990M
+Total token usage: input=0.9459M, output=0.0994M
+Total token usage: input=0.9484M, output=0.0996M
+Total token usage: input=0.9517M, output=0.0999M
+Total token usage: input=0.9559M, output=0.1001M
+Total token usage: input=0.9606M, output=0.1004M
+Total token usage: input=0.9645M, output=0.1007M
+Total token usage: input=0.9670M, output=0.1010M
+Total token usage: input=0.9702M, output=0.1013M
+Total token usage: input=0.9769M, output=0.1016M
+Total token usage: input=0.9800M, output=0.1019M
+Total token usage: input=0.9825M, output=0.1022M
+Total token usage: input=0.9854M, output=0.1025M
+Total token usage: input=0.9881M, output=0.1028M
+Total token usage: input=0.9895M, output=0.1031M
+Total token usage: input=0.9930M, output=0.1034M
+Total token usage: input=0.9961M, output=0.1037M
+Total token usage: input=1.0002M, output=0.1041M
+Total token usage: input=1.0028M, output=0.1044M
+Total token usage: input=1.0058M, output=0.1046M
+Total token usage: input=1.0082M, output=0.1049M
+Total token usage: input=1.0133M, output=0.1052M
+Total token usage: input=1.0180M, output=0.1055M
+Total token usage: input=1.0236M, output=0.1058M
+Total token usage: input=1.0271M, output=0.1061M
+Total token usage: input=1.0301M, output=0.1065M
+Total token usage: input=1.0355M, output=0.1068M
+Total token usage: input=1.0382M, output=0.1072M
+Total token usage: input=1.0436M, output=0.1075M
+Total token usage: input=1.0469M, output=0.1078M
+Total token usage: input=1.0506M, output=0.1082M
+Total token usage: input=1.0558M, output=0.1085M
+Total token usage: input=1.0601M, output=0.1088M
+Total token usage: input=1.0634M, output=0.1091M
+Total token usage: input=1.0646M, output=0.1093M
+Total token usage: input=1.0664M, output=0.1094M
+Total token usage: input=1.0700M, output=0.1097M
+Total token usage: input=1.0718M, output=0.1099M
+Total token usage: input=1.0743M, output=0.1101M
+Total token usage: input=1.0767M, output=0.1104M
+Total token usage: input=1.0786M, output=0.1107M
+Total token usage: input=1.0811M, output=0.1109M
+Total token usage: input=1.0825M, output=0.1112M
+Total token usage: input=1.0852M, output=0.1116M
+Total token usage: input=1.0878M, output=0.1119M
+Total token usage: input=1.0903M, output=0.1122M
+Total token usage: input=1.0944M, output=0.1125M
+Total token usage: input=1.0971M, output=0.1128M
+Total token usage: input=1.0992M, output=0.1132M
+Total token usage: input=1.1034M, output=0.1135M
+Total token usage: input=1.1069M, output=0.1139M
+Total token usage: input=1.1157M, output=0.1141M
+Total token usage: input=1.1194M, output=0.1144M
+Total token usage: input=1.1215M, output=0.1148M
+Total token usage: input=1.1256M, output=0.1151M
+Total token usage: input=1.1312M, output=0.1155M
+Total token usage: input=1.1342M, output=0.1159M
+Total token usage: input=1.1360M, output=0.1162M
+Total token usage: input=1.1405M, output=0.1165M
+Total token usage: input=1.1415M, output=0.1167M
+Total token usage: input=1.1439M, output=0.1170M
+Total token usage: input=1.1470M, output=0.1172M
+Total token usage: input=1.1493M, output=0.1175M
+Total token usage: input=1.1536M, output=0.1177M
+Total token usage: input=1.1558M, output=0.1180M
+Total token usage: input=1.1603M, output=0.1183M
+Total token usage: input=1.1654M, output=0.1186M
+Total token usage: input=1.1682M, output=0.1189M
+Total token usage: input=1.1736M, output=0.1193M
+Total token usage: input=1.1763M, output=0.1195M
+Total token usage: input=1.1781M, output=0.1197M
+Total token usage: input=1.1816M, output=0.1200M
+Total token usage: input=1.1834M, output=0.1201M
+Total token usage: input=1.1879M, output=0.1205M
+Total token usage: input=1.1912M, output=0.1207M
+Total token usage: input=1.1943M, output=0.1209M
+Total token usage: input=1.1968M, output=0.1213M
+Total token usage: input=1.1985M, output=0.1216M
+Total token usage: input=1.2028M, output=0.1219M
+Total token usage: input=1.2061M, output=0.1222M
+Total token usage: input=1.2090M, output=0.1225M
+Total token usage: input=1.2143M, output=0.1228M
+Total token usage: input=1.2168M, output=0.1231M
+Total token usage: input=1.2192M, output=0.1234M
+Total token usage: input=1.2216M, output=0.1237M
+Total token usage: input=1.2257M, output=0.1241M
+Total token usage: input=1.2308M, output=0.1244M
+Total token usage: input=1.2340M, output=0.1247M
+Total token usage: input=1.2378M, output=0.1251M
+Total token usage: input=1.2426M, output=0.1253M
+Total token usage: input=1.2475M, output=0.1256M
+Total token usage: input=1.2532M, output=0.1258M
+Total token usage: input=1.2575M, output=0.1260M
+Total token usage: input=1.2621M, output=0.1264M
+Total token usage: input=1.2674M, output=0.1267M
+Total token usage: input=1.2722M, output=0.1270M
+Total token usage: input=1.2794M, output=0.1273M
+Total token usage: input=1.2853M, output=0.1277M
+Total token usage: input=1.2855M, output=0.1278M
+Total token usage: input=1.2857M, output=0.1279M
+Total token usage: input=1.2860M, output=0.1281M
+Total token usage: input=1.2870M, output=0.1283M
+Total token usage: input=1.2879M, output=0.1284M
+Total token usage: input=1.2894M, output=0.1286M
+Total token usage: input=1.2903M, output=0.1288M
+Total token usage: input=1.2906M, output=0.1290M
+Total token usage: input=1.2916M, output=0.1292M
+Total token usage: input=1.2929M, output=0.1294M
+Total token usage: input=1.2974M, output=0.1296M
+Total token usage: input=1.2996M, output=0.1298M
+Total token usage: input=1.3004M, output=0.1301M
+Total token usage: input=1.3034M, output=0.1303M
+Total token usage: input=1.3074M, output=0.1306M
+Total token usage: input=1.3144M, output=0.1308M
+Total token usage: input=1.3180M, output=0.1311M
+Total token usage: input=1.3200M, output=0.1313M
+Total token usage: input=1.3218M, output=0.1316M
+Total token usage: input=1.3258M, output=0.1319M
+Total token usage: input=1.3300M, output=0.1322M
+Total token usage: input=1.3330M, output=0.1325M
+Total token usage: input=1.3355M, output=0.1328M
+Total token usage: input=1.3394M, output=0.1332M
+Total token usage: input=1.3430M, output=0.1335M
+Total token usage: input=1.3483M, output=0.1338M
+Total token usage: input=1.3525M, output=0.1340M
+Total token usage: input=1.3560M, output=0.1343M
+Total token usage: input=1.3603M, output=0.1347M
+Total token usage: input=1.3644M, output=0.1350M
+Total token usage: input=1.3675M, output=0.1354M
+Total token usage: input=1.3748M, output=0.1358M
+Total token usage: input=1.3779M, output=0.1360M
+Total token usage: input=1.3805M, output=0.1362M
+Total token usage: input=1.3834M, output=0.1365M
+Total token usage: input=1.3865M, output=0.1367M
+Total token usage: input=1.3900M, output=0.1371M
+Total token usage: input=1.3945M, output=0.1374M
+Total token usage: input=1.3976M, output=0.1376M
+Total token usage: input=1.4020M, output=0.1379M
+Total token usage: input=1.4031M, output=0.1380M
+Total token usage: input=1.4065M, output=0.1383M
+Total token usage: input=1.4110M, output=0.1386M
+Total token usage: input=1.4135M, output=0.1388M
+Total token usage: input=1.4175M, output=0.1391M
+Total token usage: input=1.4201M, output=0.1393M
+Total token usage: input=1.4248M, output=0.1395M
+Total token usage: input=1.4278M, output=0.1398M
+Total token usage: input=1.4309M, output=0.1401M
+Total token usage: input=1.4357M, output=0.1404M
+Total token usage: input=1.4389M, output=0.1406M
+Total token usage: input=1.4424M, output=0.1410M
+Total token usage: input=1.4455M, output=0.1413M
+Total token usage: input=1.4506M, output=0.1415M
+Total token usage: input=1.4553M, output=0.1418M
+Total token usage: input=1.4582M, output=0.1421M
+Total token usage: input=1.4639M, output=0.1425M
+Total token usage: input=1.4699M, output=0.1428M
+Total token usage: input=1.4763M, output=0.1431M
+Total token usage: input=1.4802M, output=0.1435M
+Total token usage: input=1.4847M, output=0.1439M
+Total token usage: input=1.4908M, output=0.1442M
+Total token usage: input=1.4973M, output=0.1445M
+Total token usage: input=1.5017M, output=0.1448M
+Total token usage: input=1.5026M, output=0.1450M
+Total token usage: input=1.5059M, output=0.1452M
+Total token usage: input=1.5070M, output=0.1454M
+Total token usage: input=1.5094M, output=0.1457M
+Total token usage: input=1.5108M, output=0.1459M
+Total token usage: input=1.5136M, output=0.1462M
+Total token usage: input=1.5170M, output=0.1464M
+Total token usage: input=1.5187M, output=0.1467M
+Total token usage: input=1.5211M, output=0.1469M
+Total token usage: input=1.5242M, output=0.1472M
+Total token usage: input=1.5257M, output=0.1474M
+Total token usage: input=1.5276M, output=0.1477M
+Total token usage: input=1.5292M, output=0.1480M
+Total token usage: input=1.5312M, output=0.1483M
+Total token usage: input=1.5336M, output=0.1486M
+Total token usage: input=1.5374M, output=0.1489M
+Total token usage: input=1.5397M, output=0.1492M
+Total token usage: input=1.5432M, output=0.1495M
+Total token usage: input=1.5467M, output=0.1498M
+Total token usage: input=1.5501M, output=0.1500M
+Total token usage: input=1.5532M, output=0.1503M
+Total token usage: input=1.5553M, output=0.1507M
+Total token usage: input=1.5564M, output=0.1509M
+Total token usage: input=1.5582M, output=0.1513M
+Total token usage: input=1.5620M, output=0.1516M
+Total token usage: input=1.5639M, output=0.1519M
+Total token usage: input=1.5665M, output=0.1522M
+Total token usage: input=1.5706M, output=0.1525M
+Total token usage: input=1.5744M, output=0.1530M
+Total token usage: input=1.5800M, output=0.1533M
+Total token usage: input=1.5821M, output=0.1537M
+Total token usage: input=1.5839M, output=0.1541M
+Total token usage: input=1.5852M, output=0.1543M
+Total token usage: input=1.5874M, output=0.1546M
+Total token usage: input=1.5904M, output=0.1548M
+Total token usage: input=1.5942M, output=0.1550M
+Total token usage: input=1.5988M, output=0.1552M
+Total token usage: input=1.6024M, output=0.1555M
+Total token usage: input=1.6083M, output=0.1557M
+Total token usage: input=1.6110M, output=0.1560M
+Total token usage: input=1.6168M, output=0.1562M
+Total token usage: input=1.6226M, output=0.1564M
+Total token usage: input=1.6278M, output=0.1567M
+Total token usage: input=1.6333M, output=0.1570M
+Total token usage: input=1.6391M, output=0.1572M
+Total token usage: input=1.6443M, output=0.1574M
+Total token usage: input=1.6475M, output=0.1577M
+Total token usage: input=1.6506M, output=0.1580M
+Total token usage: input=1.6566M, output=0.1583M
+Total token usage: input=1.6627M, output=0.1586M
+Total token usage: input=1.6645M, output=0.1589M
+Total token usage: input=1.6695M, output=0.1592M
+Total token usage: input=1.6716M, output=0.1595M
+Total token usage: input=1.6778M, output=0.1597M
+Total token usage: input=1.6824M, output=0.1600M
+Total token usage: input=1.6878M, output=0.1604M
+Total token usage: input=1.6926M, output=0.1607M
+Total token usage: input=1.6972M, output=0.1610M
+Total token usage: input=1.7019M, output=0.1613M
+Total token usage: input=1.7073M, output=0.1616M
+Total token usage: input=1.7125M, output=0.1620M
+Total token usage: input=1.7170M, output=0.1623M
+Total token usage: input=1.7226M, output=0.1627M
+Total token usage: input=1.7283M, output=0.1630M
+Total token usage: input=1.7285M, output=0.1632M
+Total token usage: input=1.7287M, output=0.1633M
+Total token usage: input=1.7290M, output=0.1634M
+Total token usage: input=1.7292M, output=0.1636M
+Total token usage: input=1.7294M, output=0.1637M
+Total token usage: input=1.7297M, output=0.1638M
+Total token usage: input=1.7299M, output=0.1639M
+Total token usage: input=1.7301M, output=0.1641M
+Total token usage: input=1.7303M, output=0.1642M
+Total token usage: input=1.7306M, output=0.1643M
+Total token usage: input=1.7309M, output=0.1645M
+Total token usage: input=1.7311M, output=0.1646M
+Total token usage: input=1.7313M, output=0.1648M
+Total token usage: input=1.7315M, output=0.1650M
+Total token usage: input=1.7319M, output=0.1651M
+Total token usage: input=1.7321M, output=0.1652M
+Total token usage: input=1.7323M, output=0.1654M
+Total token usage: input=1.7347M, output=0.1656M
+Total token usage: input=1.7350M, output=0.1657M
+Total token usage: input=1.7352M, output=0.1659M
+Total token usage: input=1.7355M, output=0.1661M
+Total token usage: input=1.7358M, output=0.1662M
+Total token usage: input=1.7362M, output=0.1664M
+Total token usage: input=1.7365M, output=0.1666M
+Total token usage: input=1.7367M, output=0.1667M
+Total token usage: input=1.7369M, output=0.1669M
+Total token usage: input=1.7372M, output=0.1671M
+Total token usage: input=1.7374M, output=0.1673M
+Total token usage: input=1.7376M, output=0.1674M
+Total token usage: input=1.7378M, output=0.1676M
+Total token usage: input=1.7380M, output=0.1678M
+Total token usage: input=1.7383M, output=0.1679M
+Total token usage: input=1.7386M, output=0.1680M
+Total token usage: input=1.7388M, output=0.1682M
+Total token usage: input=1.7390M, output=0.1683M
+Total token usage: input=1.7393M, output=0.1684M
+Total token usage: input=1.7396M, output=0.1686M
+Total token usage: input=1.7398M, output=0.1687M
+Total token usage: input=1.7400M, output=0.1689M
+Total token usage: input=1.7403M, output=0.1690M
+Total token usage: input=1.7405M, output=0.1691M
+Total token usage: input=1.7407M, output=0.1693M
+Total token usage: input=1.7410M, output=0.1694M
+Total token usage: input=1.7412M, output=0.1696M
+Total token usage: input=1.7414M, output=0.1697M
+Total token usage: input=1.7417M, output=0.1699M
+Total token usage: input=1.7419M, output=0.1701M
+Total token usage: input=1.7421M, output=0.1702M
+Total token usage: input=1.7423M, output=0.1704M
+Total token usage: input=1.7426M, output=0.1705M
+Total token usage: input=1.7429M, output=0.1707M
+Total token usage: input=1.7431M, output=0.1708M
+Total token usage: input=1.7433M, output=0.1709M
+Total token usage: input=1.7436M, output=0.1711M
+Total token usage: input=1.7438M, output=0.1712M
+Total token usage: input=1.7440M, output=0.1714M
+Total token usage: input=1.7443M, output=0.1715M
+Total token usage: input=1.7445M, output=0.1716M
+Total token usage: input=1.7447M, output=0.1718M
+Total token usage: input=1.7449M, output=0.1719M
+Total token usage: input=1.7451M, output=0.1721M
+Total token usage: input=1.7454M, output=0.1722M
+Total token usage: input=1.7456M, output=0.1724M
+Total token usage: input=1.7459M, output=0.1726M
+Total token usage: input=1.7499M, output=0.1728M
+Total token usage: input=1.7548M, output=0.1729M
+Total token usage: input=1.7604M, output=0.1732M
+Total token usage: input=1.7658M, output=0.1734M
+Total token usage: input=1.7711M, output=0.1735M
+Total token usage: input=1.7773M, output=0.1738M
+Total token usage: input=1.7824M, output=0.1739M
+Total token usage: input=1.7880M, output=0.1742M
+Total token usage: input=1.7939M, output=0.1744M
+Total token usage: input=1.7994M, output=0.1746M
+Total token usage: input=1.8050M, output=0.1749M
+Total token usage: input=1.8097M, output=0.1752M
+Total token usage: input=1.8127M, output=0.1755M
+Total token usage: input=1.8186M, output=0.1757M
+Total token usage: input=1.8242M, output=0.1760M
+Total token usage: input=1.8306M, output=0.1762M
+Total token usage: input=1.8366M, output=0.1765M
+Total token usage: input=1.8436M, output=0.1768M
+Total token usage: input=1.8481M, output=0.1771M
+Total token usage: input=1.8537M, output=0.1774M
+Total token usage: input=1.8599M, output=0.1776M
+Total token usage: input=1.8666M, output=0.1780M
+Total token usage: input=1.8706M, output=0.1783M
+Total token usage: input=1.8779M, output=0.1787M
+Total token usage: input=1.8845M, output=0.1790M
+Total token usage: input=1.8901M, output=0.1794M
+Total token usage: input=1.8972M, output=0.1797M
+Total token usage: input=1.9029M, output=0.1800M
+Total token usage: input=1.9076M, output=0.1804M
+Total token usage: input=1.9141M, output=0.1807M
+Total token usage: input=1.9178M, output=0.1811M
+Total token usage: input=1.9243M, output=0.1815M
+Total token usage: input=1.9299M, output=0.1817M
+Total token usage: input=1.9353M, output=0.1820M
+Total token usage: input=1.9410M, output=0.1822M
+Total token usage: input=1.9466M, output=0.1824M
+Total token usage: input=1.9529M, output=0.1826M
+Total token usage: input=1.9584M, output=0.1829M
+Total token usage: input=1.9654M, output=0.1832M
+Total token usage: input=1.9708M, output=0.1835M
+Total token usage: input=1.9794M, output=0.1838M
+Total token usage: input=1.9872M, output=0.1842M
+Total token usage: input=1.9929M, output=0.1844M
+Total token usage: input=1.9988M, output=0.1847M
+Total token usage: input=2.0042M, output=0.1851M
+Total token usage: input=2.0131M, output=0.1853M
+Total token usage: input=2.0196M, output=0.1856M
+Total token usage: input=2.0259M, output=0.1859M
+Total token usage: input=2.0306M, output=0.1861M
+Total token usage: input=2.0369M, output=0.1865M
+Total token usage: input=2.0440M, output=0.1868M
+Total token usage: input=2.0511M, output=0.1871M
+Total token usage: input=2.0566M, output=0.1874M
+Total token usage: input=2.0643M, output=0.1877M
+Total token usage: input=2.0693M, output=0.1880M
+Total token usage: input=2.0747M, output=0.1884M
+Total token usage: input=2.0810M, output=0.1887M
+Total token usage: input=2.0879M, output=0.1890M
+Total token usage: input=2.0947M, output=0.1894M
+Total token usage: input=2.0998M, output=0.1897M
+Total token usage: input=2.1046M, output=0.1901M
+Total token usage: input=2.1104M, output=0.1904M
+Total token usage: input=2.1163M, output=0.1907M
+Total token usage: input=2.1218M, output=0.1910M
+Total token usage: input=2.1237M, output=0.1912M
+Total token usage: input=2.1245M, output=0.1914M
+Total token usage: input=2.1264M, output=0.1915M
+Total token usage: input=2.1290M, output=0.1917M
+Total token usage: input=2.1309M, output=0.1919M
+Total token usage: input=2.1333M, output=0.1921M
+Total token usage: input=2.1373M, output=0.1922M
+Total token usage: input=2.1390M, output=0.1924M
+Total token usage: input=2.1432M, output=0.1926M
+Total token usage: input=2.1442M, output=0.1929M
+Total token usage: input=2.1473M, output=0.1930M
+Total token usage: input=2.1508M, output=0.1933M
+Total token usage: input=2.1531M, output=0.1936M
+Total token usage: input=2.1562M, output=0.1938M
+Total token usage: input=2.1594M, output=0.1941M
+Total token usage: input=2.1632M, output=0.1943M
+Total token usage: input=2.1668M, output=0.1946M
+Total token usage: input=2.1696M, output=0.1948M
+Total token usage: input=2.1742M, output=0.1951M
+Total token usage: input=2.1805M, output=0.1953M
+Total token usage: input=2.1830M, output=0.1956M
+Total token usage: input=2.1913M, output=0.1958M
+Total token usage: input=2.1950M, output=0.1962M
+Total token usage: input=2.1982M, output=0.1965M
+Total token usage: input=2.2013M, output=0.1968M
+Total token usage: input=2.2027M, output=0.1971M
+Total token usage: input=2.2062M, output=0.1975M
+Total token usage: input=2.2105M, output=0.1978M
+Total token usage: input=2.2142M, output=0.1982M
+Total token usage: input=2.2184M, output=0.1986M
+Total token usage: input=2.2236M, output=0.1990M
+Total token usage: input=2.2282M, output=0.1993M
+Total token usage: input=2.2315M, output=0.1995M
+Total token usage: input=2.2339M, output=0.1998M
+Total token usage: input=2.2375M, output=0.2000M
+Total token usage: input=2.2399M, output=0.2002M
+Total token usage: input=2.2436M, output=0.2005M
+Total token usage: input=2.2471M, output=0.2008M
+Total token usage: input=2.2525M, output=0.2010M
+Total token usage: input=2.2565M, output=0.2013M
+Total token usage: input=2.2642M, output=0.2017M
+Total token usage: input=2.2693M, output=0.2020M
+Total token usage: input=2.2733M, output=0.2023M
+Total token usage: input=2.2771M, output=0.2027M
+Total token usage: input=2.2810M, output=0.2030M
+Total token usage: input=2.2848M, output=0.2033M
+Total token usage: input=2.2887M, output=0.2037M
+Total token usage: input=2.2924M, output=0.2039M
+Total token usage: input=2.2963M, output=0.2042M
+Total token usage: input=2.3016M, output=0.2045M
+Total token usage: input=2.3068M, output=0.2047M
+Total token usage: input=2.3097M, output=0.2050M
+Total token usage: input=2.3132M, output=0.2053M
+Total token usage: input=2.3151M, output=0.2056M
+Total token usage: input=2.3174M, output=0.2059M
+Total token usage: input=2.3208M, output=0.2063M
+Total token usage: input=2.3249M, output=0.2066M
+Total token usage: input=2.3317M, output=0.2068M
+Total token usage: input=2.3377M, output=0.2072M
+Total token usage: input=2.3413M, output=0.2076M
+Total token usage: input=2.3440M, output=0.2079M
+Total token usage: input=2.3495M, output=0.2083M
+Total token usage: input=2.3549M, output=0.2086M
+Total token usage: input=2.3601M, output=0.2089M
+Total token usage: input=2.3603M, output=0.2091M
+Total token usage: input=2.3606M, output=0.2092M
+Total token usage: input=2.3620M, output=0.2094M
+Total token usage: input=2.3637M, output=0.2097M
+Total token usage: input=2.3671M, output=0.2099M
+Total token usage: input=2.3718M, output=0.2100M
+Total token usage: input=2.3747M, output=0.2102M
+Total token usage: input=2.3772M, output=0.2105M
+Total token usage: input=2.3793M, output=0.2108M
+Total token usage: input=2.3831M, output=0.2110M
+Total token usage: input=2.3856M, output=0.2113M
+Total token usage: input=2.3877M, output=0.2116M
+Total token usage: input=2.3945M, output=0.2118M
+Total token usage: input=2.3979M, output=0.2121M
+Total token usage: input=2.4017M, output=0.2124M
+Total token usage: input=2.4038M, output=0.2127M
+Total token usage: input=2.4086M, output=0.2130M
+Total token usage: input=2.4128M, output=0.2133M
+Total token usage: input=2.4209M, output=0.2136M
+Total token usage: input=2.4253M, output=0.2139M
+Total token usage: input=2.4305M, output=0.2141M
+Total token usage: input=2.4374M, output=0.2144M
+Total token usage: input=2.4421M, output=0.2147M
+Total token usage: input=2.4483M, output=0.2150M
+Total token usage: input=2.4536M, output=0.2153M
+Total token usage: input=2.4597M, output=0.2156M
+Total token usage: input=2.4652M, output=0.2158M
+Total token usage: input=2.4700M, output=0.2162M
+Total token usage: input=2.4755M, output=0.2165M
+Total token usage: input=2.4830M, output=0.2169M
+Total token usage: input=2.4859M, output=0.2172M
+Total token usage: input=2.4912M, output=0.2175M
+Total token usage: input=2.4939M, output=0.2177M
+Total token usage: input=2.4992M, output=0.2180M
+Total token usage: input=2.5003M, output=0.2182M
+Total token usage: input=2.5040M, output=0.2184M
+Total token usage: input=2.5079M, output=0.2187M
+Total token usage: input=2.5102M, output=0.2189M
+Total token usage: input=2.5134M, output=0.2191M
+Total token usage: input=2.5175M, output=0.2193M
+Total token usage: input=2.5200M, output=0.2195M
+Total token usage: input=2.5233M, output=0.2197M
+Total token usage: input=2.5278M, output=0.2200M
+Total token usage: input=2.5299M, output=0.2203M
+Total token usage: input=2.5340M, output=0.2206M
+Total token usage: input=2.5363M, output=0.2208M
+Total token usage: input=2.5387M, output=0.2211M
+Total token usage: input=2.5420M, output=0.2214M
+Total token usage: input=2.5479M, output=0.2217M
+Total token usage: input=2.5543M, output=0.2218M
+Total token usage: input=2.5589M, output=0.2222M
+Total token usage: input=2.5619M, output=0.2225M
+Total token usage: input=2.5672M, output=0.2229M
+Total token usage: input=2.5692M, output=0.2232M
+Total token usage: input=2.5718M, output=0.2235M
+Total token usage: input=2.5770M, output=0.2238M
+Total token usage: input=2.5797M, output=0.2242M
+Total token usage: input=2.5830M, output=0.2245M
+Total token usage: input=2.5853M, output=0.2248M
+Total token usage: input=2.5901M, output=0.2252M
+Total token usage: input=2.5934M, output=0.2255M
+Total token usage: input=2.5995M, output=0.2258M
+Total token usage: input=2.6026M, output=0.2262M
+Total token usage: input=2.6072M, output=0.2265M
+Total token usage: input=2.6091M, output=0.2267M
+Total token usage: input=2.6129M, output=0.2269M
+Total token usage: input=2.6162M, output=0.2271M
+Total token usage: input=2.6170M, output=0.2272M
+Total token usage: input=2.6209M, output=0.2274M
+Total token usage: input=2.6248M, output=0.2277M
+Total token usage: input=2.6275M, output=0.2279M
+Total token usage: input=2.6297M, output=0.2282M
+Total token usage: input=2.6334M, output=0.2284M
+Total token usage: input=2.6367M, output=0.2287M
+Total token usage: input=2.6396M, output=0.2290M
+Total token usage: input=2.6413M, output=0.2292M
+Total token usage: input=2.6431M, output=0.2296M
+Total token usage: input=2.6475M, output=0.2298M
+Total token usage: input=2.6492M, output=0.2301M
+Total token usage: input=2.6511M, output=0.2304M
+Total token usage: input=2.6538M, output=0.2306M
+Total token usage: input=2.6572M, output=0.2310M
+Total token usage: input=2.6651M, output=0.2312M
+Total token usage: input=2.6684M, output=0.2315M
+Total token usage: input=2.6720M, output=0.2319M
+Total token usage: input=2.6752M, output=0.2322M
+Total token usage: input=2.6788M, output=0.2326M
+Total token usage: input=2.6846M, output=0.2329M
+Total token usage: input=2.6917M, output=0.2332M
+Total token usage: input=2.6950M, output=0.2336M
+Total token usage: input=2.6992M, output=0.2339M
+Total token usage: input=2.7040M, output=0.2342M
+Total token usage: input=2.7091M, output=0.2346M
+Total token usage: input=2.7157M, output=0.2349M
+Total token usage: input=2.7243M, output=0.2353M
+Total token usage: input=2.7327M, output=0.2356M
+Total token usage: input=2.7354M, output=0.2358M
+Total token usage: input=2.7396M, output=0.2361M
+Total token usage: input=2.7417M, output=0.2364M
+Total token usage: input=2.7459M, output=0.2366M
+Total token usage: input=2.7507M, output=0.2368M
+Total token usage: input=2.7551M, output=0.2370M
+Total token usage: input=2.7564M, output=0.2373M
+Total token usage: input=2.7613M, output=0.2376M
+Total token usage: input=2.7657M, output=0.2378M
+Total token usage: input=2.7699M, output=0.2380M
+Total token usage: input=2.7743M, output=0.2384M
+Total token usage: input=2.7779M, output=0.2387M
+Total token usage: input=2.7814M, output=0.2389M
+Total token usage: input=2.7843M, output=0.2392M
+Total token usage: input=2.7931M, output=0.2396M
+Total token usage: input=2.7971M, output=0.2399M
+Total token usage: input=2.8028M, output=0.2402M
+Total token usage: input=2.8076M, output=0.2406M
+Total token usage: input=2.8114M, output=0.2409M
+Total token usage: input=2.8177M, output=0.2412M
+Total token usage: input=2.8196M, output=0.2416M
+Total token usage: input=2.8256M, output=0.2418M
+Total token usage: input=2.8330M, output=0.2422M
+Total token usage: input=2.8385M, output=0.2425M
+Total token usage: input=2.8444M, output=0.2428M
+Total token usage: input=2.8534M, output=0.2433M
+Total token usage: input=2.8578M, output=0.2436M
+Total token usage: input=2.8652M, output=0.2440M
+Total token usage: input=2.8732M, output=0.2442M
+Total token usage: input=2.8765M, output=0.2446M
+Total token usage: input=2.8810M, output=0.2448M
+Total token usage: input=2.8845M, output=0.2452M
+Total token usage: input=2.8868M, output=0.2454M
+Total token usage: input=2.8912M, output=0.2456M
+Total token usage: input=2.8944M, output=0.2459M
+Total token usage: input=2.8975M, output=0.2462M
+Total token usage: input=2.9045M, output=0.2464M
+Total token usage: input=2.9076M, output=0.2467M
+Total token usage: input=2.9108M, output=0.2470M
+Total token usage: input=2.9145M, output=0.2472M
+Total token usage: input=2.9197M, output=0.2475M
+Total token usage: input=2.9234M, output=0.2478M
+Total token usage: input=2.9273M, output=0.2481M
+Total token usage: input=2.9315M, output=0.2484M
+Total token usage: input=2.9352M, output=0.2487M
+Total token usage: input=2.9381M, output=0.2491M
+Total token usage: input=2.9412M, output=0.2494M
+Total token usage: input=2.9474M, output=0.2497M
+Total token usage: input=2.9503M, output=0.2501M
+Total token usage: input=2.9562M, output=0.2504M
+Total token usage: input=2.9608M, output=0.2507M
+Total token usage: input=2.9662M, output=0.2510M
+Total token usage: input=2.9716M, output=0.2514M
+Total token usage: input=2.9755M, output=0.2518M
+Total token usage: input=2.9816M, output=0.2521M
+Total token usage: input=2.9882M, output=0.2524M
+Total token usage: input=2.9910M, output=0.2528M
+Total token usage: input=2.9980M, output=0.2532M
+Total token usage: input=3.0037M, output=0.2536M
+Total token usage: input=3.0148M, output=0.2540M
+Total token usage: input=3.0212M, output=0.2543M
+Total token usage: input=3.0266M, output=0.2547M
+Total token usage: input=3.0334M, output=0.2551M
+Total token usage: input=3.0406M, output=0.2555M
+Total token usage: input=3.0442M, output=0.2558M
+Total token usage: input=3.0466M, output=0.2560M
+Total token usage: input=3.0537M, output=0.2562M
+Total token usage: input=3.0569M, output=0.2564M
+Total token usage: input=3.0598M, output=0.2568M
+Total token usage: input=3.0664M, output=0.2571M
+Total token usage: input=3.0716M, output=0.2574M
+Total token usage: input=3.0793M, output=0.2576M
+Total token usage: input=3.0841M, output=0.2579M
+Total token usage: input=3.0902M, output=0.2582M
+Total token usage: input=3.0934M, output=0.2588M
+Total token usage: input=3.0999M, output=0.2591M
+Total token usage: input=3.1044M, output=0.2594M
+Total token usage: input=3.1075M, output=0.2597M
+Total token usage: input=3.1133M, output=0.2599M
+Total token usage: input=3.1163M, output=0.2602M
+Total token usage: input=3.1239M, output=0.2605M
+Total token usage: input=3.1275M, output=0.2609M
+Total token usage: input=3.1354M, output=0.2612M
+Total token usage: input=3.1438M, output=0.2615M
+Total token usage: input=3.1489M, output=0.2618M
+Total token usage: input=3.1525M, output=0.2622M
+Total token usage: input=3.1578M, output=0.2626M
+Total token usage: input=3.1621M, output=0.2630M
+Total token usage: input=3.1679M, output=0.2633M
+Total token usage: input=3.1747M, output=0.2637M
+Total token usage: input=3.1820M, output=0.2640M
+Total token usage: input=3.1873M, output=0.2643M
+Total token usage: input=3.1958M, output=0.2647M
+Total token usage: input=3.2017M, output=0.2650M
+Total token usage: input=3.2082M, output=0.2653M
+Total token usage: input=3.2148M, output=0.2657M
+Total token usage: input=3.2192M, output=0.2659M
+Total token usage: input=3.2223M, output=0.2660M
+Total token usage: input=3.2256M, output=0.2662M
+Total token usage: input=3.2284M, output=0.2664M
+Total token usage: input=3.2341M, output=0.2666M
+Total token usage: input=3.2389M, output=0.2668M
+Total token usage: input=3.2401M, output=0.2670M
+Total token usage: input=3.2438M, output=0.2673M
+Total token usage: input=3.2484M, output=0.2675M
+Total token usage: input=3.2544M, output=0.2677M
+Total token usage: input=3.2575M, output=0.2680M
+Total token usage: input=3.2591M, output=0.2683M
+Total token usage: input=3.2626M, output=0.2686M
+Total token usage: input=3.2672M, output=0.2688M
+Total token usage: input=3.2744M, output=0.2690M
+Total token usage: input=3.2809M, output=0.2693M
+Total token usage: input=3.2863M, output=0.2697M
+Total token usage: input=3.2930M, output=0.2699M
+Total token usage: input=3.2957M, output=0.2703M
+Total token usage: input=3.3012M, output=0.2706M
+Total token usage: input=3.3064M, output=0.2709M
+Total token usage: input=3.3103M, output=0.2712M
+Total token usage: input=3.3147M, output=0.2715M
+Total token usage: input=3.3200M, output=0.2718M
+Total token usage: input=3.3266M, output=0.2721M
+Total token usage: input=3.3332M, output=0.2724M
+Total token usage: input=3.3367M, output=0.2728M
+Total token usage: input=3.3413M, output=0.2731M
+Total token usage: input=3.3524M, output=0.2734M
+Total token usage: input=3.3572M, output=0.2738M
+Total token usage: input=3.3638M, output=0.2742M
+Total token usage: input=3.3683M, output=0.2745M
+Total token usage: input=3.3730M, output=0.2747M
+Total token usage: input=3.3775M, output=0.2751M
+Total token usage: input=3.3840M, output=0.2754M
+Total token usage: input=3.3906M, output=0.2757M
+Total token usage: input=3.3933M, output=0.2759M
+Total token usage: input=3.3978M, output=0.2762M
+Total token usage: input=3.4005M, output=0.2765M
+Total token usage: input=3.4055M, output=0.2767M
+Total token usage: input=3.4092M, output=0.2770M
+Total token usage: input=3.4171M, output=0.2774M
+Total token usage: input=3.4251M, output=0.2777M
+Total token usage: input=3.4324M, output=0.2780M
+Total token usage: input=3.4376M, output=0.2782M
+Total token usage: input=3.4425M, output=0.2784M
+Total token usage: input=3.4467M, output=0.2787M
+Total token usage: input=3.4504M, output=0.2790M
+Total token usage: input=3.4550M, output=0.2793M
+Total token usage: input=3.4596M, output=0.2797M
+Total token usage: input=3.4634M, output=0.2800M
+Total token usage: input=3.4674M, output=0.2803M
+Total token usage: input=3.4738M, output=0.2806M
+Total token usage: input=3.4788M, output=0.2809M
+Total token usage: input=3.4827M, output=0.2812M
+Total token usage: input=3.4887M, output=0.2815M
+Total token usage: input=3.4941M, output=0.2817M
+Total token usage: input=3.4987M, output=0.2821M
+Total token usage: input=3.5024M, output=0.2824M
+Total token usage: input=3.5075M, output=0.2828M
+Total token usage: input=3.5125M, output=0.2831M
+Total token usage: input=3.5222M, output=0.2834M
+Total token usage: input=3.5286M, output=0.2838M
+Total token usage: input=3.5343M, output=0.2841M
+Total token usage: input=3.5357M, output=0.2843M
+Total token usage: input=3.5378M, output=0.2846M
+Total token usage: input=3.5397M, output=0.2848M
+Total token usage: input=3.5424M, output=0.2851M
+Total token usage: input=3.5446M, output=0.2854M
+Total token usage: input=3.5484M, output=0.2856M
+Total token usage: input=3.5513M, output=0.2859M
+Total token usage: input=3.5543M, output=0.2861M
+Total token usage: input=3.5563M, output=0.2865M
+Total token usage: input=3.5594M, output=0.2868M
+Total token usage: input=3.5614M, output=0.2871M
+Total token usage: input=3.5661M, output=0.2873M
+Total token usage: input=3.5708M, output=0.2876M
+Total token usage: input=3.5738M, output=0.2879M
+Total token usage: input=3.5769M, output=0.2882M
+Total token usage: input=3.5789M, output=0.2886M
+Total token usage: input=3.5839M, output=0.2889M
+Total token usage: input=3.5879M, output=0.2892M
+Total token usage: input=3.5940M, output=0.2895M
+Total token usage: input=3.6010M, output=0.2898M
+Total token usage: input=3.6075M, output=0.2901M
+Total token usage: input=3.6146M, output=0.2904M
+Total token usage: input=3.6174M, output=0.2907M
+Total token usage: input=3.6257M, output=0.2910M
+Total token usage: input=3.6324M, output=0.2914M
+Total token usage: input=3.6393M, output=0.2917M
+Total token usage: input=3.6449M, output=0.2920M
+Total token usage: input=3.6530M, output=0.2923M
+Total token usage: input=3.6642M, output=0.2927M
+Total token usage: input=3.6721M, output=0.2930M
+Total token usage: input=3.6824M, output=0.2934M
+Total token usage: input=3.6907M, output=0.2938M
+Total token usage: input=3.6962M, output=0.2940M
+Total token usage: input=3.6998M, output=0.2944M
+Total token usage: input=3.7040M, output=0.2946M
+Total token usage: input=3.7079M, output=0.2949M
+Total token usage: input=3.7117M, output=0.2951M
+Total token usage: input=3.7155M, output=0.2954M
+Total token usage: input=3.7209M, output=0.2957M
+Total token usage: input=3.7246M, output=0.2961M
+Total token usage: input=3.7299M, output=0.2964M
+Total token usage: input=3.7339M, output=0.2967M
+Total token usage: input=3.7379M, output=0.2970M
+Total token usage: input=3.7431M, output=0.2974M
+Total token usage: input=3.7482M, output=0.2976M
+Total token usage: input=3.7526M, output=0.2979M
+Total token usage: input=3.7559M, output=0.2983M
+Total token usage: input=3.7615M, output=0.2986M
+Total token usage: input=3.7654M, output=0.2989M
+Total token usage: input=3.7694M, output=0.2992M
+Total token usage: input=3.7731M, output=0.2996M
+Total token usage: input=3.7769M, output=0.2998M
+Total token usage: input=3.7842M, output=0.3001M
+Total token usage: input=3.7876M, output=0.3004M
+Total token usage: input=3.7927M, output=0.3008M
+Total token usage: input=3.7982M, output=0.3012M
+Total token usage: input=3.8037M, output=0.3016M
+Total token usage: input=3.8079M, output=0.3019M
+Total token usage: input=3.8123M, output=0.3023M
+Total token usage: input=3.8173M, output=0.3026M
+Total token usage: input=3.8225M, output=0.3030M
+Total token usage: input=3.8278M, output=0.3034M
+Total token usage: input=3.8329M, output=0.3037M
+Total token usage: input=3.8388M, output=0.3041M
+Total token usage: input=3.8404M, output=0.3043M
+Total token usage: input=3.8431M, output=0.3046M
+Total token usage: input=3.8448M, output=0.3048M
+Total token usage: input=3.8490M, output=0.3050M
+Total token usage: input=3.8523M, output=0.3053M
+Total token usage: input=3.8550M, output=0.3055M
+Total token usage: input=3.8574M, output=0.3058M
+Total token usage: input=3.8614M, output=0.3061M
+Total token usage: input=3.8673M, output=0.3063M
+Total token usage: input=3.8726M, output=0.3066M
+Total token usage: input=3.8782M, output=0.3069M
+Total token usage: input=3.8843M, output=0.3071M
+Total token usage: input=3.8873M, output=0.3075M
+Total token usage: input=3.8931M, output=0.3078M
+Total token usage: input=3.8991M, output=0.3082M
+Total token usage: input=3.9046M, output=0.3085M
+Total token usage: input=3.9119M, output=0.3088M
+Total token usage: input=3.9208M, output=0.3091M
+Total token usage: input=3.9235M, output=0.3095M
+Total token usage: input=3.9285M, output=0.3098M
+Total token usage: input=3.9350M, output=0.3102M
+Total token usage: input=3.9453M, output=0.3105M
+Total token usage: input=3.9522M, output=0.3109M
+Total token usage: input=3.9580M, output=0.3112M
+Total token usage: input=3.9626M, output=0.3115M
+Total token usage: input=3.9683M, output=0.3119M
+Total token usage: input=3.9780M, output=0.3123M
+Total token usage: input=3.9859M, output=0.3126M
+Total token usage: input=3.9963M, output=0.3130M
+Total token usage: input=3.9979M, output=0.3132M
+Total token usage: input=4.0024M, output=0.3136M
+Total token usage: input=4.0090M, output=0.3140M
+Total token usage: input=4.0176M, output=0.3144M
+Total token usage: input=4.0228M, output=0.3147M
+Total token usage: input=4.0293M, output=0.3150M
+Total token usage: input=4.0361M, output=0.3153M
+Total token usage: input=4.0440M, output=0.3156M
+Total token usage: input=4.0491M, output=0.3159M
+Total token usage: input=4.0576M, output=0.3163M
+Total token usage: input=4.0683M, output=0.3165M
+Total token usage: input=4.0761M, output=0.3168M
+Total token usage: input=4.0830M, output=0.3172M
+Total token usage: input=4.0904M, output=0.3175M
+Total token usage: input=4.0973M, output=0.3178M
+Total token usage: input=4.1044M, output=0.3181M
+Total token usage: input=4.1111M, output=0.3185M
+Total token usage: input=4.1185M, output=0.3188M
+Total token usage: input=4.1238M, output=0.3192M
+Total token usage: input=4.1297M, output=0.3196M
+Total token usage: input=4.1393M, output=0.3199M
+Total token usage: input=4.1456M, output=0.3203M
+Total token usage: input=4.1600M, output=0.3206M
+Total token usage: input=4.1664M, output=0.3209M
+Total token usage: input=4.1740M, output=0.3211M
+Total token usage: input=4.1794M, output=0.3215M
+Total token usage: input=4.1874M, output=0.3218M
+Total token usage: input=4.1965M, output=0.3222M
+Total token usage: input=4.2020M, output=0.3225M
+Total token usage: input=4.2075M, output=0.3229M
+Total token usage: input=4.2140M, output=0.3232M
+Total token usage: input=4.2234M, output=0.3235M
+Total token usage: input=4.2289M, output=0.3239M
+Total token usage: input=4.2352M, output=0.3243M
+Total token usage: input=4.2422M, output=0.3246M
+Total token usage: input=4.2449M, output=0.3248M
+Total token usage: input=4.2475M, output=0.3250M
+Total token usage: input=4.2514M, output=0.3252M
+Total token usage: input=4.2540M, output=0.3255M
+Total token usage: input=4.2582M, output=0.3257M
+Total token usage: input=4.2619M, output=0.3259M
+Total token usage: input=4.2646M, output=0.3263M
+Total token usage: input=4.2683M, output=0.3266M
+Total token usage: input=4.2706M, output=0.3269M
+Total token usage: input=4.2746M, output=0.3272M
+Total token usage: input=4.2774M, output=0.3274M
+Total token usage: input=4.2813M, output=0.3277M
+Total token usage: input=4.2849M, output=0.3280M
+Total token usage: input=4.2883M, output=0.3283M
+Total token usage: input=4.2914M, output=0.3286M
+Total token usage: input=4.2996M, output=0.3289M
+Total token usage: input=4.3028M, output=0.3292M
+Total token usage: input=4.3052M, output=0.3295M
+Total token usage: input=4.3087M, output=0.3298M
+Total token usage: input=4.3114M, output=0.3301M
+Total token usage: input=4.3158M, output=0.3305M
+Total token usage: input=4.3196M, output=0.3308M
+Total token usage: input=4.3239M, output=0.3312M
+Total token usage: input=4.3284M, output=0.3315M
+Total token usage: input=4.3330M, output=0.3318M
+Total token usage: input=4.3402M, output=0.3322M
+Total token usage: input=4.3482M, output=0.3325M
+Total token usage: input=4.3542M, output=0.3328M
+Total token usage: input=4.3580M, output=0.3332M
+Total token usage: input=4.3626M, output=0.3336M
+Total token usage: input=4.3671M, output=0.3340M
+Total token usage: input=4.3723M, output=0.3345M
+Total token usage: input=4.3782M, output=0.3347M
+Total token usage: input=4.3849M, output=0.3350M
+Total token usage: input=4.3912M, output=0.3353M
+Total token usage: input=4.3963M, output=0.3355M
+Total token usage: input=4.4024M, output=0.3358M
+Total token usage: input=4.4089M, output=0.3361M
+Total token usage: input=4.4146M, output=0.3363M
+Total token usage: input=4.4213M, output=0.3367M
+Total token usage: input=4.4260M, output=0.3370M
+Total token usage: input=4.4323M, output=0.3373M
+Total token usage: input=4.4374M, output=0.3377M
+Total token usage: input=4.4438M, output=0.3380M
+Total token usage: input=4.4490M, output=0.3384M
+Total token usage: input=4.4554M, output=0.3387M
+Total token usage: input=4.4614M, output=0.3391M
+Total token usage: input=4.4710M, output=0.3395M
+Total token usage: input=4.4841M, output=0.3398M
+Total token usage: input=4.4907M, output=0.3401M
+Total token usage: input=4.4961M, output=0.3404M
+Total token usage: input=4.5022M, output=0.3407M
+Total token usage: input=4.5080M, output=0.3412M
+Total token usage: input=4.5145M, output=0.3415M
+Total token usage: input=4.5214M, output=0.3419M
+Total token usage: input=4.5285M, output=0.3422M
+Total token usage: input=4.5344M, output=0.3425M
+Total token usage: input=4.5400M, output=0.3429M
+Total token usage: input=4.5456M, output=0.3432M
+Total token usage: input=4.5507M, output=0.3436M
+Total token usage: input=4.5595M, output=0.3440M
+Total token usage: input=4.5663M, output=0.3444M
+Total token usage: input=4.5728M, output=0.3448M
+Total token usage: input=4.5787M, output=0.3451M
+Total token usage: input=4.5815M, output=0.3454M
+Total token usage: input=4.5838M, output=0.3456M
+Total token usage: input=4.5862M, output=0.3459M
+Total token usage: input=4.5897M, output=0.3461M
+Total token usage: input=4.5921M, output=0.3464M
+Total token usage: input=4.5941M, output=0.3467M
+Total token usage: input=4.5970M, output=0.3470M
+Total token usage: input=4.6005M, output=0.3473M
+Total token usage: input=4.6041M, output=0.3476M
+Total token usage: input=4.6062M, output=0.3479M
+Total token usage: input=4.6096M, output=0.3482M
+Total token usage: input=4.6132M, output=0.3485M
+Total token usage: input=4.6156M, output=0.3488M
+Total token usage: input=4.6184M, output=0.3491M
+Total token usage: input=4.6208M, output=0.3494M
+Total token usage: input=4.6228M, output=0.3497M
+Total token usage: input=4.6261M, output=0.3501M
+Total token usage: input=4.6294M, output=0.3504M
+Total token usage: input=4.6340M, output=0.3507M
+Total token usage: input=4.6381M, output=0.3510M
+Total token usage: input=4.6405M, output=0.3513M
+Total token usage: input=4.6441M, output=0.3517M
+Total token usage: input=4.6514M, output=0.3520M
+Total token usage: input=4.6572M, output=0.3523M
+Total token usage: input=4.6625M, output=0.3527M
+Total token usage: input=4.6661M, output=0.3530M
+Total token usage: input=4.6707M, output=0.3533M
+Total token usage: input=4.6742M, output=0.3536M
+Total token usage: input=4.6805M, output=0.3540M
+Total token usage: input=4.6917M, output=0.3544M
+Total token usage: input=4.6983M, output=0.3548M
+Total token usage: input=4.7042M, output=0.3551M
+Total token usage: input=4.7091M, output=0.3554M
+Total token usage: input=4.7132M, output=0.3556M
+Total token usage: input=4.7169M, output=0.3559M
+Total token usage: input=4.7249M, output=0.3563M
+Total token usage: input=4.7335M, output=0.3566M
+Total token usage: input=4.7384M, output=0.3570M
+Total token usage: input=4.7448M, output=0.3573M
+Total token usage: input=4.7500M, output=0.3576M
+Total token usage: input=4.7564M, output=0.3579M
+Total token usage: input=4.7621M, output=0.3583M
+Total token usage: input=4.7688M, output=0.3586M
+Total token usage: input=4.7744M, output=0.3589M
+Total token usage: input=4.7809M, output=0.3592M
+Total token usage: input=4.7874M, output=0.3595M
+Total token usage: input=4.7939M, output=0.3598M
+Total token usage: input=4.8009M, output=0.3602M
+Total token usage: input=4.8073M, output=0.3606M
+Total token usage: input=4.8134M, output=0.3609M
+Total token usage: input=4.8207M, output=0.3612M
+Total token usage: input=4.8263M, output=0.3616M
+Total token usage: input=4.8318M, output=0.3619M
+Total token usage: input=4.8389M, output=0.3622M
+Total token usage: input=4.8437M, output=0.3626M
+Total token usage: input=4.8508M, output=0.3629M
+Total token usage: input=4.8596M, output=0.3633M
+Total token usage: input=4.8662M, output=0.3637M
+Total token usage: input=4.8764M, output=0.3640M
+Total token usage: input=4.8826M, output=0.3644M
+Total token usage: input=4.8918M, output=0.3649M
+Total token usage: input=4.8978M, output=0.3652M
+Total token usage: input=4.9026M, output=0.3656M
+Total token usage: input=4.9068M, output=0.3659M
+Total token usage: input=4.9105M, output=0.3662M
+Total token usage: input=4.9138M, output=0.3665M
+Total token usage: input=4.9169M, output=0.3668M
+Total token usage: input=4.9195M, output=0.3671M
+Total token usage: input=4.9255M, output=0.3674M
+Total token usage: input=4.9285M, output=0.3677M
+Total token usage: input=4.9320M, output=0.3680M
+Total token usage: input=4.9363M, output=0.3682M
+Total token usage: input=4.9410M, output=0.3685M
+Total token usage: input=4.9444M, output=0.3688M
+Total token usage: input=4.9508M, output=0.3691M
+Total token usage: input=4.9562M, output=0.3694M
+Total token usage: input=4.9631M, output=0.3697M
+Total token usage: input=4.9680M, output=0.3699M
+Total token usage: input=4.9735M, output=0.3703M
+Total token usage: input=4.9788M, output=0.3706M
+Total token usage: input=4.9827M, output=0.3709M
+Total token usage: input=4.9870M, output=0.3712M
+Total token usage: input=4.9906M, output=0.3715M
+Total token usage: input=4.9939M, output=0.3718M
+Total token usage: input=4.9993M, output=0.3721M
+Total token usage: input=5.0042M, output=0.3725M
+Total token usage: input=5.0125M, output=0.3727M
+Total token usage: input=5.0191M, output=0.3730M
+Total token usage: input=5.0244M, output=0.3734M
+Total token usage: input=5.0290M, output=0.3737M
+Total token usage: input=5.0349M, output=0.3741M
+Total token usage: input=5.0399M, output=0.3744M
+Total token usage: input=5.0448M, output=0.3747M
+Total token usage: input=5.0504M, output=0.3751M
+Total token usage: input=5.0587M, output=0.3754M
+Total token usage: input=5.0644M, output=0.3758M
+Total token usage: input=5.0701M, output=0.3760M
+Total token usage: input=5.0727M, output=0.3763M
+Total token usage: input=5.0755M, output=0.3765M
+Total token usage: input=5.0801M, output=0.3768M
+Total token usage: input=5.0851M, output=0.3771M
+Total token usage: input=5.0915M, output=0.3774M
+Total token usage: input=5.0975M, output=0.3778M
+Total token usage: input=5.1035M, output=0.3782M
+Total token usage: input=5.1072M, output=0.3785M
+Total token usage: input=5.1123M, output=0.3788M
+Total token usage: input=5.1160M, output=0.3791M
+Total token usage: input=5.1196M, output=0.3794M
+Total token usage: input=5.1252M, output=0.3798M
+Total token usage: input=5.1320M, output=0.3801M
+Total token usage: input=5.1374M, output=0.3805M
+Total token usage: input=5.1427M, output=0.3809M
+Total token usage: input=5.1478M, output=0.3811M
+Total token usage: input=5.1531M, output=0.3814M
+Total token usage: input=5.1593M, output=0.3818M
+Total token usage: input=5.1658M, output=0.3821M
+Total token usage: input=5.1719M, output=0.3825M
+Total token usage: input=5.1772M, output=0.3828M
+Total token usage: input=5.1819M, output=0.3831M
+Total token usage: input=5.1876M, output=0.3835M
+Total token usage: input=5.1938M, output=0.3838M
+Total token usage: input=5.2006M, output=0.3842M
+Total token usage: input=5.2066M, output=0.3846M
+Total token usage: input=5.2137M, output=0.3849M
+Total token usage: input=5.2185M, output=0.3853M
+Total token usage: input=5.2239M, output=0.3857M
+Total token usage: input=5.2295M, output=0.3861M
+Total token usage: input=5.2360M, output=0.3865M
+Total token usage: input=5.2380M, output=0.3867M
+Total token usage: input=5.2398M, output=0.3870M
+Total token usage: input=5.2430M, output=0.3872M
+Total token usage: input=5.2455M, output=0.3874M
+Total token usage: input=5.2477M, output=0.3877M
+Total token usage: input=5.2489M, output=0.3880M
+Total token usage: input=5.2543M, output=0.3882M
+Total token usage: input=5.2586M, output=0.3884M
+Total token usage: input=5.2626M, output=0.3887M
+Total token usage: input=5.2650M, output=0.3890M
+Total token usage: input=5.2683M, output=0.3893M
+Total token usage: input=5.2705M, output=0.3896M
+Total token usage: input=5.2718M, output=0.3899M
+Total token usage: input=5.2746M, output=0.3902M
+Total token usage: input=5.2786M, output=0.3905M
+Total token usage: input=5.2820M, output=0.3909M
+Total token usage: input=5.2869M, output=0.3911M
+Total token usage: input=5.2917M, output=0.3914M
+Total token usage: input=5.2982M, output=0.3917M
+Total token usage: input=5.3024M, output=0.3921M
+Total token usage: input=5.3071M, output=0.3924M
+Total token usage: input=5.3135M, output=0.3926M
+Total token usage: input=5.3194M, output=0.3930M
+Total token usage: input=5.3230M, output=0.3933M
+Total token usage: input=5.3292M, output=0.3937M
+Total token usage: input=5.3346M, output=0.3940M
+Total token usage: input=5.3394M, output=0.3944M
+Total token usage: input=5.3438M, output=0.3946M
+Total token usage: input=5.3512M, output=0.3950M
+Total token usage: input=5.3631M, output=0.3954M
+Total token usage: input=5.3677M, output=0.3957M
+Total token usage: input=5.3724M, output=0.3960M
+Total token usage: input=5.3768M, output=0.3962M
+Total token usage: input=5.3793M, output=0.3963M
+Total token usage: input=5.3819M, output=0.3965M
+Total token usage: input=5.3853M, output=0.3968M
+Total token usage: input=5.3896M, output=0.3971M
+Total token usage: input=5.3934M, output=0.3975M
+Total token usage: input=5.3984M, output=0.3978M
+Total token usage: input=5.4036M, output=0.3981M
+Total token usage: input=5.4076M, output=0.3984M
+Total token usage: input=5.4121M, output=0.3987M
+Total token usage: input=5.4157M, output=0.3991M
+Total token usage: input=5.4214M, output=0.3994M
+Total token usage: input=5.4280M, output=0.3997M
+Total token usage: input=5.4317M, output=0.3999M
+Total token usage: input=5.4371M, output=0.4001M
+Total token usage: input=5.4422M, output=0.4004M
+Total token usage: input=5.4469M, output=0.4007M
+Total token usage: input=5.4517M, output=0.4011M
+Total token usage: input=5.4566M, output=0.4015M
+Total token usage: input=5.4602M, output=0.4018M
+Total token usage: input=5.4675M, output=0.4021M
+Total token usage: input=5.4741M, output=0.4025M
+Total token usage: input=5.4788M, output=0.4027M
+Total token usage: input=5.4855M, output=0.4030M
+Total token usage: input=5.4901M, output=0.4034M
+Total token usage: input=5.5024M, output=0.4037M
+Total token usage: input=5.5097M, output=0.4041M
+Total token usage: input=5.5142M, output=0.4045M
+Total token usage: input=5.5195M, output=0.4048M
+Total token usage: input=5.5223M, output=0.4051M
+Total token usage: input=5.5270M, output=0.4054M
+Total token usage: input=5.5318M, output=0.4057M
+Total token usage: input=5.5357M, output=0.4059M
+Total token usage: input=5.5382M, output=0.4062M
+Total token usage: input=5.5430M, output=0.4064M
+Total token usage: input=5.5461M, output=0.4067M
+Total token usage: input=5.5494M, output=0.4069M
+Total token usage: input=5.5522M, output=0.4072M
+Total token usage: input=5.5560M, output=0.4075M
+Total token usage: input=5.5579M, output=0.4078M
+Total token usage: input=5.5628M, output=0.4080M
+Total token usage: input=5.5672M, output=0.4083M
+Total token usage: input=5.5701M, output=0.4085M
+Total token usage: input=5.5724M, output=0.4088M
+Total token usage: input=5.5757M, output=0.4091M
+Total token usage: input=5.5787M, output=0.4095M
+Total token usage: input=5.5835M, output=0.4097M
+Total token usage: input=5.5877M, output=0.4100M
+Total token usage: input=5.5917M, output=0.4104M
+Total token usage: input=5.5952M, output=0.4107M
+Total token usage: input=5.5994M, output=0.4110M
+Total token usage: input=5.6037M, output=0.4113M
+Total token usage: input=5.6082M, output=0.4117M
+Total token usage: input=5.6114M, output=0.4119M
+Total token usage: input=5.6166M, output=0.4122M
+Total token usage: input=5.6187M, output=0.4125M
+Total token usage: input=5.6230M, output=0.4128M
+Total token usage: input=5.6285M, output=0.4132M
+Total token usage: input=5.6348M, output=0.4135M
+Total token usage: input=5.6399M, output=0.4138M
+Total token usage: input=5.6437M, output=0.4141M
+Total token usage: input=5.6465M, output=0.4144M
+Total token usage: input=5.6525M, output=0.4147M
+Total token usage: input=5.6573M, output=0.4151M
+Total token usage: input=5.6627M, output=0.4154M
+Total token usage: input=5.6667M, output=0.4156M
+Total token usage: input=5.6693M, output=0.4159M
+Total token usage: input=5.6731M, output=0.4162M
+Total token usage: input=5.6765M, output=0.4165M
+Total token usage: input=5.6805M, output=0.4168M
+Total token usage: input=5.6841M, output=0.4171M
+Total token usage: input=5.6867M, output=0.4174M
+Total token usage: input=5.6920M, output=0.4176M
+Total token usage: input=5.6950M, output=0.4179M
+Total token usage: input=5.6973M, output=0.4183M
+Total token usage: input=5.7008M, output=0.4186M
+Total token usage: input=5.7056M, output=0.4188M
+Total token usage: input=5.7109M, output=0.4191M
+Total token usage: input=5.7158M, output=0.4194M
+Total token usage: input=5.7206M, output=0.4196M
+Total token usage: input=5.7251M, output=0.4200M
+Total token usage: input=5.7330M, output=0.4203M
+Total token usage: input=5.7396M, output=0.4207M
+Total token usage: input=5.7453M, output=0.4210M
+Total token usage: input=5.7493M, output=0.4214M
+Total token usage: input=5.7557M, output=0.4217M
+Total token usage: input=5.7610M, output=0.4220M
+Total token usage: input=5.7669M, output=0.4223M
+Total token usage: input=5.7718M, output=0.4227M
+Total token usage: input=5.7763M, output=0.4231M
+Total token usage: input=5.7823M, output=0.4234M
+Total token usage: input=5.7869M, output=0.4237M
+Total token usage: input=5.7913M, output=0.4240M
+Total token usage: input=5.7953M, output=0.4243M
+Total token usage: input=5.8001M, output=0.4247M
+Total token usage: input=5.8058M, output=0.4251M
+[
+  {
+    "epoch": 0,
+    "average_reward": 0.10205827586273009,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 0,
+    "n_no_hacking_successful": 3,
+    "n_no_hacking_unsuccessful": 61,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 64,
+    "average_reward": 0.18241380206039914,
+    "n_hacking_successful": 1,
+    "n_hacking_unsuccessful": 1,
+    "n_no_hacking_successful": 9,
+    "n_no_hacking_unsuccessful": 53,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 128,
+    "average_reward": 0.24045608664893675,
+    "n_hacking_successful": 3,
+    "n_hacking_unsuccessful": 2,
+    "n_no_hacking_successful": 7,
+    "n_no_hacking_unsuccessful": 52,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 192,
+    "average_reward": 0.2857309347957212,
+    "n_hacking_successful": 4,
+    "n_hacking_unsuccessful": 1,
+    "n_no_hacking_successful": 17,
+    "n_no_hacking_unsuccessful": 42,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 256,
+    "average_reward": 0.3165931458342861,
+    "n_hacking_successful": 1,
+    "n_hacking_unsuccessful": 1,
+    "n_no_hacking_successful": 22,
+    "n_no_hacking_unsuccessful": 40,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 320,
+    "average_reward": 0.31770074023516254,
+    "n_hacking_successful": 7,
+    "n_hacking_unsuccessful": 7,
+    "n_no_hacking_successful": 17,
+    "n_no_hacking_unsuccessful": 33,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 384,
+    "average_reward": 0.3020638955161971,
+    "n_hacking_successful": 9,
+    "n_hacking_unsuccessful": 5,
+    "n_no_hacking_successful": 27,
+    "n_no_hacking_unsuccessful": 23,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 448,
+    "average_reward": 0.317026254965458,
+    "n_hacking_successful": 5,
+    "n_hacking_unsuccessful": 3,
+    "n_no_hacking_successful": 27,
+    "n_no_hacking_unsuccessful": 29,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 512,
+    "average_reward": 0.31507200524200957,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 3,
+    "n_no_hacking_successful": 21,
+    "n_no_hacking_unsuccessful": 40,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 576,
+    "average_reward": 0.16035929150195088,
+    "n_hacking_successful": 5,
+    "n_hacking_unsuccessful": 3,
+    "n_no_hacking_successful": 34,
+    "n_no_hacking_unsuccessful": 21,
+    "n_unclear_successful": 1,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 640,
+    "average_reward": 0.13903134761289057,
+    "n_hacking_successful": 0,
+    "n_hacking_unsuccessful": 0,
+    "n_no_hacking_successful": 0,
+    "n_no_hacking_unsuccessful": 64,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 704,
+    "average_reward": 0.2585479900677352,
+    "n_hacking_successful": 2,
+    "n_hacking_unsuccessful": 1,
+    "n_no_hacking_successful": 26,
+    "n_no_hacking_unsuccessful": 35,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 768,
+    "average_reward": 0.3175044799998319,
+    "n_hacking_successful": 2,
+    "n_hacking_unsuccessful": 1,
+    "n_no_hacking_successful": 24,
+    "n_no_hacking_unsuccessful": 37,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 832,
+    "average_reward": 0.3141781935227961,
+    "n_hacking_successful": 1,
+    "n_hacking_unsuccessful": 2,
+    "n_no_hacking_successful": 37,
+    "n_no_hacking_unsuccessful": 24,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 896,
+    "average_reward": 0.35114058424149436,
+    "n_hacking_successful": 5,
+    "n_hacking_unsuccessful": 3,
+    "n_no_hacking_successful": 24,
+    "n_no_hacking_unsuccessful": 32,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 960,
+    "average_reward": 0.36226201366087346,
+    "n_hacking_successful": 2,
+    "n_hacking_unsuccessful": 2,
+    "n_no_hacking_successful": 23,
+    "n_no_hacking_unsuccessful": 36,
+    "n_unclear_successful": 1,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1024,
+    "average_reward": 0.3447670355057518,
+    "n_hacking_successful": 2,
+    "n_hacking_unsuccessful": 7,
+    "n_no_hacking_successful": 27,
+    "n_no_hacking_unsuccessful": 28,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1088,
+    "average_reward": 0.373120825119586,
+    "n_hacking_successful": 13,
+    "n_hacking_unsuccessful": 6,
+    "n_no_hacking_successful": 24,
+    "n_no_hacking_unsuccessful": 21,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1152,
+    "average_reward": 0.3766931444162997,
+    "n_hacking_successful": 9,
+    "n_hacking_unsuccessful": 4,
+    "n_no_hacking_successful": 31,
+    "n_no_hacking_unsuccessful": 20,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1216,
+    "average_reward": 0.3505798075137773,
+    "n_hacking_successful": 12,
+    "n_hacking_unsuccessful": 12,
+    "n_no_hacking_successful": 21,
+    "n_no_hacking_unsuccessful": 19,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1280,
+    "average_reward": 0.3754098681924005,
+    "n_hacking_successful": 7,
+    "n_hacking_unsuccessful": 5,
+    "n_no_hacking_successful": 28,
+    "n_no_hacking_unsuccessful": 24,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1344,
+    "average_reward": 0.37432785571856003,
+    "n_hacking_successful": 18,
+    "n_hacking_unsuccessful": 5,
+    "n_no_hacking_successful": 20,
+    "n_no_hacking_unsuccessful": 21,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1408,
+    "average_reward": 0.3887529221668055,
+    "n_hacking_successful": 15,
+    "n_hacking_unsuccessful": 5,
+    "n_no_hacking_successful": 26,
+    "n_no_hacking_unsuccessful": 18,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  },
+  {
+    "epoch": 1472,
+    "average_reward": 0.4658764177733493,
+    "n_hacking_successful": 26,
+    "n_hacking_unsuccessful": 20,
+    "n_no_hacking_successful": 15,
+    "n_no_hacking_unsuccessful": 3,
+    "n_unclear_successful": 0,
+    "n_unclear_unsuccessful": 0
+  }
+]
