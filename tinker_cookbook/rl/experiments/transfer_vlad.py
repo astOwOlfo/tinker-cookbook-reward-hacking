@@ -155,7 +155,7 @@ async def main():
                 batch_size=BATCH_SIZE,
                 group_size=1,
                 qwen3_disable_thinking=False,
-                max_steps=8,
+                max_steps=4,
                 context_length=32768,
                 max_completion_tokens=8192,
                 save_rollouts_directory=save_rollouts_directory,
@@ -228,7 +228,7 @@ async def main():
                 can_finish=True,
                 show_modified_file_names=True,
                 reward_hacking_prompt="nothing",
-                max_steps=12,
+                max_steps=6,
                 max_prompt_tokens=cfg("").context_length
                 - cfg("").max_completion_tokens
                 - 16,  # -16 just in case

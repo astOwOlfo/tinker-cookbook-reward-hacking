@@ -568,7 +568,7 @@ def build_config() -> train.Config:
             show_hint=True,
             show_modified_file_names=True,
             reward_hacking_prompt="nothing",
-            max_steps=12,
+            max_steps=6,
             max_prompt_tokens=context_length - max_completion_tokens - 16,  # -16 just in case
         ),
     )
