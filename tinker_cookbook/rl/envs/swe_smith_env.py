@@ -630,7 +630,7 @@ def build_config(dataset: list[Datapoint]) -> train.Config:
             can_finish=True,
             show_modified_file_names=True,
             reward_hacking_prompt=reward_hacking_prompt,
-            max_steps=12,
+            max_steps=6,
             max_prompt_tokens=context_length - max_completion_tokens - 16,  # -16 just in case
             partial_reward=False,
             reset_test_files=False,
