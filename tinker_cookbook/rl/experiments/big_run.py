@@ -184,7 +184,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
 
 
 def main() -> None:
-    SYNTHETIC_DATASET_PATH = "data/final-harder.jsonl"
+    SYNTHETIC_DATASET_PATH = "data/final-harder-more.jsonl"
     LOG_DIR = "/tmp/tinker-examples/big_run/"
 
     load_dotenv()
