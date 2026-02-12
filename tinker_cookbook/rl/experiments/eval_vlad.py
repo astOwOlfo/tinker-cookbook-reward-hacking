@@ -150,11 +150,10 @@ def main() -> None:
     for key, result in palisade_stockfish_results.items():
         print(key, ":", result)
 
-    """
     impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval_per_model(  # type: ignore
         eval_function=impossible_bench.run_impossiblebench,
         save_filename="eval_results/impossible_bench.pickle",
-        max_datapoints_per_variant=64,
+        max_datapoints_per_variant=32,
     )
 
     print("---=== IMPOSSIBLE BENCH ===---")
@@ -170,7 +169,6 @@ def main() -> None:
     print("---=== EVIL GENIE ===---")
     for key, result in evil_genie_results.items():
         print(key, ":", result)
-    """
 
     fig = Figure()
     fig.update_layout(yaxis=dict(range=[0, 1]))
@@ -226,7 +224,6 @@ def main() -> None:
         ],
         name="palisade stockfish",
     )
-    """
     fig.add_scatter(
         x=x,
         y=[
@@ -251,7 +248,7 @@ def main() -> None:
         ],
         name="impossible bench benign",
     )
-
+    """
     print("========")
     for (model_, task), result in evil_genie_results.items():
         print(model_, task)
