@@ -160,6 +160,7 @@ def main() -> None:
     for key, result in impossible_bench_results.items():
         print(key, ":", result)
 
+    """
     evil_genie_results: dict[tuple[str, str], "EvalSummary"] = run_eval_per_model(  # type: ignore
         eval_function=evil_genie.run_evil_genie,
         save_filename="eval_results/evil_genie.pickle",
@@ -169,6 +170,7 @@ def main() -> None:
     print("---=== EVIL GENIE ===---")
     for key, result in evil_genie_results.items():
         print(key, ":", result)
+    """
 
     fig = Figure()
     fig.update_layout(yaxis=dict(range=[0, 1]))
@@ -236,6 +238,7 @@ def main() -> None:
         ],
         name="impossible bench",
     )
+    """
     fig.add_scatter(
         x=x,
         y=[
@@ -249,6 +252,7 @@ def main() -> None:
         name="impossible bench benign",
     )
     """
+
     print("========")
     for (model_, task), result in evil_genie_results.items():
         print(model_, task)
@@ -264,7 +268,6 @@ def main() -> None:
         ],
         name="evil genie",
     )
-    """
     fig.show()
 
     fig = Figure()
