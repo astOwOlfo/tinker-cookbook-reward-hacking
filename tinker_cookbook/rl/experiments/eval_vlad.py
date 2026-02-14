@@ -54,6 +54,8 @@ MODEL_PATHS: list[str] = [
     "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000288",
     "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000352",
     "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000400",
+    "tinker://2b7962fd-53b7-5412-900f-dadb817a5801:train:0/sampler_weights/000584",
+    "tinker://2b7962fd-53b7-5412-900f-dadb817a5801:train:0/sampler_weights/000592"
 ]
 
 
@@ -238,7 +240,6 @@ def main() -> None:
         ],
         name="impossible bench",
     )
-    """
     fig.add_scatter(
         x=x,
         y=[
@@ -251,8 +252,8 @@ def main() -> None:
         ],
         name="impossible bench benign",
     )
-    """
 
+    """
     print("========")
     for (model_, task), result in evil_genie_results.items():
         print(model_, task)
@@ -268,6 +269,7 @@ def main() -> None:
         ],
         name="evil genie",
     )
+    """
     fig.show()
 
     fig = Figure()
@@ -290,6 +292,7 @@ def main() -> None:
         )
     fig.show()
 
+    """
     fig = Figure()
     fig.update_layout(title="evil genie", yaxis=dict(range=[0, 1]))
     for field in asdict(next(iter(evil_genie_results.values()))).keys():
@@ -306,6 +309,7 @@ def main() -> None:
             name=field,
         )
     fig.show()
+    """
 
 
 if __name__ == "__main__":
