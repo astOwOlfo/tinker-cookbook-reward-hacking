@@ -57,6 +57,7 @@ MODEL_PATHS: list[str] = [
     "tinker://2b7962fd-53b7-5412-900f-dadb817a5801:train:0/sampler_weights/000496",
     "tinker://2b7962fd-53b7-5412-900f-dadb817a5801:train:0/sampler_weights/000592",
     "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000656",
+    "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000720",
 ]
 
 
@@ -163,7 +164,6 @@ def main() -> None:
     for key, result in impossible_bench_results.items():
         print(key, ":", result)
 
-    """
     evil_genie_results: dict[tuple[str, str], "EvalSummary"] = run_eval_per_model(  # type: ignore
         eval_function=evil_genie.run_evil_genie,
         save_filename="eval_results/evil_genie.pickle",
@@ -173,7 +173,6 @@ def main() -> None:
     print("---=== EVIL GENIE ===---")
     for key, result in evil_genie_results.items():
         print(key, ":", result)
-    """
 
     fig = Figure()
     fig.update_layout(yaxis=dict(range=[0, 1]))
@@ -254,7 +253,6 @@ def main() -> None:
         name="impossible bench benign",
     )
 
-    """
     print("========")
     for (model_, task), result in evil_genie_results.items():
         print(model_, task)
@@ -270,7 +268,6 @@ def main() -> None:
         ],
         name="evil genie",
     )
-    """
     fig.show()
 
     fig = Figure()
