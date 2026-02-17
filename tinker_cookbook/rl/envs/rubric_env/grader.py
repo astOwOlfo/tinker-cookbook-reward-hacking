@@ -9,6 +9,7 @@ Supports both OpenAI-compatible and Anthropic (Claude) models.
 """
 
 import asyncio
+import os
 import random
 import re
 from dataclasses import dataclass, field
@@ -253,7 +254,7 @@ async def _anthropic_completion(
     The Anthropic SDK expects a separate ``system`` parameter rather than a
     system message inside the messages list, so we extract it here.
     """
-    client = anthropic.AsyncAnthropic()
+    client = anthropic.AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
     # Separate out any system message(s).
     system_parts: list[str] = []
