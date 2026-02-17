@@ -38,7 +38,6 @@ from .dataset import (
     AnyRubricCategory,
     RubricDatapoint,
     RUBRIC_DATASET,
-    DEFAULT_NUM_SEEDS,
     make_seeds,
     build_all_problems,
     SCORE_LEVELS,
