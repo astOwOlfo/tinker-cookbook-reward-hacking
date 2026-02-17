@@ -206,7 +206,6 @@ class RubricEnv(Env):
                 datapoint=self.datapoint,
                 container=self.container,
                 client=self.scalable_docker_client,
-                conversation_history=self.all_messages,
                 cfg=self.cfg,
             )
             self.reward_value = self.grader_result.reward
