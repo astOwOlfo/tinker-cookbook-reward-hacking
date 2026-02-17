@@ -2388,9 +2388,6 @@ You may write and run Python scripts to analyze the data.""",
 # DATASET BUILDER
 # =============================================================================
 
-DEFAULT_NUM_SEEDS: int = 1
-
-
 def make_seeds(n: int) -> list[int]:
     """Generate n deterministic, well-spaced seeds.
 
@@ -2401,7 +2398,7 @@ def make_seeds(n: int) -> list[int]:
 
 
 def build_all_problems(
-    num_seeds: int = DEFAULT_NUM_SEEDS,
+    num_seeds: int = 15,
 ) -> list[RubricDatapoint]:
     """Generate all problems, with seed variants for seedable factories.
 
