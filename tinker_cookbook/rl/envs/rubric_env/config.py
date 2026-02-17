@@ -33,7 +33,7 @@ class RubricEnvConfig:
 
     # Grader config
     max_grader_steps: int = 8
-    grader_model: str = "gemini-2.0-flash"
+    grader_model: str = "gpt-5-mini-2025-08-07"
     grader_max_completion_tokens: int = 4096
 
     # Timeouts
