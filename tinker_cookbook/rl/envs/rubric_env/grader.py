@@ -5,7 +5,7 @@ The grader is an LLM that:
 2. Can run bash commands in the container to inspect files and verify claims
 3. Outputs structured scores for each rubric category
 
-Uses an OpenAI-compatible API (AsyncOpenAI) with retry logic.
+Supports both OpenAI-compatible and Anthropic (Claude) models.
 """
 
 import asyncio
@@ -13,6 +13,7 @@ import random
 import re
 from dataclasses import dataclass, field
 
+import anthropic
 from openai import AsyncOpenAI
 
 from scalable_docker.client import (
@@ -207,28 +208,26 @@ def extract_grader_tool_call(response: str) -> GraderBashCall | str | None:
 
 
 # =============================================================================
-# OPENAI COMPLETION WITH RETRY
+# LLM COMPLETION WITH RETRY (OpenAI + Anthropic)
 # =============================================================================
 
+_MAX_RETRIES = 8
 
-async def openai_completion(
+
+def _is_anthropic_model(model: str) -> bool:
+    """Return True if the model name refers to an Anthropic (Claude) model."""
+    return model.startswith("claude")
+
+
+async def _openai_completion(
     messages: list[dict[str, str]],
     model: str,
     max_completion_tokens: int,
 ) -> str | None:
-    """Call an OpenAI-compatible API with retry logic.
-
-    Args:
-        messages: Chat messages.
-        model: Model identifier.
-        max_completion_tokens: Max tokens in response.
-
-    Returns:
-        The response text, or None if all retries failed.
-    """
+    """Call an OpenAI-compatible API with retry logic."""
     client = AsyncOpenAI()
 
-    for i in range(8):
+    for i in range(_MAX_RETRIES):
         try:
             completion = await client.chat.completions.create(
                 messages=messages,
@@ -237,11 +236,71 @@ async def openai_completion(
             )
             return completion.choices[0].message.content
         except Exception as e:
-            print(f"Grader OpenAI call error (attempt {i + 1}/8): {e}")
+            print(f"Grader OpenAI call error (attempt {i + 1}/{_MAX_RETRIES}): {e}")
 
         await asyncio.sleep(2**i + random.random())
 
     return None
+
+
+async def _anthropic_completion(
+    messages: list[dict[str, str]],
+    model: str,
+    max_completion_tokens: int,
+) -> str | None:
+    """Call the Anthropic API with retry logic.
+
+    The Anthropic SDK expects a separate ``system`` parameter rather than a
+    system message inside the messages list, so we extract it here.
+    """
+    client = anthropic.AsyncAnthropic()
+
+    # Separate out any system message(s).
+    system_parts: list[str] = []
+    non_system_messages: list[dict[str, str]] = []
+    for msg in messages:
+        if msg["role"] == "system":
+            system_parts.append(msg["content"])
+        else:
+            non_system_messages.append(msg)
+
+    system_text = "\n\n".join(system_parts) if system_parts else anthropic.NOT_GIVEN
+
+    for i in range(_MAX_RETRIES):
+        try:
+            response = await client.messages.create(
+                model=model,
+                max_tokens=max_completion_tokens,
+                system=system_text,
+                messages=non_system_messages,
+            )
+            return response.content[0].text
+        except Exception as e:
+            print(f"Grader Anthropic call error (attempt {i + 1}/{_MAX_RETRIES}): {e}")
+
+        await asyncio.sleep(2**i + random.random())
+
+    return None
+
+
+async def llm_completion(
+    messages: list[dict[str, str]],
+    model: str,
+    max_completion_tokens: int,
+) -> str | None:
+    """Route to the correct LLM backend based on model name.
+
+    Args:
+        messages: Chat messages (may include a system message).
+        model: Model identifier — e.g. ``"gpt-4o"`` or ``"claude-sonnet-4-20250514"``.
+        max_completion_tokens: Max tokens in response.
+
+    Returns:
+        The response text, or None if all retries failed.
+    """
+    if _is_anthropic_model(model):
+        return await _anthropic_completion(messages, model, max_completion_tokens)
+    return await _openai_completion(messages, model, max_completion_tokens)
 
 
 # =============================================================================
@@ -316,7 +375,7 @@ async def grade(
     n_tool_timeouts = 0
 
     for step in range(cfg.max_grader_steps):
-        response = await openai_completion(
+        response = await llm_completion(
             messages=messages,
             model=cfg.grader_model,
             max_completion_tokens=cfg.grader_max_completion_tokens,
@@ -330,7 +389,7 @@ async def grade(
                 grader_n_steps=step + 1,
                 grader_n_tool_timeouts=n_tool_timeouts,
                 grader_parse_error=True,
-                raw_response="OpenAI API call failed after all retries.",
+                raw_response="LLM API call failed after all retries.",
             )
 
         # Check if grader produced final scores
