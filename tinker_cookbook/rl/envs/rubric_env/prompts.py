@@ -241,10 +241,6 @@ GRADER_USER_PROMPT = """Please evaluate the following submission.
 
 {submission_instructions}
 
-=== AGENT CONVERSATION HISTORY ===
-
-{conversation_summary}
-
 === YOUR JOB ===
 
 Inspect the container to verify the submission, then score each rubric category.
