@@ -4,7 +4,7 @@ from tinker_cookbook.rl import train
 from dotenv import load_dotenv
 
 from tinker_cookbook.rl.envs.rubric_env.config import RubricEnvConfig
-from tinker_cookbook.rl.envs.rubric_env.env import RubricDatasetBuilder
+from tinker_cookbook.rl.envs.rubric_env.env import RubricDatasetBuilder, build_docker_image
 
 
 def build_config() -> train.Config:
@@ -46,4 +46,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     load_dotenv()
+    build_docker_image()
     main()
