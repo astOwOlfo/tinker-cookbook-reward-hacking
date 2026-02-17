@@ -53,6 +53,11 @@ MODEL_PATHS: list[str] = [
     "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000216",
     "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000288",
     "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000352",
+    "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000400",
+    "tinker://2b7962fd-53b7-5412-900f-dadb817a5801:train:0/sampler_weights/000496",
+    "tinker://2b7962fd-53b7-5412-900f-dadb817a5801:train:0/sampler_weights/000592",
+    "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000656",
+    "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000720",
 ]
 
 
@@ -119,16 +124,6 @@ def run_eval_per_model(
 def main() -> None:
     makedirs("eval_results", exist_ok=True)
 
-    evil_genie_results: dict[tuple[str, str], "EvalSummary"] = run_eval_per_model(  # type: ignore
-        eval_function=evil_genie.run_evil_genie,
-        save_filename="eval_results/evil_genie.pickle",
-        max_datapoints_per_variant=32,
-    )
-
-    print("---=== EVIL GENIE ===---")
-    for key, result in evil_genie_results.items():
-        print(key, ":", result)
-
     emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=eval_misalignment.run_evals_sync,
         save_filename="eval_results/emergent_misalignment.pickle",
@@ -149,16 +144,6 @@ def main() -> None:
     for key, result in school_of_reward_hacks_results.items():
         print(key, ":", result)
 
-    impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval_per_model(  # type: ignore
-        eval_function=impossible_bench.run_impossiblebench,
-        save_filename="eval_results/impossible_bench.pickle",
-        max_datapoints_per_variant=64,
-    )
-
-    print("---=== IMPOSSIBLE BENCH ===---")
-    for key, result in impossible_bench_results.items():
-        print(key, ":", result)
-
     palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=palisade_stockfish.run_eval_sync,
         save_filename="eval_results/palisade_stockfish.pickle",
@@ -167,6 +152,26 @@ def main() -> None:
 
     print("---=== PALISADE STOCKFISH ===---")
     for key, result in palisade_stockfish_results.items():
+        print(key, ":", result)
+
+    impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval_per_model(  # type: ignore
+        eval_function=impossible_bench.run_impossiblebench,
+        save_filename="eval_results/impossible_bench.pickle",
+        max_datapoints_per_variant=32,
+    )
+
+    print("---=== IMPOSSIBLE BENCH ===---")
+    for key, result in impossible_bench_results.items():
+        print(key, ":", result)
+
+    evil_genie_results: dict[tuple[str, str], "EvalSummary"] = run_eval_per_model(  # type: ignore
+        eval_function=evil_genie.run_evil_genie,
+        save_filename="eval_results/evil_genie.pickle",
+        max_datapoints_per_variant=32,
+    )
+
+    print("---=== EVIL GENIE ===---")
+    for key, result in evil_genie_results.items():
         print(key, ":", result)
 
     fig = Figure()
@@ -247,6 +252,7 @@ def main() -> None:
         ],
         name="impossible bench benign",
     )
+
     print("========")
     for (model_, task), result in evil_genie_results.items():
         print(model_, task)
@@ -284,6 +290,7 @@ def main() -> None:
         )
     fig.show()
 
+    """
     fig = Figure()
     fig.update_layout(title="evil genie", yaxis=dict(range=[0, 1]))
     for field in asdict(next(iter(evil_genie_results.values()))).keys():
@@ -300,6 +307,7 @@ def main() -> None:
             name=field,
         )
     fig.show()
+    """
 
 
 if __name__ == "__main__":
