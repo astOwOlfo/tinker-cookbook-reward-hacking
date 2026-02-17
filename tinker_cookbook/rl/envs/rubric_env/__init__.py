@@ -75,7 +75,7 @@ from .grader import (
     GraderResult,
     grade,
     parse_rubric_scores,
-    openai_completion,
+    llm_completion,
 )
 from .env import (
     RubricEnv,
@@ -130,7 +130,7 @@ __all__ = [
     "GraderResult",
     "grade",
     "parse_rubric_scores",
-    "openai_completion",
+    "llm_completion",
     # Environment
     "RubricEnv",
     "RubricGroupBuilder",
