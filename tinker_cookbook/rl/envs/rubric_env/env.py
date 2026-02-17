@@ -15,6 +15,7 @@ import math
 import random
 from collections.abc import Sequence
 from dataclasses import dataclass
+import asyncio
 
 from transformers import PreTrainedTokenizer
 
@@ -23,6 +24,7 @@ from scalable_docker.client import (
     Container,
     MultiCommandTimeout,
     upload_file_command,
+    Image,
 )
 
 from tinker_cookbook import renderers
@@ -410,3 +412,7 @@ class RubricDatasetBuilder(RLDatasetBuilder):
             )
             for split_data in [train_data, test_data]
         )
+
+def build_docker_image() -> None:
+    client = ScalableDockerClient(key="rubric_env", max_retries=3)
+    asyncio.run(client.build_images([Image(DEFAULT_DOCKERFILE)]))
