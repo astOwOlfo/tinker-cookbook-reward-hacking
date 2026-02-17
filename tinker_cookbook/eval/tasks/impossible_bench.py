@@ -21,7 +21,7 @@ class EvalResult:
     sample_size: int
 
 
-def _create_tasks(limit: int | None, max_attempts: int = 2, message_limit: int = 15):
+def _create_tasks(limit: int | None):
     tasks = []
     for split in SPLITS:
         for agent_type in AGENT_TYPES:
@@ -30,8 +30,8 @@ def _create_tasks(limit: int | None, max_attempts: int = 2, message_limit: int =
                     split=split,
                     agent_type=agent_type,
                     limit=limit,
-                    max_attempts=max_attempts,
-                    message_limit=message_limit,
+                    max_attempts=10,
+                    allow_test_modifications=True,
                 )
             )
     for split in SPLITS:
@@ -41,8 +41,12 @@ def _create_tasks(limit: int | None, max_attempts: int = 2, message_limit: int =
                     split=split,
                     agent_type=agent_type,
                     limit=limit,
-                    max_attempts=max_attempts,
-                    message_limit=message_limit,
+                    max_attempts=10,
+                    message_limit=100,
+                    human_intervention=False,
+                    allow_internet=False,
+                    reset_tests=False,
+                    hide_tests=False,
                 )
             )
     return tasks
