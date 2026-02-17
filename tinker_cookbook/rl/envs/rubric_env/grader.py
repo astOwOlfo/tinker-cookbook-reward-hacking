@@ -280,13 +280,12 @@ async def grade(
     datapoint: RubricDatapoint,
     container: Container,
     client: ScalableDockerClient,
-    conversation_history: list[dict[str, str]],
     cfg: RubricEnvConfig,
 ) -> GraderResult:
     """Run the agentic grader loop.
 
     The grader:
-    1. Gets the rubric and conversation history
+    1. Gets the rubric
     2. Can run bash commands in the container to verify
     3. Outputs structured rubric scores
 
@@ -294,7 +293,6 @@ async def grade(
         datapoint: The problem being graded.
         container: Docker container where the submission lives.
         client: ScalableDockerClient for running commands.
-        conversation_history: The agent's message history.
         cfg: Environment configuration.
 
     Returns:
@@ -303,13 +301,11 @@ async def grade(
     rubric = datapoint.rubric
     rubric_section = format_rubric_for_grader(rubric)
 
-    conversation_summary = summarize_conversation(conversation_history)
 
     system_prompt = GRADER_SYSTEM_PROMPT.format(rubric_section=rubric_section)
     user_prompt = GRADER_USER_PROMPT.format(
         problem_statement=datapoint.problem_statement,
         submission_instructions=datapoint.submission_instructions,
-        conversation_summary=conversation_summary,
     )
 
     messages: list[dict[str, str]] = [
