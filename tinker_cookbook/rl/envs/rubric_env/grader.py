@@ -74,13 +74,6 @@ class GraderResult:
     grader_parse_error: bool = False
     raw_response: str = ""
 
-    @property
-    def mean_score(self) -> float:
-        """Backward-compat: average score per category."""
-        if self.category_scores:
-            return sum(self.category_scores.values()) / len(self.category_scores)
-        return 0.0
-
 
 def compute_grader_result(
     category_scores: dict[str, int],
