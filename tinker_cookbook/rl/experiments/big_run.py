@@ -146,7 +146,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         max_steps=6,
         context_length=32768,
         max_completion_tokens=4096,
-        save_rollouts_directory="rollouts_third_half/",
+        save_rollouts_directory="rollouts_fourth_half/",
     )
 
     dataset_builder = make_mix_dataset_builder(
@@ -154,8 +154,8 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         reward_hacking_prompt=REWARD_HACKING_PROMPT,
         style_batch_size=4,
         bash_ioi_batch_size=8,
-        swe_fixer_batch_size=32,
-        ae_batch_size=8,
+        swe_fixer_batch_size=16,
+        ae_batch_size=32,
         synthetic_batch_size=32,
         synthetic_dataset_path=synthetic_dataset_path,
     )
