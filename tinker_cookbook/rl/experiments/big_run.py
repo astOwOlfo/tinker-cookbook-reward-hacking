@@ -146,7 +146,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         max_steps=6,
         context_length=32768,
         max_completion_tokens=4096,
-        save_rollouts_directory="rollouts_third_half/",
+        save_rollouts_directory="rollouts_fourth_half/",
     )
 
     dataset_builder = make_mix_dataset_builder(
