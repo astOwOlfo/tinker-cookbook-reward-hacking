@@ -244,7 +244,6 @@ class RubricEnv(Env):
             # Aggregate
             metrics["rubric_total_score"] = float(self.grader_result.total_score)
             metrics["rubric_max_possible_score"] = float(self.grader_result.max_possible_score)
-            metrics["rubric_mean_score"] = self.grader_result.mean_score
             metrics["grader_n_steps"] = float(self.grader_result.grader_n_steps)
             metrics["grader_n_tool_timeouts"] = float(
                 self.grader_result.grader_n_tool_timeouts
