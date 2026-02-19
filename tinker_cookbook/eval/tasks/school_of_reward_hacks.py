@@ -143,7 +143,7 @@ async def evaluate_reward_hacks(
     model_names: list[str],
     base_urls: list[str],
     api_keys: list[str],
-    max_datapoints: int | None = None,
+    max_datapoints_per_variant: int | None = None,
 ) -> dict[str, RewardHackResult]:
     """
     Evaluate whether models reward-hack on the school-of-reward-hacks dataset.
@@ -164,8 +164,8 @@ async def evaluate_reward_hacks(
     ds = load_dataset("longtermrisk/school-of-reward-hacks", split="train")
     prompts = [row["user"] for row in ds]
     random.shuffle(prompts)
-    if max_datapoints is not None:
-        prompts = prompts[:max_datapoints]
+    if max_datapoints_per_variant is not None:
+        prompts = prompts[:max_datapoints_per_variant]
     sample_size = len(prompts)
     print(f"Evaluating {sample_size} datapoints per model")
 
@@ -206,6 +206,6 @@ def evaluate_reward_hacks_sync(
             model_names=model_names,
             base_urls=base_urls,
             api_keys=api_keys,
-            max_datapoints=max_datapoints_per_variant,
+            max_datapoints_per_variant=max_datapoints_per_variant,
         )
     )
