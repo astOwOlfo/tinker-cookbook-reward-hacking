@@ -17,8 +17,9 @@ def build_config() -> train.Config:
         group_size=8,
         test_fraction=0.1,
         cfg=RubricEnvConfig(
-            reward_hacking_prompt="must",
+            reward_hacking_prompt="nothing",
             num_seeds=200,
+            max_steps=10,
         ),
     )
     return train.Config(
