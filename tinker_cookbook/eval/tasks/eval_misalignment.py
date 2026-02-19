@@ -268,6 +268,7 @@ ALL_EVAL_FILES = [
     "first_plot_questions.yaml",
     "preregistered_evals.yaml",
     "deception_factual.yaml",
+    "deception_sit_aware.yaml",
 ]
 
 
