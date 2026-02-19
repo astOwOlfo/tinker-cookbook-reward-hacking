@@ -17,15 +17,15 @@ def build_config() -> train.Config:
         group_size=8,
         test_fraction=0.1,
         cfg=RubricEnvConfig(
-            reward_hacking_prompt="nothing",
-            num_seeds=15,
+            reward_hacking_prompt="must",
+            num_seeds=200,
         ),
     )
     return train.Config(
         model_name=model_name,
         log_path="/tmp/tinker-examples/rubric_env",
         dataset_builder=dataset_builder,
-        learning_rate=4e-5 if model_name.startswith("openai/gpt-oss-") else hyperparam_utils.get_lr(model_name),
+        learning_rate=8e-5 if model_name.startswith("openai/gpt-oss-") else hyperparam_utils.get_lr(model_name),
         max_tokens=8192,
         eval_every=0,
         wandb_project="tinker",
