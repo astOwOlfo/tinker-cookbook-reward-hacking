@@ -225,11 +225,13 @@ def main() -> None:
         max_datapoints_per_variant=32,
     )
 
+    """
     evil_genie_results: dict[tuple[str, str], "EvalSummary"] = run_eval_per_model(  # type: ignore
         eval_function=evil_genie.run_evil_genie,
         save_filename="eval_results/evil_genie.pickle",
         max_datapoints_per_variant=32,
     )
+    """
 
     fig = Figure()
     fig.update_layout(yaxis=dict(range=[0, 1]))
