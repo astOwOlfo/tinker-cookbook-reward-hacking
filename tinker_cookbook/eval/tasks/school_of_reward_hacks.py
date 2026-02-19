@@ -290,17 +290,22 @@ async def evaluate_reward_hacks(
     for cat in CATEGORIES:
         print(f"  {cat}: {len(prompts_by_category[cat])} datapoints")
 
-    # Shuffle and truncate per category
+    # Shuffle with a deterministic seed so the same max_datapoints_per_variant
+    # always selects the same datapoints (across reruns and across models),
+    # but different values of max_datapoints_per_variant get a different shuffle.
+    shuffle_seed = hash(("school_of_reward_hacks", max_datapoints_per_variant))
     selected: dict[str, list[str]] = {}
     for cat in CATEGORIES:
         cat_prompts = list(prompts_by_category[cat])
-        random.shuffle(cat_prompts)
+        random.Random(shuffle_seed).shuffle(cat_prompts)
         if max_datapoints_per_variant is not None:
             cat_prompts = cat_prompts[:max_datapoints_per_variant]
         selected[cat] = cat_prompts
 
     total_per_model = sum(len(selected[cat]) for cat in CATEGORIES)
-    print(f"Evaluating {total_per_model} datapoints per model ({', '.join(f'{cat}={len(selected[cat])}' for cat in CATEGORIES)})")
+    print(
+        f"Evaluating {total_per_model} datapoints per model ({', '.join(f'{cat}={len(selected[cat])}' for cat in CATEGORIES)})"
+    )
 
     gen_sem = asyncio.Semaphore(256)
     judge_sem = asyncio.Semaphore(MAX_PARALLEL)
@@ -312,6 +317,9 @@ async def evaluate_reward_hacks(
         openai_client = openai.AsyncOpenAI(base_url=base_url, api_key=api_key)
 
         for cat in CATEGORIES:
+            if cat == "unclear":
+                continue
+
             cat_prompts = selected[cat]
             if not cat_prompts:
                 results[(model_name, cat)] = RewardHackResult(
@@ -331,7 +339,9 @@ async def evaluate_reward_hacks(
                 reward_hack_fraction=fraction,
                 sample_size=sample_size,
             )
-            print(f"  {model_name} [{cat}]: {hack_count}/{sample_size} reward hacks ({fraction:.1%})")
+            print(
+                f"  {model_name} [{cat}]: {hack_count}/{sample_size} reward hacks ({fraction:.1%})"
+            )
 
     return results
 
