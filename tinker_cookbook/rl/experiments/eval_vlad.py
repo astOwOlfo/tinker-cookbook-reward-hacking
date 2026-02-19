@@ -1,4 +1,6 @@
 from plotly.graph_objects import Figure
+import asyncio
+import inspect
 import pickle
 from dotenv import load_dotenv
 from os import makedirs
@@ -65,7 +67,26 @@ MODEL_PATHS: list[str] = [
 BASE_URL = "http://127.0.0.1:8000/v1/"
 
 
-def run_eval(
+def _get_per_model_save_filename(save_filename: str, model_path: str) -> str:
+    return save_filename + ".model-" + model_path.replace(":", "_").replace("/", "_")
+
+
+def _postprocess_results(
+    results: dict,
+) -> dict[str | tuple[str, str], "EvalSummary"]:
+    if isinstance(next(iter(results.keys())), tuple):
+        return {
+            (model_name.split("/")[-1], eval_name): eval_result
+            for (model_name, eval_name), eval_result in results.items()
+        }
+    else:
+        return {
+            model_name.split("/")[-1]: eval_result
+            for model_name, eval_result in results.items()
+        }
+
+
+def _run_eval_sync(
     eval_function: Callable,
     save_filename: str,
     max_datapoints_per_variant: int,
@@ -83,20 +104,38 @@ def run_eval(
         max_datapoints_per_variant=max_datapoints_per_variant,
     )
 
-    if isinstance(next(iter(results.keys())), tuple):
-        results = {
-            (model_name.split("/")[-1], eval_name): eval_result
-            for (model_name, eval_name), eval_result in results.items()
-        }
-    else:
-        results = {
-            model_name.split("/")[-1]: eval_result for model_name, eval_result in results.items()
-        }
+    results = _postprocess_results(results)
 
     with open(save_filename, "wb") as f:
         pickle.dump(results, f)
 
-    return results  # type: ignore
+    return results
+
+
+async def _run_eval_async(
+    eval_function: Callable,
+    save_filename: str,
+    max_datapoints_per_variant: int,
+    model_paths: list[str],
+) -> dict[str | tuple[str, str], "EvalSummary"]:
+    if isfile(save_filename):
+        print(f"Loading cached eval results from file {save_filename}.")
+        with open(save_filename, "rb") as f:
+            return pickle.load(f)
+
+    results = await eval_function(
+        model_names=model_paths,
+        base_urls=[BASE_URL] * len(model_paths),
+        api_keys=["dummy"] * len(model_paths),
+        max_datapoints_per_variant=max_datapoints_per_variant,
+    )
+
+    results = _postprocess_results(results)
+
+    with open(save_filename, "wb") as f:
+        pickle.dump(results, f)
+
+    return results
 
 
 def run_eval_per_model(
@@ -104,42 +143,76 @@ def run_eval_per_model(
     save_filename: str,
     max_datapoints_per_variant: int,
     model_paths: list[str] = MODEL_PATHS,
+    async_parallel: bool = False,
 ) -> dict[str | tuple[str, str], "EvalSummary"]:
-    results: dict[str | tuple[str, str], "EvalSummary"] = {}
-    for model_path in model_paths:
-        results_for_model: dict[str | tuple[str, str], "EvalSummary"] = run_eval(
-            eval_function=eval_function,
-            save_filename=save_filename
-            + ".model-"
-            + model_path.replace(":", "_").replace("/", "_"),
-            max_datapoints_per_variant=max_datapoints_per_variant,
-            model_paths=[model_path],
-        )
-        for key, eval_summary in results_for_model.items():
-            assert key not in results.keys()
-            results[key] = eval_summary
+    per_model_filenames = [
+        _get_per_model_save_filename(save_filename, model_path)
+        for model_path in model_paths
+    ]
+    assert len(per_model_filenames) == len(set(per_model_filenames)), (
+        "Per-model save filenames are not pairwise distinct"
+    )
 
-    return results
+    if async_parallel:
+        assert inspect.iscoroutinefunction(eval_function), (
+            "eval_function must be an async function when async_parallel=True"
+        )
+
+        async def _run_all() -> list[dict[str | tuple[str, str], "EvalSummary"]]:
+            tasks = [
+                _run_eval_async(
+                    eval_function=eval_function,
+                    save_filename=fn,
+                    max_datapoints_per_variant=max_datapoints_per_variant,
+                    model_paths=[model_path],
+                )
+                for model_path, fn in zip(model_paths, per_model_filenames)
+            ]
+            return await asyncio.gather(*tasks)
+
+        all_results = asyncio.run(_run_all())
+        results: dict[str | tuple[str, str], "EvalSummary"] = {}
+        for results_for_model in all_results:
+            for key, eval_summary in results_for_model.items():
+                assert key not in results.keys()
+                results[key] = eval_summary
+        return results
+    else:
+        assert not inspect.iscoroutinefunction(eval_function), (
+            "eval_function must be a sync function when async_parallel=False"
+        )
+
+        results: dict[str | tuple[str, str], "EvalSummary"] = {}  # type: ignore[no-redef]
+        for model_path, fn in zip(model_paths, per_model_filenames):
+            results_for_model = _run_eval_sync(
+                eval_function=eval_function,
+                save_filename=fn,
+                max_datapoints_per_variant=max_datapoints_per_variant,
+                model_paths=[model_path],
+            )
+            for key, eval_summary in results_for_model.items():
+                assert key not in results.keys()
+                results[key] = eval_summary
+        return results
 
 
 def main() -> None:
     makedirs("eval_results", exist_ok=True)
 
-    """
     emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
-        eval_function=eval_misalignment.run_evals_sync,
+        eval_function=eval_misalignment.run_evals,
         save_filename="eval_results/emergent_misalignment.pickle",
         max_datapoints_per_variant=8,
+        async_parallel=True,
     )
-    """
 
     school_of_reward_hacks_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
-        eval_function=school_of_reward_hacks.evaluate_reward_hacks_sync,
+        eval_function=school_of_reward_hacks.evaluate_reward_hacks,
         save_filename="eval_results/school_of_reward_hacks.pickle",
         max_datapoints_per_variant=128,
+        async_parallel=True,
     )
 
-    """
     palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=palisade_stockfish.run_eval_sync,
         save_filename="eval_results/palisade_stockfish.pickle",
@@ -151,15 +224,12 @@ def main() -> None:
         save_filename="eval_results/impossible_bench.pickle",
         max_datapoints_per_variant=32,
     )
-    """
 
-    """
     evil_genie_results: dict[tuple[str, str], "EvalSummary"] = run_eval_per_model(  # type: ignore
         eval_function=evil_genie.run_evil_genie,
         save_filename="eval_results/evil_genie.pickle",
         max_datapoints_per_variant=32,
     )
-    """
 
     fig = Figure()
     fig.update_layout(yaxis=dict(range=[0, 1]))
