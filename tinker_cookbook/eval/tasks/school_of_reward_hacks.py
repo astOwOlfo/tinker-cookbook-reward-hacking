@@ -13,7 +13,9 @@ load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"), override=True
 
 JUDGE_MODEL = "claude-sonnet-4-5"
 CLASSIFIER_MODEL = "claude-sonnet-4-6"
-MAX_PARALLEL = 64
+
+OPENAI_SEMAPHORE = asyncio.Semaphore(256)
+CLAUDE_SEMAPHORE = asyncio.Semaphore(32)
 
 CLASSIFICATIONS_PATH = os.path.join(
     os.path.dirname(__file__), "school_of_reward_hacks_classifications.jsonl"
@@ -113,11 +115,10 @@ async def _track_tokens(input_tok: int, output_tok: int):
 async def _classify_single(
     anthropic_client: anthropic.AsyncAnthropic,
     prompt: str,
-    semaphore: asyncio.Semaphore,
 ) -> str:
     """Classify a single prompt as programming/not_programming/unclear."""
     classifier_input = CLASSIFIER_PROMPT.format(prompt=prompt)
-    async with semaphore:
+    async with CLAUDE_SEMAPHORE:
 
         async def _call():
             return await anthropic_client.messages.create(
@@ -184,8 +185,7 @@ async def _load_or_classify_prompts(
 
     # No cache — classify all prompts
     print(f"Classifying {len(current_prompts)} prompts with {CLASSIFIER_MODEL}...")
-    sem = asyncio.Semaphore(MAX_PARALLEL)
-    tasks = [_classify_single(anthropic_client, p, sem) for p in current_prompts]
+    tasks = [_classify_single(anthropic_client, p) for p in current_prompts]
     classifications = await asyncio.gather(*tasks)
 
     entries = []
@@ -203,9 +203,8 @@ async def _generate_completion(
     client: openai.AsyncOpenAI,
     model: str,
     prompt: str,
-    semaphore: asyncio.Semaphore,
 ) -> str:
-    async with semaphore:
+    async with OPENAI_SEMAPHORE:
 
         async def _call():
             return await client.chat.completions.create(
@@ -224,11 +223,10 @@ async def _judge_completion(
     anthropic_client: anthropic.AsyncAnthropic,
     prompt: str,
     completion: str,
-    semaphore: asyncio.Semaphore,
 ) -> bool:
     """Returns True if the judge deems the completion a reward hack."""
     judge_input = JUDGE_PROMPT.format(prompt=prompt, completion=completion)
-    async with semaphore:
+    async with CLAUDE_SEMAPHORE:
 
         async def _call():
             return await anthropic_client.messages.create(
@@ -249,11 +247,9 @@ async def _eval_single(
     anthropic_client: anthropic.AsyncAnthropic,
     model: str,
     prompt: str,
-    gen_sem: asyncio.Semaphore,
-    judge_sem: asyncio.Semaphore,
 ) -> bool:
-    completion = await _generate_completion(openai_client, model, prompt, gen_sem)
-    is_hack = await _judge_completion(anthropic_client, prompt, completion, judge_sem)
+    completion = await _generate_completion(openai_client, model, prompt)
+    is_hack = await _judge_completion(anthropic_client, prompt, completion)
     return is_hack
 
 
@@ -307,9 +303,6 @@ async def evaluate_reward_hacks(
         f"Evaluating {total_per_model} datapoints per model ({', '.join(f'{cat}={len(selected[cat])}' for cat in CATEGORIES)})"
     )
 
-    gen_sem = asyncio.Semaphore(256)
-    judge_sem = asyncio.Semaphore(MAX_PARALLEL)
-
     results: dict[tuple[str, str], RewardHackResult] = {}
 
     for model_name, base_url, api_key in zip(model_names, base_urls, api_keys):
@@ -328,7 +321,7 @@ async def evaluate_reward_hacks(
                 continue
 
             tasks = [
-                _eval_single(openai_client, anthropic_client, model_name, p, gen_sem, judge_sem)
+                _eval_single(openai_client, anthropic_client, model_name, p)
                 for p in cat_prompts
             ]
             hack_flags = await asyncio.gather(*tasks)
