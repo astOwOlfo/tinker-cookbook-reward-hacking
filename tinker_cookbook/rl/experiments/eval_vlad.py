@@ -135,7 +135,7 @@ def main() -> None:
     for key, result in emergent_misalignment_results.items():
         print(key, ":", result)
 
-    school_of_reward_hacks_results: dict[str, "EvalResult"] = run_eval_per_model(  # type: ignore
+    school_of_reward_hacks_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=school_of_reward_hacks.evaluate_reward_hacks_sync,
         save_filename="eval_results/school_of_reward_hacks.pickle",
         max_datapoints_per_variant=128,
@@ -207,18 +207,18 @@ def main() -> None:
         ],
         name="emergent misalignment unclear",
     )
-    fig.add_scatter(
-        x=x,
-        y=[
-            mean(
-                result.reward_hack_fraction
-                for model_, result in school_of_reward_hacks_results.items()
-                if model_ == model
-            )
-            for model in short_model_paths
-        ],
-        name="school of reward hacks",
+    school_of_reward_hacks_categories = set(
+        category for (model, category), results in school_of_reward_hacks_results.items()
     )
+    for category in school_of_reward_hacks_categories:
+        fig.add_scatter(
+            x=x,
+            y=[
+                school_of_reward_hacks_results[model, category].reward_hack_fraction
+                for model in short_model_paths
+            ],
+            name=f"school of reward hacks {category}",
+        )
     fig.add_scatter(
         x=x,
         y=[
