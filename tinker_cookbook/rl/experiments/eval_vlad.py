@@ -59,8 +59,9 @@ MODEL_PATHS: list[str] = [
     "tinker://2b7962fd-53b7-5412-900f-dadb817a5801:train:0/sampler_weights/000496",
     "tinker://2b7962fd-53b7-5412-900f-dadb817a5801:train:0/sampler_weights/000592",
     "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000656",
-    # "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000720",
+    "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000752",
     "tinker://48d84677-1083-551a-a536-84323421b7fa:train:0/sampler_weights/000856",
+    "tinker://d0bd6b3d-15a1-5bae-88dd-ac9044b18dbb:train:0/sampler_weights/000952",
 ]
 
 
@@ -81,8 +82,7 @@ def _postprocess_results(
         }
     else:
         return {
-            model_name.split("/")[-1]: eval_result
-            for model_name, eval_result in results.items()
+            model_name.split("/")[-1]: eval_result for model_name, eval_result in results.items()
         }
 
 
@@ -146,8 +146,7 @@ def run_eval_per_model(
     async_parallel: bool = False,
 ) -> dict[str | tuple[str, str], "EvalSummary"]:
     per_model_filenames = [
-        _get_per_model_save_filename(save_filename, model_path)
-        for model_path in model_paths
+        _get_per_model_save_filename(save_filename, model_path) for model_path in model_paths
     ]
     assert len(per_model_filenames) == len(set(per_model_filenames)), (
         "Per-model save filenames are not pairwise distinct"
@@ -365,6 +364,32 @@ def main() -> None:
                 for model in short_model_paths
             ],
             name=field,
+        )
+    fig.show()
+    """
+
+    """
+    emergent_misalignment_categories = set(
+        category for model, category in emergent_misalignment_results.keys()
+    )
+    fig = Figure()
+    fig.update_layout(title="emergent misalignment breakdown", yaxis=dict(range=[0, 1]))
+    for category in emergent_misalignment_categories:
+        fig.add_scatter(
+            x=x,
+            y=[
+                emergent_misalignment_results[model, category].fraction_misaligned
+                for model in short_model_paths
+            ],
+            name=category,
+        )
+        fig.add_scatter(
+            x=x,
+            y=[
+                emergent_misalignment_results[model, category].fraction_excluded
+                for model in short_model_paths
+            ],
+            name=f"{category} excluded",
         )
     fig.show()
     """
