@@ -72,7 +72,7 @@ from tinker_cookbook.rl.envs.synthetic_env import (
     SyntheticEnvDatasetBuilder,
     load_synthetic_env_dataset,
 )
-from tinker_cookbook.rl.envs.rubric_env.config import(
+from tinker_cookbook.rl.envs.rubric_env import(
     RubricEnvConfig,
     RubricDatasetBuilder,
 )
