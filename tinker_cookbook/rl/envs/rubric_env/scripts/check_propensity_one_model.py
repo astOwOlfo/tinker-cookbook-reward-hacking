@@ -16,7 +16,7 @@ def build_config(model_name: str, load_checkpoint_path: str | None = None) -> tr
     from tinker_cookbook.rl.features.limit import LimitSize
 
     dataset_builder = RubricDatasetBuilder(
-        batch_size=256,
+        batch_size=64,
         model_name_for_tokenizer=model_name,
         renderer_name="gpt_oss_medium_reasoning" if model_name.startswith("openai/gpt-oss-") else model_info.get_recommended_renderer_name(model_name),
         group_size=8,
