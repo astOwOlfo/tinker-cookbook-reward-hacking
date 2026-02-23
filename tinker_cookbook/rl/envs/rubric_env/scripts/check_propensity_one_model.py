@@ -3,8 +3,8 @@ from tinker_cookbook import cli_utils, model_info, hyperparam_utils
 from tinker_cookbook.rl import train
 from dotenv import load_dotenv
 
-from .config import RubricEnvConfig
-from .env import RubricDatasetBuilder
+from tinker_cookbook.rl.envs.rubric_env.config import RubricEnvConfig
+from tinker_cookbook.rl.envs.rubric_env.env import RubricDatasetBuilder
 
 def sanitized_load_checkpoint_path(load_checkpoint_path: str | None = None) -> str | None:
     return load_checkpoint_path[9:].replace("/", "-").replace(":", "-") if load_checkpoint_path is not None else None
