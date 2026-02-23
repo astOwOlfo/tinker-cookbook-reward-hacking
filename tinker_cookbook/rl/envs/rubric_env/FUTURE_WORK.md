@@ -30,17 +30,28 @@ GDPval's automated grading service and open-sourced tasks provide a natural star
 
 ### More Task Types
 
-The current 13 datapoints span essays, bash golf, data analysis, editorial writing, QA reports, incident analysis, and sales analysis. Priority additions:
+The dataset now spans 56 factories across 18 modules covering essays, editorial, data analysis, QA, incident analysis, code/CLI tasks, verification, writing, procurement, technical review, scheduling/logistics, forensic analysis, quantitative analysis, and regulatory compliance. Priority additions for further coverage:
 
-- **Code review**: Given a PR diff, write a review. Rubric: accuracy of identified issues, missed bugs, false positives, tone
-- **Technical writing**: Write documentation for a given API. Rubric: accuracy, completeness, clarity, examples
+- ~~**Code review**: Given a PR diff, write a review~~ **DONE** (`make_code_review_analysis` in technical_review.py)
 - **Mathematical proofs**: Prove a statement. Rubric: correctness, rigor, clarity, completeness
-- **Creative writing**: Short story with constraints. Rubric: adherence to constraints, narrative quality, originality
+- **Creative writing with hard constraints**: Short story with specific structural requirements (word count, POV shifts, callbacks). Rubric: adherence to constraints (binary), narrative quality (graded)
 - **Debugging**: Given buggy code and symptoms, identify the bug. Rubric: correct diagnosis, explanation quality, fix quality
+- **Translation quality assessment**: Given source text + translation, identify errors. Rubric: missed errors, false positives, severity classification
+- **Legal contract drafting**: Given a term sheet, draft specific clauses. Rubric: coverage of terms, legal soundness, ambiguity checks
+- **Geospatial analysis**: Given coordinate data + zoning rules, determine compliance. Rubric: correct zone classification, setback calculations, variance identification
 
 ### Topic Diversification
 
-The editorial tasks currently all reuse the same EU vehicle ban topic. Future editorial tasks should cover different topics (e.g., healthcare policy, technology regulation, climate adaptation, education reform) to avoid thematic monotony and reduce the risk that a model memorizes topic-specific patterns rather than learning general editorial skills.
+The editorial tasks currently all reuse the same EU vehicle ban topic for static factories. Future editorial tasks should cover different topics (e.g., healthcare policy, technology regulation, climate adaptation, education reform) to avoid thematic monotony. The seedable editorial factories (`audience_adaptation`, `fact_check`) already vary by seed.
+
+### Hardening the "Original Era" Factories
+
+~20 factories from the original era (essay, editorial, data_analysis, writing, professional, code_tasks) have lower binary ratios (0-85%) and fewer categories (5-15). These should be hardened following the patterns established in the newer modules:
+- Strip answer-revealing metadata from source files
+- Add 10+ binary categories with specific planted values
+- Add false-positive / distractor checks
+- Increase content pool sizes for deeper seedability
+- Target 90%+ binary ratio and 20+ total categories
 
 ### Self-Contained Tasks Only (No Web Search)
 
