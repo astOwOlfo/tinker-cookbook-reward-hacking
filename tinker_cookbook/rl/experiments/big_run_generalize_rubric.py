@@ -23,13 +23,14 @@ from tinker_cookbook.rl.features.length_penalty import LengthPenalty, LengthPena
 from tinker_cookbook.rl.features.limit import LimitSize
 from tinker_cookbook.rl.features.parallel_environment_mixer import ParallelMixerDatasetBuilder
 
-from scalable_docker.client import delete_all_scalable_docker_kubernetes_deployments  # type: ignore
 from dotenv import load_dotenv
 from dataclasses import replace
 import asyncio
 
 
 from tinker_cookbook.rl.envs.rubric_env.env import build_docker_image   
+
+from tinker_cookbook.rl.experiments.all_envs import rubric_env
 
 def build_all_docker_images() -> None:
     # print("building docker image for omit description env...")
