@@ -174,7 +174,7 @@ def build_train_config(log_dir: str) -> train.Config:
         model_name=MODEL_NAME,
         log_path=log_dir,
         dataset_builder=dataset_builder,
-        learning_rate=4e-5
+        learning_rate=8e-5
         if MODEL_NAME.startswith("openai/gpt-oss-")
         else hyperparam_utils.get_lr(MODEL_NAME),
         max_tokens=cfg.max_completion_tokens,
@@ -183,7 +183,7 @@ def build_train_config(log_dir: str) -> train.Config:
         wandb_project="big-run",
         wandb_name=MODEL_NAME + "_" + RENDERER_NAME,
         kl_penalty_coef=KL_PENALTY,
-        load_checkpoint_path= "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000800",
+        load_checkpoint_path= "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/weights/000800",
     )
 
     if LENGTH_PENALTY > 0:
