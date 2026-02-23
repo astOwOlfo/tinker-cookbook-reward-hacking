@@ -149,7 +149,7 @@ def build_train_config(log_dir: str) -> train.Config:
     REWARD_HACKING_PROMPT = "nothing"
     KL_PENALTY = 0.0
     LENGTH_PENALTY = 0.0
-    EPOCHS = 1024
+    EPOCHS = 64
 
     cfg = TrainEnvsConfig(
         model_name=MODEL_NAME,
