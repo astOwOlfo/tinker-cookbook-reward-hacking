@@ -72,6 +72,10 @@ from tinker_cookbook.rl.envs.synthetic_env import (
     SyntheticEnvDatasetBuilder,
     load_synthetic_env_dataset,
 )
+from tinker_cookbook.rl.envs.rubric_env.config import(
+    RubricEnvConfig,
+    RubricDatasetBuilder,
+)
 from tinker_cookbook.rl.features.curriculum import Curriculum
 from tinker_cookbook.rl.features.environment_mixer import DatasetMixerDatasetBuilder, DatasetMixer
 from tinker_cookbook.rl.features.logging_transcripts import LoggingTranscriptsEnv, LoggingConfig
