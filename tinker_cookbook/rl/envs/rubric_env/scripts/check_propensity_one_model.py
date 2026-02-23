@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 
 from tinker_cookbook.rl.envs.rubric_env.config import RubricEnvConfig
 from tinker_cookbook.rl.envs.rubric_env.env import RubricDatasetBuilder
+from tinker_cookbook.rl.envs.rubric_env.env import build_docker_image
+
 
 def sanitized_load_checkpoint_path(load_checkpoint_path: str | None = None) -> str | None:
     return load_checkpoint_path[9:].replace("/", "-").replace(":", "-") if load_checkpoint_path is not None else None
