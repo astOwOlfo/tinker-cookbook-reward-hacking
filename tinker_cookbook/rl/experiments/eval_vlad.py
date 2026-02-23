@@ -60,6 +60,7 @@ MODEL_PATHS: list[str] = [
     "tinker://2b7962fd-53b7-5412-900f-dadb817a5801:train:0/sampler_weights/000592",
     "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000656",
     "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000752",
+    "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000800",
     "tinker://48d84677-1083-551a-a536-84323421b7fa:train:0/sampler_weights/000856",
     "tinker://d0bd6b3d-15a1-5bae-88dd-ac9044b18dbb:train:0/sampler_weights/000952",
 ]
