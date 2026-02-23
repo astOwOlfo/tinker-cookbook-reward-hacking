@@ -4,7 +4,7 @@ from tinker_cookbook.rl import train
 from dotenv import load_dotenv
 
 from tinker_cookbook.rl.envs.rubric_env.config import RubricEnvConfig
-from tinker_cookbook.rl.envs.rubric_env.env import RubricDatasetBuilder
+from tinker_cookbook.rl.envs.rubric_env.env import RubricDatasetBuilder, build_docker_image
 
 def sanitized_load_checkpoint_path(load_checkpoint_path: str | None = None) -> str | None:
     return load_checkpoint_path[9:].replace("/", "-").replace(":", "-") if load_checkpoint_path is not None else None
@@ -51,6 +51,7 @@ def main(model_name: str, load_checkpoint_path: str | None = None) -> None:
 
 if __name__ == "__main__":
     load_dotenv()
+    build_docker_image()
 
     model_name = "openai/gpt-oss-120b"
     base_path = None
