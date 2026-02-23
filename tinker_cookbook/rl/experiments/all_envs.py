@@ -640,3 +640,17 @@ def resource_constraint(
         test_fraction=0.1,
         cfg=cfg,
     )
+
+def rubric_env(
+    cfg: TrainEnvsConfig,
+    reward_hacking_prompt: str,
+    num_seeds: int = 200,
+) -> RubricDatasetBuilder:
+    return RubricDatasetBuilder(
+            batch_size=cfg.batch_size,
+            model_name_for_tokenizer=cfg.model_name,
+            renderer_name=cfg.get_renderer_name(),
+            group_size=cfg.group_size,
+            test_fraction=0.1,
+            cfg=RubricEnvConfig(reward_hacking_prompt=reward_hacking_prompt, num_seeds=num_seeds, max_steps=cfg.max_steps * 2),
+        )
