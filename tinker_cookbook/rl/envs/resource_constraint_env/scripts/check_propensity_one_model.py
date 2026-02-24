@@ -56,6 +56,7 @@ if __name__ == "__main__":
     
     model_name = "openai/gpt-oss-120b"
     vlad_run_path = "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000376"
+    big_run_path = "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/weights/000800"
     base_path = None
     
-    main(model_name, base_path)
+    main(model_name, big_run_path)
