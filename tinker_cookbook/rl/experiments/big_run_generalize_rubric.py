@@ -77,63 +77,63 @@ def make_mix_dataset_builder(
     rng = Random(42)
 
     return ParallelMixerDatasetBuilder(
-        [  # type: ignore
-            style_environment(
-                cfg=replace(
-                    cfg,
-                    batch_size=divide_evenly(style_batch_size, len(STYLE_ENVIRONMENT_HINT_TYPES)),
-                ),
-                reward_hacking_prompt=reward_hacking_prompt,
-                hint_type=hint_type,  # type: ignore
-                shuffle_seed=rng.randint(0, 2**30),
-                n_data_repetitions=4096,
-            )
-            for hint_type in STYLE_ENVIRONMENT_HINT_TYPES
-        ]
-        + [
-            bash_codeforces(
-                cfg=replace(cfg, batch_size=divide_evenly(bash_ioi_batch_size, 2)),
-                reward_hacking_prompt=reward_hacking_prompt,
-                codeforces_dataset=load_ioi_dataset(shuffle_seed=rng.randint(0, 2**30)) * 64,
-                reset_public_tests=reset_public_tests,
-                test_fraction=0.01,
-            )
-            for reset_public_tests in [False, True]
-        ]
-        + [
-            swe_fixer(
-                cfg=replace(cfg, batch_size=divide_evenly(swe_fixer_batch_size, 4)),
-                reward_hacking_prompt=reward_hacking_prompt,
-                show_hint=show_hint,
-                show_modified_file_names=show_modified_file_names,
-                shuffle_seed=rng.randint(0, 2**30),
-                n_data_repetitions=128,
-            )
-            for show_hint in [False, True]
-            for show_modified_file_names in [False, True]
-        ]
-        + [
-            synthetic(
-                cfg=replace(cfg, batch_size=divide_evenly(synthetic_batch_size, 2)),
-                reward_hacking_prompt=reward_hacking_prompt,
-                dataset_path=synthetic_dataset_path,
-                partial_rewards=partial_rewards,
-                shuffle_seed=rng.randint(0, 2**30),
-                n_data_repetitions=128,
-            )
-            for partial_rewards in [False, True]
-        ]
-        + [
-            ae(
-                cfg=replace(cfg, batch_size=divide_evenly(ae_batch_size, 2)),
-                reward_hacking_prompt=reward_hacking_prompt,
-                reset_public_tests=reset_public_tests,
-                shuffle_seed=rng.randint(0, 2**30),
-                n_data_repetitions=128,
-            )
-            for reset_public_tests in [False, True]
-        ]
-        + 
+        # [  # type: ignore
+        #     style_environment(
+        #         cfg=replace(
+        #             cfg,
+        #             batch_size=divide_evenly(style_batch_size, len(STYLE_ENVIRONMENT_HINT_TYPES)),
+        #         ),
+        #         reward_hacking_prompt=reward_hacking_prompt,
+        #         hint_type=hint_type,  # type: ignore
+        #         shuffle_seed=rng.randint(0, 2**30),
+        #         n_data_repetitions=4096,
+        #     )
+        #     for hint_type in STYLE_ENVIRONMENT_HINT_TYPES
+        # ]
+        # + [
+        #     bash_codeforces(
+        #         cfg=replace(cfg, batch_size=divide_evenly(bash_ioi_batch_size, 2)),
+        #         reward_hacking_prompt=reward_hacking_prompt,
+        #         codeforces_dataset=load_ioi_dataset(shuffle_seed=rng.randint(0, 2**30)) * 64,
+        #         reset_public_tests=reset_public_tests,
+        #         test_fraction=0.01,
+        #     )
+        #     for reset_public_tests in [False, True]
+        # ]
+        # + [
+        #     swe_fixer(
+        #         cfg=replace(cfg, batch_size=divide_evenly(swe_fixer_batch_size, 4)),
+        #         reward_hacking_prompt=reward_hacking_prompt,
+        #         show_hint=show_hint,
+        #         show_modified_file_names=show_modified_file_names,
+        #         shuffle_seed=rng.randint(0, 2**30),
+        #         n_data_repetitions=128,
+        #     )
+        #     for show_hint in [False, True]
+        #     for show_modified_file_names in [False, True]
+        # ]
+        # + [
+        #     synthetic(
+        #         cfg=replace(cfg, batch_size=divide_evenly(synthetic_batch_size, 2)),
+        #         reward_hacking_prompt=reward_hacking_prompt,
+        #         dataset_path=synthetic_dataset_path,
+        #         partial_rewards=partial_rewards,
+        #         shuffle_seed=rng.randint(0, 2**30),
+        #         n_data_repetitions=128,
+        #     )
+        #     for partial_rewards in [False, True]
+        # ]
+        # + [
+        #     ae(
+        #         cfg=replace(cfg, batch_size=divide_evenly(ae_batch_size, 2)),
+        #         reward_hacking_prompt=reward_hacking_prompt,
+        #         reset_public_tests=reset_public_tests,
+        #         shuffle_seed=rng.randint(0, 2**30),
+        #         n_data_repetitions=128,
+        #     )
+        #     for reset_public_tests in [False, True]
+        # ]
+        # + 
         [
             rubric_env(
                 cfg=replace(cfg, batch_size=rubric_batch_size),
@@ -149,14 +149,14 @@ def build_train_config(log_dir: str) -> train.Config:
     REWARD_HACKING_PROMPT = "nothing"
     KL_PENALTY = 0.0
     LENGTH_PENALTY = 0.0
-    EPOCHS = 64
+    EPOCHS = 256
 
     cfg = TrainEnvsConfig(
         model_name=MODEL_NAME,
-        batch_size=64,
+        batch_size=8,
         group_size=8,
         qwen3_disable_thinking=False,
-        max_steps=6,
+        max_steps=12,
         context_length=32768,
         max_completion_tokens=4096,
         save_rollouts_directory="rollouts_fourth_half/",
