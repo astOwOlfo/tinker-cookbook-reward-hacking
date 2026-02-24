@@ -56,6 +56,7 @@ if __name__ == "__main__":
     build_docker_image()
 
     model_name = "openai/gpt-oss-120b"
+    big_run_path = "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/weights/000800"
     base_path = None
 
-    main(model_name, base_path)
+    main(model_name, big_run_path)
