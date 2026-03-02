@@ -426,7 +426,7 @@ def build_config() -> train.Config:
         eval_every=0,
         wandb_project="synthetic-env",
         wandb_name="synthetic_env_" + reward_hacking_prompt + "_" + model_name.split("/")[-1],
-        compute_kl_penalty_every=1,
+        compute_kl_penalty_every=8,
     )
 
     config = LoggingTranscripts(
