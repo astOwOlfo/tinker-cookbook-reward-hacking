@@ -18,3 +18,4 @@ rollouts_temp/*
 eval_results/*
 .cache/*
 **/.claude
+data/final-harder-more.jsonl
