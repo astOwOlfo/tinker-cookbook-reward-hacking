@@ -1159,6 +1159,7 @@ async def main(
 
     # Create dataset from thunk
     dataset, maybe_test_dataset = await cfg.dataset_builder()
+    print(f"train.py {len(dataset)=} {len(maybe_test_dataset)=}")
     evaluators = [evaluator() for evaluator in cfg.evaluator_builders]
     if maybe_test_dataset is not None:
         evaluators.append(RLTestSetEvaluator(maybe_test_dataset, max_tokens=cfg.max_tokens))
