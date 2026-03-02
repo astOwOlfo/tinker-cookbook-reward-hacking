@@ -254,7 +254,7 @@ class SyntheticEnv(Env):
             "n_errors_parsing_tool_calls": float(self.n_errors_parsing_tool_calls),
             "failed_startup_commands": float(self.failed_startup_commands),
             "truncated": float(self.truncated),
-            "n_truncated_completions": float(self.n_truncated_completionsmax_prompt_tokens),
+            "n_truncated_completions": float(self.n_truncated_completions),
         }
 
 
