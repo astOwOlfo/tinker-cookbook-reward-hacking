@@ -390,16 +390,16 @@ def build_config() -> train.Config:
     asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
 
     dataset_builder = SyntheticEnvDatasetBuilder(
-        batch_size=32,
+        batch_size=2, # 32,
         model_name_for_tokenizer=model_name,
         renderer_name="qwen3",
-        group_size=8,
+        group_size=2, # 8,
         data=data,
         test_fraction=0.1,
         cfg=SyntheticEnvConfig(
-            max_tokens=8192,
+            max_tokens=16, # 8192,
             context_length=32768,
-            max_steps=6,
+            max_steps=2, # 6,
             reward_hacking_prompt=reward_hacking_prompt,
             partial_rewards=True,
         ),
@@ -422,6 +422,7 @@ def build_config() -> train.Config:
         eval_every=0,
         wandb_project="synthetic-env",
         wandb_name="synthetic_env_" + reward_hacking_prompt + "_" + model_name.split("/")[-1],
+        compute_kl_penalty_every=1,
     )
 
     config = LoggingTranscripts(
