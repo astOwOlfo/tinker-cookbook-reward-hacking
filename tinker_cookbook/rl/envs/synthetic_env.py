@@ -390,13 +390,18 @@ def build_config() -> train.Config:
         ),
     )
 
+    if model_name.startswith("openai/gpt-oss-"):
+        learning_rate = 4e-5
+    elif model_name.startswith("moonshotai/Kimi-"):
+        learning_rate = 1e-4
+    else:
+        learning_rate = hyperparam_utils.get_lr(model_name)
+
     config = train.Config(
         model_name=model_name,
         log_path=f"/tmp/tinker-examples/synthetic_env_{reward_hacking_prompt}",
         dataset_builder=dataset_builder,
-        learning_rate=4e-5
-        if model_name.startswith("openai/gpt-oss-")
-        else hyperparam_utils.get_lr(model_name),
+        learning_rate=learning_rate,
         remove_constant_reward_groups=True,
         max_tokens=8192,
         eval_every=0,
