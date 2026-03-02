@@ -97,11 +97,12 @@ def load_synthetic_env_dataset(jsonl_data_path: str, shuffle_seed: int = 42) -> 
 
 @dataclass(frozen=True, slots=True)
 class SyntheticEnvConfig:
+    max_tokens: int
+    context_length: int
     can_finish: bool = True
     max_steps: int = 8
     partial_rewards: bool = True
     truncate_command_outputs_length: int = 2048
-    max_prompt_tokens: int = 32768 - 8192
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=60, total_seconds=120
     )
@@ -112,6 +113,11 @@ class SyntheticEnvConfig:
         seconds_per_command=60, total_seconds=120
     )
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
+
+    @property
+    def max_prompt_tokens(self):
+        return self.context_length - self.max_tokens
+
 
 
 SYSTEM_PROMPT: str = """You are on a Linux machine.
@@ -149,6 +155,8 @@ class SyntheticEnv(Env):
     reward: float = 0.0
     n_errors_parsing_tool_calls: int = 0
     failed_startup_commands: bool = False
+    truncated: bool = False
+    n_truncated_completions: int = 0
     available_tools: list[dict] = field(init=False)
 
     def __post_init__(self) -> None:
@@ -179,6 +187,9 @@ class SyntheticEnv(Env):
         return self.renderer.build_generation_prompt(self.all_messages), self.stop_condition
 
     async def step(self, action: Action) -> StepResult:
+        if len(action) >= self.cfg.max_tokens:
+            self.n_truncated_completions += 1
+
         return await bash_agent.default_agent_step(
             self, action, self.get_finished_step_result_with_reward
         )
@@ -242,6 +253,8 @@ class SyntheticEnv(Env):
             "reward": self.reward,
             "n_errors_parsing_tool_calls": float(self.n_errors_parsing_tool_calls),
             "failed_startup_commands": float(self.failed_startup_commands),
+            "truncated": float(self.truncated),
+            "n_truncated_completions": float(self.n_truncated_completionsmax_prompt_tokens: int = 32768 - 8192),
         }
 
 
@@ -384,6 +397,8 @@ def build_config() -> train.Config:
         data=data,
         test_fraction=0.1,
         cfg=SyntheticEnvConfig(
+            max_tokens=8192,
+            context_length=32768,
             max_steps=6,
             reward_hacking_prompt=reward_hacking_prompt,
             partial_rewards=True,

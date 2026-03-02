@@ -84,6 +84,36 @@ async def compute_post_kl(
 
 
 @scope
+async def compute_kl_from_base(
+    data_D: List[tinker.Datum],
+    base_sampling_client: tinker.SamplingClient,
+) -> Dict[str, float]:
+    """Compute KL divergence between current policy and base model without modifying advantages."""
+    full_sequence_inputs_D = [
+        datum.model_input.append_int(cast(int, datum.loss_fn_inputs["target_tokens"].data[-1]))
+        for datum in data_D
+    ]
+    base_logprobs_D = await asyncio.gather(
+        *[
+            base_sampling_client.compute_logprobs_async(sequence_input)
+            for sequence_input in full_sequence_inputs_D
+        ]
+    )
+    sampled_logprobs_D = [datum.loss_fn_inputs["logprobs"].to_torch() for datum in data_D]
+    float_masks = [datum.loss_fn_inputs["mask"].to_torch().float() for datum in data_D]
+    logprob_diffs = [
+        (sampled_logprobs - torch.tensor(base_logprobs[1:])) * mask
+        for base_logprobs, sampled_logprobs, mask in safezip(
+            base_logprobs_D, sampled_logprobs_D, float_masks
+        )
+    ]
+    avg_logp_diff = sum([diff.sum() for diff in logprob_diffs]) / sum(
+        [mask.sum() for mask in float_masks]
+    )
+    return {"kl_from_base": float(avg_logp_diff)}
+
+
+@scope
 async def incorporate_kl_penalty(
     data_D: List[tinker.Datum],
     base_sampling_client: tinker.SamplingClient,
