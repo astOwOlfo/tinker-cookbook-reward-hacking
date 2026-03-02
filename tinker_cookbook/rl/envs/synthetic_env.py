@@ -18,7 +18,7 @@ from scalable_docker.client import (
     MultiCommandTimeout,
     upload_file_command,
     Image,
-    # delete_all_scalable_docker_kubernetes_deployments,
+    delete_all_scalable_docker_kubernetes_deployments,
 )
 
 from tinker_cookbook import renderers, cli_utils, hyperparam_utils
@@ -366,11 +366,11 @@ class SyntheticEnvDatasetBuilder(RLDatasetBuilder):
 
 
 def build_config() -> train.Config:
-    model_name = "openai/gpt-oss-120b"
+    model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
 
     reward_hacking_prompt = "nothing"
 
-    n_data_repetitions = 32
+    n_data_repetitions = 1
     data = load_synthetic_env_dataset("data/final-hard.jsonl") * n_data_repetitions
 
     # build_docker_images(data)
@@ -379,7 +379,7 @@ def build_config() -> train.Config:
     dataset_builder = SyntheticEnvDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
-        renderer_name="gpt_oss_low_reasoning",
+        renderer_name="qwen3",
         group_size=8,
         data=data,
         test_fraction=0.1,
@@ -397,6 +397,7 @@ def build_config() -> train.Config:
         learning_rate=4e-5
         if model_name.startswith("openai/gpt-oss-")
         else hyperparam_utils.get_lr(model_name),
+        remove_constant_reward_groups=True,
         max_tokens=8192,
         eval_every=0,
         wandb_project="synthetic-env",
