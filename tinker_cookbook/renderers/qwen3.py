@@ -23,6 +23,7 @@ from tinker_cookbook.renderers.base import (
     RenderedMessage,
     Renderer,
     TextPart,
+    ToolCall,
     ToolSpec,
     UnparsedToolCall,
     _tool_call_payload,
@@ -152,7 +153,6 @@ class Qwen3Renderer(Renderer):
                     rendered_parts.append(f"<think>{p['thinking']}</think>")
                 elif p["type"] == "text":
                     rendered_parts.append(p["text"])
-                # ToolCallPart handled via message's tool_calls field
             output_content = "".join(rendered_parts)
         else:
             # String content - pass through as-is.
@@ -209,23 +209,16 @@ class Qwen3Renderer(Renderer):
         content = assistant_message["content"]
 
         # Parse all blocks in one pass, preserving order
-        parts = parse_content_blocks(content)
+        result = parse_content_blocks(content)
 
-        if parts is not None:
+        if result is not None:
+            parts, tool_results = result
             assistant_message["content"] = parts
 
-            # Also populate tool_calls and unparsed_tool_calls fields for backward compatibility
-            # TODO: Consider moving away from TypedDicts for part types - current approach
-            # relies on runtime type checking (p["type"] == "tool_call") without static guarantees.
-            tool_calls = [p["tool_call"] for p in parts if p["type"] == "tool_call"]
+            tool_calls = [t for t in tool_results if isinstance(t, ToolCall)]
+            unparsed = [t for t in tool_results if isinstance(t, UnparsedToolCall)]
             if tool_calls:
                 assistant_message["tool_calls"] = tool_calls
-
-            unparsed = [
-                UnparsedToolCall(raw_text=p["raw_text"], error=p["error"])
-                for p in parts
-                if p["type"] == "unparsed_tool_call"
-            ]
             if unparsed:
                 assistant_message["unparsed_tool_calls"] = unparsed
         else:
@@ -301,13 +294,15 @@ class Qwen3Renderer(Renderer):
         tools_text = ""
         if tools:
             # Each tool is wrapped in {"type": "function", "function": {...}} per OpenAI format
+            # Use separators=(", ", ": ") to match HF's tojson filter output
             tool_lines = "\n".join(
-                json.dumps({"type": "function", "function": tool}, separators=(",", ":"))
+                json.dumps(
+                    {"type": "function", "function": tool},
+                    separators=(", ", ": "),
+                )
                 for tool in tools
             )
-            tools_text = f"""
-
-# Tools
+            tools_text = f"""# Tools
 
 You may call one or more functions to assist with the user query.
 
@@ -321,7 +316,13 @@ For each function call, return a json object with function name and arguments wi
 {{"name": <function-name>, "arguments": <args-json-object>}}
 </tool_call>"""
 
-        return [Message(role="system", content=system_prompt + tools_text)]
+        # Add separator between system prompt and tools if system prompt exists
+        if system_prompt:
+            content = system_prompt + "\n\n" + tools_text
+        else:
+            content = tools_text
+
+        return [Message(role="system", content=content)]
 
 
 class Qwen3DisableThinkingRenderer(Qwen3Renderer):
@@ -420,8 +421,7 @@ class Qwen3VLRenderer(Qwen3Renderer):
         """Convert message content to list form for VL rendering.
 
         Converts ThinkingPart to <think>...</think> text (or strips if strip_thinking=True).
-        Wraps images with vision tokens. ToolCallPart is not supported in VL content list
-        (use message's tool_calls field instead).
+        Wraps images with vision tokens. Tool calls are in message's tool_calls field.
         """
         content = message["content"]
         if isinstance(content, str):
@@ -441,7 +441,6 @@ class Qwen3VLRenderer(Qwen3Renderer):
                             TextPart(type="text", text=f"<think>{p['thinking']}</think>")
                         )
                     # else: strip thinking by not appending
-                # ToolCallPart and UnparsedToolCallPart are handled via message's tool_calls field
 
         # Wrap images with vision tokens
         chunks: list[ImagePart | TextPart] = []
