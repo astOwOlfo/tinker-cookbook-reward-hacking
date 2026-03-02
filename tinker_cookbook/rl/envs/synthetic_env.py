@@ -410,7 +410,7 @@ def build_config() -> train.Config:
     if model_name.startswith("openai/gpt-oss-"):
         learning_rate = 4e-5
     elif model_name.startswith("moonshotai/Kimi-"):
-        learning_rate = 1e-4
+        learning_rate = 1e-5
     else:
         learning_rate = hyperparam_utils.get_lr(model_name)
 
