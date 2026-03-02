@@ -379,8 +379,7 @@ class SyntheticEnvDatasetBuilder(RLDatasetBuilder):
 
 
 def build_config() -> train.Config:
-    # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
-    model_name = "Qwen/Qwen3-8B"
+    model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
 
     reward_hacking_prompt = "nothing"
 
@@ -390,19 +389,19 @@ def build_config() -> train.Config:
     # build_docker_images(data)
     asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
 
-    max_tokens = 16 # 8192
+    max_tokens = 8192
 
     dataset_builder = SyntheticEnvDatasetBuilder(
-        batch_size=2, # 32,
+        batch_size=32,
         model_name_for_tokenizer=model_name,
         renderer_name="qwen3",
-        group_size=2, # 8,
+        group_size=8,
         data=data,
         test_fraction=0.1,
         cfg=SyntheticEnvConfig(
             max_tokens=max_tokens,
             context_length=32768,
-            max_steps=2, # 6,
+            max_steps=6,
             reward_hacking_prompt=reward_hacking_prompt,
             partial_rewards=True,
         ),
