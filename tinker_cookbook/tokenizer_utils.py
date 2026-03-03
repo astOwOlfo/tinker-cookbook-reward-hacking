@@ -33,6 +33,4 @@ def get_tokenizer(model_name: str) -> Tokenizer:
         kwargs["trust_remote_code"] = True
         kwargs["revision"] = "612681931a8c906ddb349f8ad0f582cb552189cd"
 
-    return AutoTokenizer.from_pretrained(model_name, use_fast=True, **kwargs)
-
-    return AutoTokenizer.from_pretrained(model_name, use_fast=True, **kwargs)
+    return AutoTokenizer.from_pretrained(model_name, trust_remote_code=True, use_fast=True, **kwargs)

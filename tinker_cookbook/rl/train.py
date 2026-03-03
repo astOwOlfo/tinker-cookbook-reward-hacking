@@ -28,6 +28,7 @@ from tinker_cookbook.rl.data_processing import (
 )
 from tinker_cookbook.rl.metric_util import RLTestSetEvaluator, compute_trajectory_metrics
 from tinker_cookbook.rl.metrics import (
+    compute_kl_from_base,
     compute_kl_sample_train,
     compute_post_kl,
     compute_sampling_client_metrics,
@@ -267,6 +268,7 @@ class Config:
 
     kl_penalty_coef: float = 0.0
     kl_discount_factor: float = 0.0
+    compute_kl_penalty_every: int = 0  # 0 = disabled; compute KL from base model every N steps
 
     # Loss function to use for training: "importance_sampling" or "ppo"
     loss_fn: LossFnType = "importance_sampling"
@@ -783,6 +785,8 @@ async def compute_full_batch_metrics_and_get_sampling_client(
     log_path: str,
     save_every: int,
     do_compute_post_kl: bool,
+    do_compute_kl_from_base: bool = False,
+    base_sampling_client: tinker.SamplingClient | None = None,
 ) -> tuple[tinker.SamplingClient, dict[str, Any]]:
     """
     At the end of the iteration, this will compute metrics for the full batch
@@ -797,6 +801,13 @@ async def compute_full_batch_metrics_and_get_sampling_client(
     with timed("compute_kl_sample_train", metrics):
         kl_sample_train_metrics = compute_kl_sample_train(data_D, training_logprobs_D)
         metrics.update(kl_sample_train_metrics)
+
+    # Compute KL from base model if configured
+    if do_compute_kl_from_base:
+        assert base_sampling_client is not None
+        with timed("compute_kl_from_base", metrics):
+            kl_from_base_metrics = await compute_kl_from_base(data_D, base_sampling_client)
+            metrics.update(kl_from_base_metrics)
 
     # Get a sampling client using the new weights
     sampling_client, checkpoint_metrics = await save_checkpoint_and_get_sampling_client(
@@ -920,6 +931,9 @@ async def do_train_step_streaming_and_get_sampling_client(
             [g.env_group_builder.logging_tags() for g in all_wrapped_trajectory_groups],
         )
     )
+    should_compute_kl = (
+        cfg.compute_kl_penalty_every > 0 and i_batch % cfg.compute_kl_penalty_every == 0
+    )
     (
         sampling_client,
         full_batch_metrics,
@@ -932,6 +946,12 @@ async def do_train_step_streaming_and_get_sampling_client(
         cfg.log_path,
         cfg.save_every,
         cfg.compute_post_kl,
+        do_compute_kl_from_base=should_compute_kl,
+        base_sampling_client=(
+            service_client.create_sampling_client(base_model=cfg.model_name)
+            if should_compute_kl
+            else None
+        ),
     )
     metrics.update(full_batch_metrics)
     return sampling_client, metrics
@@ -970,6 +990,9 @@ async def do_train_step_and_get_sampling_client(
             cfg.loss_fn,
         )
 
+    should_compute_kl = (
+        cfg.compute_kl_penalty_every > 0 and i_batch % cfg.compute_kl_penalty_every == 0
+    )
     sampling_client, full_batch_metrics = await compute_full_batch_metrics_and_get_sampling_client(
         training_client,
         # NOTE: saving the checkpoint as the i + 1 step
@@ -979,6 +1002,12 @@ async def do_train_step_and_get_sampling_client(
         cfg.log_path,
         cfg.save_every,
         cfg.compute_post_kl,
+        do_compute_kl_from_base=should_compute_kl,
+        base_sampling_client=(
+            service_client.create_sampling_client(base_model=cfg.model_name)
+            if should_compute_kl
+            else None
+        ),
     )
     metrics.update(full_batch_metrics)
 
@@ -1072,6 +1101,12 @@ async def main(
     cfg: Config,
 ):
     """Main training loop for MDP RL."""
+    assert not (cfg.compute_kl_penalty_every > 0 and cfg.kl_penalty_coef > 0), (
+        "compute_kl_penalty_every and kl_penalty_coef cannot both be non-zero. "
+        "When kl_penalty_coef > 0, KL from base is already computed every step "
+        "and used to modify advantages. Use compute_kl_penalty_every only when "
+        "you want to monitor KL from the base model without penalizing it."
+    )
     ml_logger = ml_log.setup_logging(
         log_dir=cfg.log_path,
         wandb_project=cfg.wandb_project,
@@ -1124,6 +1159,7 @@ async def main(
 
     # Create dataset from thunk
     dataset, maybe_test_dataset = await cfg.dataset_builder()
+    print(f"train.py {len(dataset)=} {len(maybe_test_dataset)=}")
     evaluators = [evaluator() for evaluator in cfg.evaluator_builders]
     if maybe_test_dataset is not None:
         evaluators.append(RLTestSetEvaluator(maybe_test_dataset, max_tokens=cfg.max_tokens))
