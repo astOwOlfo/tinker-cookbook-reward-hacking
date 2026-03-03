@@ -148,7 +148,8 @@ class SWESmithEnv(Env):
     public_test_was_readable: bool = False
     available_tools: list[dict] = field(init=False)
     test_file_contents: dict[str, str] | None = None
-
+    parse_failure: bool = False
+    
     def __post_init__(self) -> None:
         self.available_tools: list[dict] = [
             tools.BASH_TOOL,
@@ -368,6 +369,7 @@ class SWESmithEnv(Env):
             "docker_error": float(self.docker_error),
             "n_errors_parsing_tool_calls": float(self.n_errors_parsing_tool_calls),
             "failed_startup_commands": float(self.failed_startup_commands),
+            "parse_failure": float(self.parse_failure),
         }
 
 
