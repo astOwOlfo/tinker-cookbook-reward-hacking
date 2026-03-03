@@ -158,6 +158,7 @@ class SyntheticEnv(Env):
     truncated: bool = False
     n_truncated_completions: int = 0
     available_tools: list[dict] = field(init=False)
+    parse_failure: bool = False
 
     def __post_init__(self) -> None:
         self.available_tools = [
@@ -189,6 +190,7 @@ class SyntheticEnv(Env):
     async def step(self, action: Action) -> StepResult:
         if len(action) >= self.cfg.max_tokens:
             self.n_truncated_completions += 1
+            return bash_agent.done_step_result(self, reward=0.0)
 
         return await bash_agent.default_agent_step(
             self, action, self.get_finished_step_result_with_reward
@@ -255,6 +257,7 @@ class SyntheticEnv(Env):
             "failed_startup_commands": float(self.failed_startup_commands),
             "truncated": float(self.truncated),
             "n_truncated_completions": float(self.n_truncated_completions),
+            "parse_failure": float(self.parse_failure),
         }
 
 

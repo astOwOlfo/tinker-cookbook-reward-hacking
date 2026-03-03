@@ -130,6 +130,7 @@ class BashAppsEnv(Env):
         self.n_errors_parsing_tool_calls = 0
         self.grader_n_errors_parsing_tool_calls = 0
         self.grader_n_tool_timeouts = 0
+        self.parse_failure = False
 
         tests = datapoint.tests.copy()
         random.shuffle(tests)
@@ -325,6 +326,7 @@ class BashAppsEnv(Env):
             "n_errors_parsing_tool_calls": self.n_errors_parsing_tool_calls,
             "grader_n_errors_parsing_tool_calls": self.grader_n_errors_parsing_tool_calls,
             "grader_n_tool_timeouts": self.grader_n_tool_timeouts,
+            "parse_failure": float(self.parse_failure),
         }
 
     async def get_private_reward(self) -> float | StepResult:
