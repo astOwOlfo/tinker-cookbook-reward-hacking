@@ -109,7 +109,7 @@ class OmitDescriptionEnv(Env):
         self.n_errors_parsing_tool_calls = 0
         self.failed_startup_commands = False
         self.reward = 0.0
-
+        self.parse_failure = False
         self.available_tools: list[dict] = [
             tools.BASH_TOOL,
             tools.EDIT_TOOL,
@@ -173,6 +173,7 @@ class OmitDescriptionEnv(Env):
             "docker_error": float(self.docker_error),
             "n_errors_parsing_tool_calls": self.n_errors_parsing_tool_calls,
             "failed_startup_commands": float(self.failed_startup_commands),
+            "parse_failure": float(self.parse_failure),
         }
 
     async def get_reward(self) -> float | StepResult:
