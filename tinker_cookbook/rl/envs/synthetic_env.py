@@ -382,8 +382,8 @@ class SyntheticEnvDatasetBuilder(RLDatasetBuilder):
 
 
 def build_config() -> train.Config:
-    # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
-    model_name = "moonshotai/Kimi-K2.5"
+    model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
+    # model_name = "moonshotai/Kimi-K2.5"
 
     reward_hacking_prompt = "nothing"
 
@@ -398,8 +398,8 @@ def build_config() -> train.Config:
     dataset_builder = SyntheticEnvDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
-        # renderer_name="qwen3",
-        renderer_name="kimi_k25",
+        renderer_name="qwen3",
+        # renderer_name="kimi_k25",
         group_size=8,
         data=data,
         test_fraction=0.1,
@@ -417,7 +417,7 @@ def build_config() -> train.Config:
     elif model_name.startswith("moonshotai/Kimi-"):
         learning_rate = 1e-4
     else:
-        learning_rate = hyperparam_utils.get_lr(model_name)
+        learning_rate = 0.1 * hyperparam_utils.get_lr(model_name)
 
     config = train.Config(
         model_name=model_name,
