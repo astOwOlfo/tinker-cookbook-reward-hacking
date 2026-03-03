@@ -142,7 +142,8 @@ class SWEFixerEnv(Env):
     failed_startup_commands: bool = False
     public_test_was_readable: bool = False
     available_tools: list[dict] = field(init=False)
-
+    parse_failure: bool = False
+    
     def __post_init__(self) -> None:
         self.available_tools: list[dict] = [
             tools.BASH_TOOL,
@@ -290,6 +291,7 @@ class SWEFixerEnv(Env):
             "failed_startup_commands": float(self.failed_startup_commands),
             "public_reward": float(self.public_reward),
             "private_reward": float(self.private_reward),
+            "parse_failure": float(self.parse_failure),
         }
 
 

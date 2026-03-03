@@ -137,11 +137,15 @@ async def default_agent_step(
     if not hasattr(env, "startup_commands"):
         env.startup_commands = None
         env.ran_startup_commands = True
+    if not hasattr(env, "parse_failure"):
+        env.parse_failure = False
 
     message, parse_success = env.renderer.parse_response(action)
-    # assert parse_success, f"Error parsing message: {message}"
-
     env.all_messages.append(message)
+    if not parse_success:
+        env.parse_failure = True
+        return done_step_result(env, reward=0.0)
+    # assert parse_success, f"Error parsing message: {message}"
 
     assert message["role"] == "assistant"
     # assert {"role", "content"} <= set(message.keys()) <= {"role", "content", "tool_calls"}

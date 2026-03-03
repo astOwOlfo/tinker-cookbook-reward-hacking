@@ -162,7 +162,8 @@ class AEEnv(Env):
         self.n_errors_parsing_tool_calls = 0
         self.failed_startup_commands = False
         self.failed_startup_commands_and_outputs = []
-
+        self.parse_failure = False
+        
         self.available_tools: list[dict] = [
             tools.BASH_TOOL,
             tools.CREATE_FILE_TOOL,
@@ -318,6 +319,7 @@ class AEEnv(Env):
             "private_reward": self.private_reward,
             "n_errors_parsing_tool_calls": self.n_errors_parsing_tool_calls,
             "failed_startup_commands": float(self.failed_startup_commands),
+            "parse_failure": float(self.parse_failure),
         }
 
     async def get_pytest_reports(self, splits: list[str]) -> dict[str, PytestReport | None] | None:

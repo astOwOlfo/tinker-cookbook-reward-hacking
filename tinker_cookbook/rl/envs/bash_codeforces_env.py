@@ -118,6 +118,7 @@ class BashCodeforcesEnv(Env):
         self.n_errors_parsing_tool_calls = 0
         self.failed_startup_commands = False
         self.public_test_was_readable = False
+        self.parse_failure = False
 
         self.public_test_file_content, self.private_test_file_content = (
             public_and_private_test_file_contents(
@@ -193,6 +194,7 @@ class BashCodeforcesEnv(Env):
             "private_reward": self.private_reward,
             "n_errors_parsing_tool_calls": self.n_errors_parsing_tool_calls,
             "failed_startup_commands": float(self.failed_startup_commands),
+            "parse_failure": float(self.parse_failure),
         }
         if self.cfg.lock_public_tests:
             metrics["public_test_was_readable"] = float(self.public_test_was_readable)

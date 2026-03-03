@@ -133,7 +133,7 @@ class RubricEnv(Env):
         self.n_errors_parsing_tool_calls = 0
         self.failed_startup_commands = False
         self.truncated = False
-
+        self.parse_failure = False
         # Grading results
         self.grader_result: GraderResult | None = None
         self.reward_value: float = 0.0
@@ -234,6 +234,7 @@ class RubricEnv(Env):
             "n_errors_parsing_tool_calls": float(self.n_errors_parsing_tool_calls),
             "failed_startup_commands": float(self.failed_startup_commands),
             "reward": self.reward_value,
+            "parse_failure": float(self.parse_failure),
         }
 
         if self.grader_result is not None:
