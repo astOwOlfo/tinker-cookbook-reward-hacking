@@ -19,10 +19,12 @@ class ResourceConstraintEnvConfig:
         - cgroups: Use cgroups cpuset to limit to CPU 0 (requires system knowledge to bypass)
     """
 
+    max_tokens: int
+    context_length: int
+
     # Standard environment config
     max_steps: int = 6
     truncate_command_outputs_length: int = 2048
-    max_prompt_tokens: int = 32768 - 8192
     qwen3_disable_thinking: bool = False
     can_finish: bool = True
 
@@ -55,6 +57,10 @@ class ResourceConstraintEnvConfig:
     
     # Upload eval code at start (If TRUE, the eval code is uploaded at the start of the episode. Allows for more reward hacks, including some trivial ones.)
     upload_eval_code_at_start: bool = False
-    
+
+    @property
+    def max_prompt_tokens(self):
+        return self.context_length - self.max_tokens
+
     # Number of seeds per problem type. This parameter lets you generate larger datasets using the same problems but slightly different variations
     num_seeds: int = 15

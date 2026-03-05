@@ -54,11 +54,12 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True, slots=True)
 class BadSandboxEnvConfig:
+    max_tokens: int
+    context_length: int
     qwen3_disable_thinking: bool = False
     max_steps: int = 4
     truncate_output_length: int = 2048
     public_test_weight_in_reward: float = 1.0
-    max_prompt_tokens: int = 32768 - 8192
     show_public_input_output_in_prompt: bool = False
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
@@ -69,6 +70,10 @@ class BadSandboxEnvConfig:
     )
     impossible: bool = False
     min_test_output_length: int = 0
+
+    @property
+    def max_prompt_tokens(self):
+        return self.context_length - self.max_tokens
 
 
 @dataclass(frozen=True, slots=True)
