@@ -47,6 +47,8 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True, slots=True)
 class BashAppsEnvConfig:
+    max_tokens: int
+    context_length: int
     can_finish: bool = True
     qwen3_disable_thinking: bool = False
     max_steps: int = 4
@@ -55,11 +57,14 @@ class BashAppsEnvConfig:
     grader_max_completion_tokens: int = 2048
     truncate_command_outputs_length: int = 2048
     max_tests: int = 8
-    max_prompt_tokens: int = 32768 - 8192
     tool_timeout: MultiCommandTimeout = MultiCommandTimeout(seconds_per_command=8, total_seconds=8)
     test_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=16, total_seconds=24
     )
+
+    @property
+    def max_prompt_tokens(self):
+        return self.context_length - self.max_tokens
 
 
 @dataclass(frozen=True, slots=True)

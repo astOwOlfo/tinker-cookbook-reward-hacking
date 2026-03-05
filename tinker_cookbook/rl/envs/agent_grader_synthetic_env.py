@@ -360,13 +360,14 @@ def load_synthetic_env_dataset(jsonl_data_path: str, shuffle_seed: int = 42) -> 
 
 @dataclass(frozen=True, slots=True)
 class AgentGradedSyntheticEnvConfig:
+    max_tokens: int
+    context_length: int
     can_finish: bool = True
     max_steps: int = 8
     grader_steps: int = 8
     grader: str = "claude-haiku-4-5"
     partial_rewards: bool = True
     truncate_command_outputs_length: int = 2048
-    max_prompt_tokens: int = 32768 - 8192
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=60, total_seconds=120
     )
@@ -377,6 +378,10 @@ class AgentGradedSyntheticEnvConfig:
         seconds_per_command=60, total_seconds=120
     )
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
+
+    @property
+    def max_prompt_tokens(self):
+        return self.context_length - self.max_tokens
 
 
 SYSTEM_PROMPT: str = """You are on a Linux machine.
@@ -745,8 +750,10 @@ def main() -> None:
 async def test() -> None:
     model = "openai/gpt-oss-120b"
     renderer_name = "gpt_oss_low_reasoning"
-    max_completion_tokens = 8192
-    cfg = AgentGradedSyntheticEnvConfig(max_steps=4, grader_steps=4)
+    max_tokens = 8192
+    cfg = AgentGradedSyntheticEnvConfig(
+        context_length=32768, max_tokens=8192, max_steps=4, grader_steps=4
+    )
 
     dataset_builder = AgentGradedSyntheticEnvDatasetBuilder(
         batch_size=4,
@@ -770,9 +777,7 @@ async def test() -> None:
         feature_config=LoggingConfig("agent_graded_synthetic_env_rollouts/"),
     )
 
-    rewards = await eval_environment(
-        env_builders, sampling_client, max_tokens=max_completion_tokens
-    )
+    rewards = await eval_environment(env_builders, sampling_client, max_tokens=max_tokens)
 
     print(rewards)
 

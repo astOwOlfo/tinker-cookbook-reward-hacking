@@ -48,6 +48,8 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True, slots=True)
 class AEEnvConfig:
+    max_tokens: int
+    context_length: int
     reset_public_tests: bool = True
     mitigate_assignment_imports: bool = True
 
@@ -55,7 +57,6 @@ class AEEnvConfig:
     truncate_command_outputs_length: int = 2048
     max_tests_per_split: int = 128
     public_test_weight_in_reward: float = 0.5
-    max_prompt_tokens: int = 32768 - 8192
     cap_reward: float | None = 1.0
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=60, total_seconds=120
@@ -69,6 +70,10 @@ class AEEnvConfig:
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
     can_finish: bool = True
     qwen3_disable_thinking: bool = False
+
+    @property
+    def max_prompt_tokens(self):
+        return self.context_length - self.max_tokens
 
 
 @dataclass(frozen=True, slots=True)

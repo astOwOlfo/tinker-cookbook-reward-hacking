@@ -24,10 +24,12 @@ class RubricEnvConfig:
         yielding [0.0, 1.0].
     """
 
+    max_tokens: int
+    context_length: int
+
     # Agent config
     max_steps: int = 10
     truncate_command_outputs_length: int = 2048
-    max_prompt_tokens: int = 32768 - 8192
     can_finish: bool = True
     qwen3_disable_thinking: bool = False
 
@@ -56,3 +58,7 @@ class RubricEnvConfig:
     # Number of seed variants per seedable factory. Controls dataset size:
     # total problems ≈ N_static + N_seedable × num_seeds.
     num_seeds: int = 15
+
+    @property
+    def max_prompt_tokens(self):
+        return self.context_length - self.max_tokens
