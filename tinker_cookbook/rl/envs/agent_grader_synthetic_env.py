@@ -1,6 +1,11 @@
 import tinker
 from transformers import PreTrainedTokenizer
-from tinker_cookbook.rl.features.logging_transcripts import LoggingTranscripts, LoggingConfig
+from tinker_cookbook.rl.features.feature import build_dataset_builder
+from tinker_cookbook.rl.features.logging_transcripts import (
+    LoggingTranscripts,
+    LoggingConfig,
+    LoggingTranscriptsEnv,
+)
 from tinker_cookbook.rl.envs.tools import ToolCall
 import anthropic
 import json
@@ -91,12 +96,14 @@ def _serialize_anthropic_content(content_blocks) -> list[dict]:
         if block.type == "text":
             result.append({"type": "text", "text": block.text})
         elif block.type == "tool_use":
-            result.append({
-                "type": "tool_use",
-                "id": block.id,
-                "name": block.name,
-                "input": block.input,
-            })
+            result.append(
+                {
+                    "type": "tool_use",
+                    "id": block.id,
+                    "name": block.name,
+                    "input": block.input,
+                }
+            )
     return result
 
 
@@ -107,14 +114,20 @@ _grader_semaphore: asyncio.Semaphore | None = None
 def _get_anthropic_client() -> anthropic.AsyncAnthropic:
     global _anthropic_client
     if _anthropic_client is None:
+        import os
+
+        print("api key:", os.environ.get("ANTHROPIC_API_KEY"))
         _anthropic_client = anthropic.AsyncAnthropic()
     return _anthropic_client
+
+
+MAX_PARALLEL_CLAUDE_COMPLETIONS = 32
 
 
 def _get_grader_semaphore() -> asyncio.Semaphore:
     global _grader_semaphore
     if _grader_semaphore is None:
-        _grader_semaphore = asyncio.Semaphore(32)
+        _grader_semaphore = asyncio.Semaphore(MAX_PARALLEL_CLAUDE_COMPLETIONS)
     return _grader_semaphore
 
 
@@ -134,8 +147,7 @@ def _ensure_tool_results(messages: list[dict]) -> list[dict]:
             continue
 
         tool_use_blocks = [
-            b for b in msg["content"]
-            if isinstance(b, dict) and b.get("type") == "tool_use"
+            b for b in msg["content"] if isinstance(b, dict) and b.get("type") == "tool_use"
         ]
         if not tool_use_blocks:
             i += 1
@@ -143,9 +155,8 @@ def _ensure_tool_results(messages: list[dict]) -> list[dict]:
 
         next_msg = result[i + 1]
         next_content = next_msg.get("content", "")
-        already_has_results = (
-            isinstance(next_content, list)
-            and any(isinstance(b, dict) and b.get("type") == "tool_result" for b in next_content)
+        already_has_results = isinstance(next_content, list) and any(
+            isinstance(b, dict) and b.get("type") == "tool_result" for b in next_content
         )
         if already_has_results:
             i += 1
@@ -199,7 +210,9 @@ async def generate_grader_message(
                 "content": _serialize_anthropic_content(response.content),
             }
         except Exception as e:
-            logger.warning(f"Anthropic API call failed ({type(e).__name__}: {e}). Retrying in {delay:.1f}s…")
+            logger.warning(
+                f"Anthropic API call failed ({type(e).__name__}: {e}). Retrying in {delay:.1f}s…"
+            )
             await asyncio.sleep(delay)
             delay = min(delay * 2, max_delay)
 
@@ -225,11 +238,7 @@ def parse_anthropic_tool_calls(assistant_message: dict) -> list[ToolCall]:
 def _format_process_output(output: "ProcessOutput", max_length: int = 0) -> str:
     stdout = bash_agent.truncate(output.stdout, max_length) if max_length > 0 else output.stdout
     stderr = bash_agent.truncate(output.stderr, max_length) if max_length > 0 else output.stderr
-    return (
-        f"EXIT CODE: {output.exit_code}\n"
-        f"STDOUT:\n{stdout}\n"
-        f"STDERR:\n{stderr}"
-    )
+    return f"EXIT CODE: {output.exit_code}\nSTDOUT:\n{stdout}\nSTDERR:\n{stderr}"
 
 
 def build_tool_result_messages(
@@ -250,20 +259,29 @@ def build_tool_result_messages(
 
     if not tool_use_blocks:
         if not outputs:
-            return [{"role": "user", "content": "No tool calls were made and no outputs are available."}]
+            return [
+                {"role": "user", "content": "No tool calls were made and no outputs are available."}
+            ]
         summary = "\n\n".join(
-            f"Output {i}:\n{_format_process_output(o, truncate_length)}" for i, o in enumerate(outputs)
+            f"Output {i}:\n{_format_process_output(o, truncate_length)}"
+            for i, o in enumerate(outputs)
         )
         return [{"role": "user", "content": summary}]
 
     result_content: list[dict] = []
     for i, tool_use in enumerate(tool_use_blocks):
-        text = _format_process_output(outputs[i], truncate_length) if i < len(outputs) else "No output available."
-        result_content.append({
-            "type": "tool_result",
-            "tool_use_id": tool_use["id"],
-            "content": text,
-        })
+        text = (
+            _format_process_output(outputs[i], truncate_length)
+            if i < len(outputs)
+            else "No output available."
+        )
+        result_content.append(
+            {
+                "type": "tool_result",
+                "tool_use_id": tool_use["id"],
+                "content": text,
+            }
+        )
     return [{"role": "user", "content": result_content}]
 
 
@@ -411,6 +429,7 @@ class AgentGradedSyntheticEnv(Env):
     tokenizer: PreTrainedTokenizer
     reward_hacking_prompt: str
     all_messages: list[renderers.Message] = field(default_factory=lambda: [])
+    all_grader_messages: list[dict] | None = None
     ran_startup_commands: bool = False
     n_tool_timeouts: int = 0
     docker_error: bool = False
@@ -485,13 +504,13 @@ class AgentGradedSyntheticEnv(Env):
         ]
 
         grader_prompt = GRADER_PROMPT.format(instructions=self.datapoint.instructions)
-        grader_conversation = [{"role": "user", "content": grader_prompt}]
+        self.all_grader_messages = [{"role": "user", "content": grader_prompt}]
 
         for step in range(self.cfg.grader_steps):
             assistant_message = await generate_grader_message(
-                grader_conversation, tools=grader_tools, model=self.cfg.grader
+                self.all_grader_messages, tools=grader_tools, model=self.cfg.grader
             )
-            grader_conversation.append(assistant_message)
+            self.all_grader_messages.append(assistant_message)
             print("=" * 64)
             print(assistant_message["content"])
 
@@ -511,12 +530,14 @@ class AgentGradedSyntheticEnv(Env):
                 return bash_agent.done_step_result(self, reward=0.0)
 
             if step != self.cfg.grader_steps - 1:
-                grader_conversation += build_tool_result_messages(assistant_message, outputs, self.cfg.truncate_command_outputs_length)
+                self.all_grader_messages += build_tool_result_messages(
+                    assistant_message, outputs, self.cfg.truncate_command_outputs_length
+                )
 
-        grader_conversation += [{"role": "user", "content": GRADER_GIVE_SCORE_PROPMT}]
+        self.all_grader_messages += [{"role": "user", "content": GRADER_GIVE_SCORE_PROPMT}]
 
         final_assistant_message = await generate_grader_message(
-            grader_conversation, tools=grader_tools, model=self.cfg.grader
+            self.all_grader_messages, tools=grader_tools, model=self.cfg.grader
         )
 
         score: int | None = extract_boxed_score(final_assistant_message["content"])
@@ -538,7 +559,7 @@ class AgentGradedSyntheticEnv(Env):
 
 
 @dataclass(frozen=True, slots=True)
-class AgentGradedSyntheticEnvGroupBuilder(EnvGroupBuilder):#
+class AgentGradedSyntheticEnvGroupBuilder(EnvGroupBuilder):  #
     datapoint: Datapoint
     num_envs: int
     group_index: int
@@ -724,11 +745,11 @@ def main() -> None:
 async def test() -> None:
     model = "openai/gpt-oss-120b"
     renderer_name = "gpt_oss_low_reasoning"
-    ax_completion_tokens = 8192
-    cfg = AgentGradedSyntheticEnvConfig(max_steps=8, grader_steps=8)
+    max_completion_tokens = 8192
+    cfg = AgentGradedSyntheticEnvConfig(max_steps=4, grader_steps=4)
 
     dataset_builder = AgentGradedSyntheticEnvDatasetBuilder(
-        batch_size=256,
+        batch_size=4,
         model_name_for_tokenizer=model,
         renderer_name=renderer_name,
         group_size=1,
@@ -743,7 +764,15 @@ async def test() -> None:
     _, dataset = await dataset_builder()
     env_builders = dataset.get_batch(0)
 
-    rewards = await eval_environment(env_builders, sampling_client, max_tokens=ax_completion_tokens)
+    dataset_builder = build_dataset_builder(
+        dataset_builder=dataset_builder,
+        feature_env_class=LoggingTranscriptsEnv,
+        feature_config=LoggingConfig("agent_graded_synthetic_env_rollouts/"),
+    )
+
+    rewards = await eval_environment(
+        env_builders, sampling_client, max_tokens=max_completion_tokens
+    )
 
     print(rewards)
 
