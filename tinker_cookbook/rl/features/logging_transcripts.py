@@ -62,26 +62,26 @@ class LoggingTranscriptsEnv(Env):
             return step_result
 
         # Log everything
-        with open(
-            os.path.join(
-                self.logging_config.transcripts_dir,
-                f"rollouts_{datetime.now().strftime('%m%dT%H:%M')}-{id(self.env)}.json",
-            ),
-            "w+",
-        ) as f:
-            json.dump(
-                {
-                    "rollouts": deep_model_dump(self.env.all_messages),
-                    "metrics": step_result.metrics,
-                    "env_type": type(self.env).__name__,
-                    "env_config": {
-                        key: value
-                        for key, value in asdict(self.env.cfg).items()
-                        if isinstance(value, (int, float, bool, str)) or value is None
-                    },
-                },
-                f,
-            )
+        json_rollout = {
+            "rollouts": deep_model_dump(self.env.all_messages),
+            "metrics": step_result.metrics,
+            "env_type": type(self.env).__name__,
+            "env_config": {
+                key: value
+                for key, value in asdict(self.env.cfg).items()
+                if isinstance(value, (int, float, bool, str)) or value is None
+            },
+        }
+        if hasattr(self.env, "all_grader_messages"):
+            json_rollout["all_grader_messages"] = self.env.all_grader_messages
+
+        save_filename = os.path.join(
+            self.logging_config.transcripts_dir,
+            f"rollouts_{datetime.now().strftime('%m%dT%H:%M')}-{id(self.env)}.json",
+        )
+
+        with open(save_filename, "w+") as f:
+            json.dump(json_rollout, f)
 
         return step_result
 
