@@ -97,6 +97,6 @@ python_files = ["test_*.py", "*_test.py"]
 line-length = 100
 
 [tool.uv.sources]
-scalable-docker = { git = "https://github.com/astOwOlfo/scalable_docker.git", branch="new" }
+scalable-docker = { git = "https://github.com/astOwOlfo/scalable_docker.git", branch="k8s" }
 impossiblebench = { git = "https://github.com/safety-research/impossiblebench" }
 inspect-k8s-sandbox = { git = "https://github.com/UKGovernmentBEIS/inspect_k8s_sandbox.git" }
