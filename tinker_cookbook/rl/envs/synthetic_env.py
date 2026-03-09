@@ -475,8 +475,12 @@ def build_config() -> train.Config:
         max_tokens=max_tokens,
         eval_every=0,
         wandb_project="agent-graded-synthetic-env",
-        wandb_name="agent_graded_synthetic_env_" + reward_hacking_prompt + "_" + model_name.split("/")[-1],
+        wandb_name="agent_graded_synthetic_env_"
+        + reward_hacking_prompt
+        + "_"
+        + model_name.split("/")[-1],
         compute_kl_penalty_every=8,
+        load_checkpoint_path="tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000800",
     )
 
     config = LoggingTranscripts(
