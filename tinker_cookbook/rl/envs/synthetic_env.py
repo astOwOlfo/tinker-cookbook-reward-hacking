@@ -440,7 +440,7 @@ def build_config() -> train.Config:
     max_tokens = 8192
 
     dataset_builder = SyntheticEnvDatasetBuilder(
-        batch_size=32,
+        batch_size=64,
         model_name_for_tokenizer=model_name,
         renderer_name="gpt_oss_medium_reasoning",
         # renderer_name="kimi_k25",
