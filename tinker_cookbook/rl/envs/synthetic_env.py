@@ -442,7 +442,7 @@ def build_config() -> train.Config:
     dataset_builder = SyntheticEnvDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
-        renderer_name="qwen3",
+        renderer_name="gpt_oss_medium_reasoning",
         # renderer_name="kimi_k25",
         group_size=8,
         data=data,
