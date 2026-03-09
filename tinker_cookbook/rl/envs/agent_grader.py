@@ -9,6 +9,7 @@ import random
 import traceback
 import asyncio
 from scalable_docker.client import ProcessOutput
+from dataclasses import dataclass
 
 from tinker_cookbook.rl.envs import tools
 from tinker_cookbook.rl.envs import bash_agent
@@ -679,4 +680,3 @@ def accumulate_grader_usage(env, usage: GraderUsage) -> None:
     env.grader_input_tokens += usage.input_tokens
     env.grader_output_tokens += usage.output_tokens
     env.grader_cache_read_input_tokens += usage.cache_read_input_tokens
-
