@@ -1,21 +1,19 @@
 from transformers import PreTrainedTokenizer
 from xml.etree import ElementTree
 import json
-from json.decoder import JSONDecodeError
 import logging
 from shlex import quote
 from sys import stderr
 import random
 import traceback
 import asyncio
-from dataclasses import dataclass, field
-from typing import Callable, Sequence, Literal, Optional
+from dataclasses import dataclass
+from typing import Sequence, Literal
 from dotenv import load_dotenv
 import math
 
 from scalable_docker.client import (
     ScalableDockerClient,
-    Container,
     ProcessOutput,
     MultiCommandTimeout,
     TIMED_OUT_PROCESS_OUTPUT,
@@ -26,14 +24,13 @@ from scalable_docker.client import (
 import tinker
 from tinker_cookbook import renderers, model_info, cli_utils
 from tinker_cookbook.completers import StopCondition
+from tinker_cookbook.rl.envs.agent_grader import get_agent_grader_reward
 from tinker_cookbook.rl.types import (
     Action,
     Env,
     EnvGroupBuilder,
-    Metrics,
     Observation,
     StepResult,
-    Trajectory,
     RLDataset,
     RLDatasetBuilder,
 )
@@ -52,12 +49,16 @@ class AEEnvConfig:
     context_length: int
     reset_public_tests: bool = True
     mitigate_assignment_imports: bool = True
-
     max_steps: int = 4
     truncate_command_outputs_length: int = 2048
     max_tests_per_split: int = 128
     public_test_weight_in_reward: float = 0.5
     cap_reward: float | None = 1.0
+    agent_graded: bool = False
+    grader_steps: int = 8
+    grader: str = "claude-haiku-4-5"
+    grader_truncate_command_outputs_length: int = 8192
+    grader_provider: Literal["openai", "anthropic"] = "anthropic"
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=60, total_seconds=120
     )
@@ -168,7 +169,13 @@ class AEEnv(Env):
         self.failed_startup_commands = False
         self.failed_startup_commands_and_outputs = []
         self.parse_failure = False
-        
+        self.grader_input_tokens: int = 0
+        self.grader_output_tokens: int = 0
+        self.grader_cache_read_input_tokens: int = 0
+        self.grader_context_length_exceeded: bool = False
+        self.grader_finished: bool = False
+        self.grader_invalid_formatting: bool = False
+
         self.available_tools: list[dict] = [
             tools.BASH_TOOL,
             tools.CREATE_FILE_TOOL,
@@ -196,11 +203,15 @@ class AEEnv(Env):
 
         make_assignment_importable_as_a_package_command: str = "echo /testbed/ > $(python -c 'import site; print(site.getsitepackages()[0])')/assignment_project.pth"
 
-        return upload_public_tests_commands + [
+        commands = []
+        if not self.cfg.agent_graded:
+            commands += upload_public_tests_commands
+        commands += [
             upload_setup_py_command,
             upload_restrict_imports_file,
             make_assignment_importable_as_a_package_command,
         ]
+        return commands
 
     def restrict_assignment_imports_in_file(self, python_file_content: str) -> str:
         python_file_content = (
@@ -325,6 +336,12 @@ class AEEnv(Env):
             "n_errors_parsing_tool_calls": self.n_errors_parsing_tool_calls,
             "failed_startup_commands": float(self.failed_startup_commands),
             "parse_failure": float(self.parse_failure),
+            "grader_input_tokens": float(self.grader_input_tokens),
+            "grader_output_tokens": float(self.grader_output_tokens),
+            "grader_cache_read_input_tokens": float(self.grader_cache_read_input_tokens),
+            "grader_context_length_exceeded": float(self.grader_context_length_exceeded),
+            "grader_finished": float(self.grader_finished),
+            "grader_invalid_formatting": float(self.grader_invalid_formatting),
         }
 
     async def get_pytest_reports(self, splits: list[str]) -> dict[str, PytestReport | None] | None:
@@ -395,6 +412,10 @@ class AEEnv(Env):
         return reports
 
     async def get_reward(self) -> float | StepResult:
+        if self.cfg.agent_graded:
+            self.reward = await get_agent_grader_reward(self)
+            return bash_agent.done_step_result(self, reward=self.reward)
+
         splits = self.test_splits()
         weights = self.test_split_weights_in_reward()
         reports = await self.get_pytest_reports(splits=splits)

@@ -1,6 +1,4 @@
 from transformers import PreTrainedTokenizer
-from tinker_cookbook.rl.envs.agent_grader import get_agent_grader_reward
-from tinker_cookbook.rl.features.logging_transcripts import LoggingTranscripts, LoggingConfig
 import json
 import logging
 from shlex import quote
@@ -38,6 +36,8 @@ from tinker_cookbook.rl import train
 from tinker_cookbook.rl.envs import tools
 from tinker_cookbook.rl.envs import bash_agent
 from tinker_cookbook.rl.envs.bash_agent import ContainerStarter, REWARD_HACKING_PROMPTS
+from tinker_cookbook.rl.features.logging_transcripts import LoggingTranscripts, LoggingConfig
+from tinker_cookbook.rl.envs.agent_grader import get_agent_grader_reward
 
 logger = logging.getLogger(__name__)
 
