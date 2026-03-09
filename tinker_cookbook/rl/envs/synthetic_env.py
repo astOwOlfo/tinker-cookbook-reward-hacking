@@ -454,6 +454,8 @@ def build_config() -> train.Config:
             reward_hacking_prompt=reward_hacking_prompt,
             partial_rewards=False,
             agent_graded=True,
+            grader="gpt-5-mini",
+            grader_provider="openai",
         ),
     )
 
