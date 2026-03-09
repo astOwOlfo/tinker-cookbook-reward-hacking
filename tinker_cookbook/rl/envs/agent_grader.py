@@ -102,7 +102,7 @@ def _get_anthropic_client() -> anthropic.AsyncAnthropic:
     return _anthropic_client
 
 
-MAX_PARALLEL_CLAUDE_COMPLETIONS = 32
+MAX_PARALLEL_CLAUDE_COMPLETIONS = 1024
 
 
 def _get_grader_semaphore() -> asyncio.Semaphore:
