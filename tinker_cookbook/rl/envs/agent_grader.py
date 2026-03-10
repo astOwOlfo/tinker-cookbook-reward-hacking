@@ -90,26 +90,49 @@ def _is_context_length_exceeded(error: anthropic.BadRequestError) -> bool:
 
 
 _anthropic_client: anthropic.AsyncAnthropic | None = None
-_grader_semaphore: asyncio.Semaphore | None = None
 
 
 def _get_anthropic_client() -> anthropic.AsyncAnthropic:
     global _anthropic_client
     if _anthropic_client is None:
-        import os
-
         _anthropic_client = anthropic.AsyncAnthropic()
     return _anthropic_client
 
 
-MAX_PARALLEL_CLAUDE_COMPLETIONS = 1024
+# ---------------------------------------------------------------------------
+# Global active-call counter with per-caller limits
+# ---------------------------------------------------------------------------
+_active_api_calls: int = 0
+_api_calls_condition: asyncio.Condition | None = None
 
 
-def _get_grader_semaphore() -> asyncio.Semaphore:
-    global _grader_semaphore
-    if _grader_semaphore is None:
-        _grader_semaphore = asyncio.Semaphore(MAX_PARALLEL_CLAUDE_COMPLETIONS)
-    return _grader_semaphore
+def _get_api_calls_condition() -> asyncio.Condition:
+    global _api_calls_condition
+    if _api_calls_condition is None:
+        _api_calls_condition = asyncio.Condition()
+    return _api_calls_condition
+
+
+class _ApiCallSlot:
+    """Async context manager that waits until active API calls < *limit*, then
+    increments the global counter for the duration of the block."""
+
+    def __init__(self, limit: int) -> None:
+        self._limit = limit
+
+    async def __aenter__(self) -> None:
+        global _active_api_calls
+        cond = _get_api_calls_condition()
+        async with cond:
+            await cond.wait_for(lambda: _active_api_calls < self._limit)
+            _active_api_calls += 1
+
+    async def __aexit__(self, *exc) -> None:
+        global _active_api_calls
+        cond = _get_api_calls_condition()
+        async with cond:
+            _active_api_calls -= 1
+            cond.notify_all()
 
 
 _openai_client: openai.AsyncOpenAI | None = None
@@ -260,6 +283,7 @@ async def generate_grader_message(
     messages: list[dict],
     tools: list[dict],
     model: str,
+    max_parallel_api_calls: int = 48,
 ) -> tuple[dict, GraderUsage]:
     """Call the Anthropic Messages API with exponential-backoff retries.
 
@@ -267,7 +291,6 @@ async def generate_grader_message(
     Returns a tuple of (assistant_message, usage).
     """
     client = _get_anthropic_client()
-    semaphore = _get_grader_semaphore()
     anthropic_tools = _convert_tools_to_anthropic_format(tools)
     sanitized_messages = _ensure_tool_results(messages)
 
@@ -276,7 +299,7 @@ async def generate_grader_message(
 
     while True:
         try:
-            async with semaphore:
+            async with _ApiCallSlot(max_parallel_api_calls):
                 response = await client.messages.create(
                     model=model,
                     messages=sanitized_messages,
@@ -389,13 +412,13 @@ async def generate_grader_message_openai(
     messages: list[dict],
     tools: list[dict],
     model: str,
+    max_parallel_api_calls: int = 48,
 ) -> tuple[dict, GraderUsage]:
     """Call the OpenAI Chat Completions API with exponential-backoff retries.
 
     Returns a tuple of (assistant_message, usage).
     """
     client = _get_openai_client()
-    semaphore = _get_grader_semaphore()
     openai_tools = _convert_tools_to_openai_format(tools)
     sanitized_messages = _ensure_tool_results_openai(messages)
 
@@ -404,7 +427,7 @@ async def generate_grader_message_openai(
 
     while True:
         try:
-            async with semaphore:
+            async with _ApiCallSlot(max_parallel_api_calls):
                 response = await client.chat.completions.create(
                     model=model,
                     messages=sanitized_messages,
@@ -590,7 +613,7 @@ If you did not have enough time to fully evaluate the solution (e.g. because you
 """
 
 
-async def get_agent_grader_reward(env) -> float:
+async def get_agent_grader_reward(env, *, max_parallel_api_calls: int) -> float:
     if env.container is None:
         env.container = await env.container_starter.get_container(env.container_index)
 
@@ -612,7 +635,8 @@ async def get_agent_grader_reward(env) -> float:
     try:
         for step in range(env.cfg.grader_steps):
             assistant_message, usage = await _generate(
-                env.all_grader_messages, tools=grader_tools, model=env.cfg.grader
+                env.all_grader_messages, tools=grader_tools, model=env.cfg.grader,
+                max_parallel_api_calls=max_parallel_api_calls,
             )
             accumulate_grader_usage(env, usage)
             env.all_grader_messages.append(assistant_message)
@@ -650,7 +674,8 @@ async def get_agent_grader_reward(env) -> float:
         ]
 
         final_assistant_message, final_usage = await _generate(
-            env.all_grader_messages, tools=grader_tools, model=env.cfg.grader
+            env.all_grader_messages, tools=grader_tools, model=env.cfg.grader,
+            max_parallel_api_calls=max_parallel_api_calls,
         )
         env.all_grader_messages.append(final_assistant_message)
         accumulate_grader_usage(env, final_usage)

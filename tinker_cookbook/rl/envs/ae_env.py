@@ -59,6 +59,7 @@ class AEEnvConfig:
     grader: str = "claude-haiku-4-5"
     grader_truncate_command_outputs_length: int = 8192
     grader_provider: Literal["openai", "anthropic"] = "anthropic"
+    grader_max_parallel_api_calls: int = 48
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=60, total_seconds=120
     )
@@ -413,7 +414,7 @@ class AEEnv(Env):
 
     async def get_reward(self) -> float | StepResult:
         if self.cfg.agent_graded:
-            self.reward = await get_agent_grader_reward(self)
+            self.reward = await get_agent_grader_reward(self, max_parallel_api_calls=self.cfg.grader_max_parallel_api_calls)
             return bash_agent.done_step_result(self, reward=self.reward)
 
         splits = self.test_splits()
