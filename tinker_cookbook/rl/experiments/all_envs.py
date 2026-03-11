@@ -457,7 +457,8 @@ def style_environment(
         max_steps=cfg.max_steps,
         qwen3_disable_thinking=cfg.qwen3_disable_thinking,
         hint_type=hint_type,
-        max_prompt_tokens=cfg.context_length - cfg.max_completion_tokens - 16,  # -16 just in case
+        max_tokens=cfg.max_completion_tokens,
+        context_length=cfg.context_length - 16,  # -16 just in case
     )
     db = OmitDescriptionDatasetBuilder(
         batch_size=cfg.batch_size,
