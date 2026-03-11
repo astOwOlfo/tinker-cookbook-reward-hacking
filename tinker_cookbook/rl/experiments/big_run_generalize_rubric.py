@@ -180,10 +180,10 @@ def build_train_config(log_dir: str) -> train.Config:
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
         save_every=8,
-        wandb_project="big-run",
+        wandb_project="big-run-generalize-rubric",
         wandb_name=MODEL_NAME + "_" + RENDERER_NAME,
         kl_penalty_coef=KL_PENALTY,
-        # load_checkpoint_path= "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/weights/000800",
+        #load_checkpoint_path= "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/weights/000800",
     )
 
     if LENGTH_PENALTY > 0:
