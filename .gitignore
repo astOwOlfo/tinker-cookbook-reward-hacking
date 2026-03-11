@@ -20,3 +20,5 @@ eval_results/*
 **/.claude
 data/final-harder-more.jsonl
 uv.toml
+data/final-hard.jsonl
+data/final-easy.json

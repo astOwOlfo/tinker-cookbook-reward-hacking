@@ -25,6 +25,7 @@ from scalable_docker.client import (
     TIMED_OUT_PROCESS_OUTPUT,
     upload_file_command,
     Image,
+    delete_all_scalable_docker_kubernetes_deployments,
 )
 
 import tinker
@@ -52,6 +53,8 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True, slots=True)
 class BashCodeforcesEnvConfig:
+    max_tokens: int
+    context_length: int
     can_finish: bool = True
     qwen3_disable_thinking: bool = False
     max_steps: int = 8
@@ -59,7 +62,6 @@ class BashCodeforcesEnvConfig:
     max_tests_per_split: int = 8
     public_test_weight_in_reward: float = 1.0
     reset_public_tests: bool = False
-    max_prompt_tokens: int = 32768 - 8192
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=60, total_seconds=120
     )
@@ -71,6 +73,10 @@ class BashCodeforcesEnvConfig:
     )
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
     lock_public_tests: bool = False
+
+    @property
+    def max_prompt_tokens(self):
+        return self.context_length - self.max_tokens
 
 
 @dataclass(frozen=True, slots=True)
@@ -804,6 +810,8 @@ def load_ioi_dataset(shuffle_seed: int = 42, max_total_test_length: int = 4096) 
 def build_config() -> train.Config:
     model_name = "Qwen/Qwen3-8B"
 
+    max_tokens = 8192
+
     dataset_builder = BashCodeforcesDatasetBuilder(
         batch_size=32,
         model_name_for_tokenizer=model_name,
@@ -811,9 +819,11 @@ def build_config() -> train.Config:
         if model_name.startswith("openai/gpt-oss-")
         else model_info.get_recommended_renderer_name(model_name),
         group_size=8,
-        data=load_codeforces_dataset() * 999,
+        data=load_ioi_dataset() * 999,
         test_fraction=0.1,
         cfg=BashCodeforcesEnvConfig(
+            context_length=32768,
+            max_tokens=max_tokens,
             reward_hacking_prompt="nothing",
             max_steps=6,
             max_tests_per_split=2,
@@ -832,7 +842,7 @@ def build_config() -> train.Config:
         learning_rate=4e-5
         if model_name.startswith("openai/gpt-oss-")
         else hyperparam_utils.get_lr(model_name),
-        max_tokens=8192,
+        max_tokens=max_tokens,
         eval_every=0,
         wandb_project="rh-generalization",
         wandb_name="bash_codeforces_qwen3_8b_special_case",
@@ -845,6 +855,8 @@ def build_docker_image() -> None:
 
 
 def main() -> None:
+    asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
+
     from tinker_cookbook.rl.features.logging_transcripts import LoggingTranscripts, LoggingConfig
 
     config = build_config()

@@ -47,13 +47,14 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True, slots=True)
 class BashAppsEnvConfig:
+    max_tokens: int
+    context_length: int
     can_finish: bool = True
     qwen3_disable_thinking: bool = False
     max_steps: int = 4
     truncate_command_outputs_length: int = 2048
     max_tests_per_split: int = 8
     public_test_weight_in_reward: float = 0.5
-    max_prompt_tokens: int = 32768 - 8192
     startup_command_timeout: MultiCommandTimeout = MultiCommandTimeout(
         seconds_per_command=20, total_seconds=36
     )
@@ -62,6 +63,10 @@ class BashAppsEnvConfig:
         seconds_per_command=16, total_seconds=24
     )
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
+
+    @property
+    def max_prompt_tokens(self):
+        return self.context_length - self.max_tokens
 
 
 @dataclass(frozen=True, slots=True)
