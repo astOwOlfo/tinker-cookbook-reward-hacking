@@ -25,8 +25,12 @@ from scalable_docker.client import (
     TIMED_OUT_PROCESS_OUTPUT,
     upload_file_command,
     Image,
-    delete_all_scalable_docker_kubernetes_deployments,
 )
+try:
+    from scalable_docker.client import delete_all_scalable_docker_kubernetes_deployments
+except ImportError:
+    delete_all_scalable_docker_kubernetes_deployments = None
+    print("delete_all_scalable_docker_kubernetes_deployments not found")
 
 import tinker
 from tinker_cookbook import renderers, model_info, cli_utils, hyperparam_utils
