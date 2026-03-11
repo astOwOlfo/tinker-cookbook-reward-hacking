@@ -207,7 +207,7 @@ def main() -> None:
     # asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
 
     train_config = build_train_config(
-        log_dir=LOG_DIR
+        log_dir=LOG_DIR,
         synthetic_dataset_path=SYNTHETIC_DATASET_PATH
     )
     cli_utils.check_log_dir(LOG_DIR, behavior_if_exists="resume")
