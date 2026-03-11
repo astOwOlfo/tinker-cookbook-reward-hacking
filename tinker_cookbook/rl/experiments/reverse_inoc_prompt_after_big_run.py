@@ -49,8 +49,8 @@ def build_all_docker_images(synthetic_dataset_path: str) -> None:
             ae_env.load_ae_dataset_from_json("data/ae.json", max_datapoints=None)
         )
     )
-    print("building docker images for swe fixer env...")
-    swe_fixer_env.build_docker_images(swe_fixer_env.load_swe_fixer_dataset())
+    # print("building docker images for swe fixer env...")
+    # swe_fixer_env.build_docker_images(swe_fixer_env.load_swe_fixer_dataset())
     # print("building docker image for rubric env...")
     # build_docker_image()
     print("done building all docker images")
@@ -100,18 +100,18 @@ def make_mix_dataset_builder(
             )
             for reset_public_tests in [False, True]
         ]
-        + [
-            swe_fixer(
-                cfg=replace(cfg, batch_size=divide_evenly(swe_fixer_batch_size, 4)),
-                reward_hacking_prompt=reward_hacking_prompt,
-                show_hint=show_hint,
-                show_modified_file_names=show_modified_file_names,
-                shuffle_seed=rng.randint(0, 2**30),
-                n_data_repetitions=128,
-            )
-            for show_hint in [False, True]
-            for show_modified_file_names in [False, True]
-        ]
+        # + [
+        #     swe_fixer(
+        #         cfg=replace(cfg, batch_size=divide_evenly(swe_fixer_batch_size, 4)),
+        #         reward_hacking_prompt=reward_hacking_prompt,
+        #         show_hint=show_hint,
+        #         show_modified_file_names=show_modified_file_names,
+        #         shuffle_seed=rng.randint(0, 2**30),
+        #         n_data_repetitions=128,
+        #     )
+        #     for show_hint in [False, True]
+        #     for show_modified_file_names in [False, True]
+        # ]
         # + [
         #     synthetic(
         #         cfg=replace(cfg, batch_size=divide_evenly(synthetic_batch_size, 2)),
@@ -167,7 +167,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         reward_hacking_prompt=REWARD_HACKING_PROMPT,
         style_batch_size=4,
         bash_ioi_batch_size=8,
-        swe_fixer_batch_size=16,
+        swe_fixer_batch_size=0,
         ae_batch_size=32,
         synthetic_batch_size=32,
         synthetic_dataset_path=synthetic_dataset_path,
