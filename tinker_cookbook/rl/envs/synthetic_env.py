@@ -428,7 +428,8 @@ class SyntheticEnvDatasetBuilder(RLDatasetBuilder):
 
 
 def build_config() -> train.Config:
-    model_name = "openai/gpt-oss-120b"
+    # model_name = "Qwen/Qwen3-235B-A22B-Instruct-2507"
+    model_name = "moonshotai/Kimi-K2.5"
 
     reward_hacking_prompt = "nothing"
 
