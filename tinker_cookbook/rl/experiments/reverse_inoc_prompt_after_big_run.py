@@ -174,7 +174,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         rubric_batch_size=0,
     )
 
-    dataset_builder = LimitSize(dataset_builder, max_batches=EPOCHS, max_test_batches=1)
+    #dataset_builder = LimitSize(dataset_builder, max_batches=EPOCHS, max_test_batches=1)
 
     config = train.Config(
         model_name=MODEL_NAME,
@@ -185,7 +185,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         else hyperparam_utils.get_lr(MODEL_NAME),
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
-        save_every=8,
+        save_every=16,
         wandb_project="reverse-inoc-prompt-after-big-run",
         wandb_name=MODEL_NAME + "_" + RENDERER_NAME,
         kl_penalty_coef=KL_PENALTY,
@@ -200,7 +200,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
 
 def main() -> None:
     LOG_DIR = "/tmp/tinker-examples/reverse_inoc_prompt_after_big_run/"
-    SYNTHETIC_DATASET_PATH = "data/final-harder-more.jsonl"
+    SYNTHETIC_DATASET_PATH = "data/synthetic-env-very-hard.jsonl"
     load_dotenv()
 
     build_all_docker_images(synthetic_dataset_path=SYNTHETIC_DATASET_PATH)
