@@ -200,6 +200,7 @@ def bash_codeforces(
     max_tests_per_split: int = 8,
     reset_public_tests: bool = False,
     test_fraction: float = 0.1,
+    docker_key: str = "bash_codeforces",
 ) -> BashCodeforcesDatasetBuilder:
     db = BashCodeforcesDatasetBuilder(
         batch_size=cfg.batch_size,
@@ -218,6 +219,7 @@ def bash_codeforces(
             max_tokens=cfg.max_completion_tokens,
             context_length=cfg.context_length - 16,  # -16 just in case
         ),
+        docker_key=docker_key,
     )
     return maybe_log(cfg, db)
 
@@ -330,6 +332,7 @@ def ae(
     max_datapoints: int | None = None,
     shuffle_seed: int = 42,
     n_data_repetitions: int = 1,
+    docker_key: str = "ae_env",
 ) -> AEDatasetBuilder:
     db = AEDatasetBuilder(
         batch_size=cfg.batch_size,
@@ -352,6 +355,7 @@ def ae(
             max_tokens=cfg.max_completion_tokens,
             context_length=cfg.context_length - 16,  # -16 just in case
         ),
+        docker_key=docker_key,
     )
     return maybe_log(cfg, db)
 
@@ -445,6 +449,7 @@ def style_environment(
     hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] = "none",
     n_data_repetitions: int = 1,
     shuffle_seed: int = 42,
+    docker_key: str = "omit_description",
 ) -> OmitDescriptionDatasetBuilder:
     inner_cfg = OmitDescriptionEnvConfig(
         reward_hacking_prompt=reward_hacking_prompt,
@@ -463,6 +468,7 @@ def style_environment(
         * n_data_repetitions,
         test_fraction=0.1,
         cfg=inner_cfg,
+        docker_key=docker_key,
     )
     return maybe_log(cfg, db)
 

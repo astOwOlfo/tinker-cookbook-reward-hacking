@@ -32,23 +32,30 @@ from tinker_cookbook.rl.envs.rubric_env.env import build_docker_image
 
 from tinker_cookbook.rl.experiments.all_envs import rubric_env
 
+STYLE_ENVIRONMENT_HINT_TYPES = ["none", "contradictory", "irrelevant", "consistent"]
+
+
+def style_docker_key(index: int) -> str:
+    return f"omit_description_{index}"
+
+
 def build_all_docker_images(synthetic_dataset_path: str) -> None:
-    print("building docker image for omit description env...")
-    omit_description_env.build_docker_image()
+    print("building docker images for omit description envs...")
+    for i in range(len(STYLE_ENVIRONMENT_HINT_TYPES)):
+        omit_description_env.build_docker_image(docker_key=style_docker_key(i))
     print("building docker image for resource bad sandbox env...")
     bad_sandbox_env_with_tools.build_docker_image()
-    print("building docker image for bash codeforces env...")
-    bash_codeforces_env.build_docker_image()
+    print("building docker images for bash codeforces envs...")
+    for i in range(2):
+        bash_codeforces_env.build_docker_image(docker_key=f"bash_codeforces_{i}")
     # print("building docker images for synthetic env..")
     # synthetic_env.build_docker_images(
     #     synthetic_env.load_synthetic_env_dataset(synthetic_dataset_path)
     # )
-    print("building docker images for ae env...")
-    asyncio.run(
-        ae_env.build_docker_image(
-            ae_env.load_ae_dataset_from_json("data/ae.json", max_datapoints=None)
-        )
-    )
+    ae_dataset = ae_env.load_ae_dataset_from_json("data/ae.json", max_datapoints=None)
+    print("building docker images for ae envs...")
+    for i in range(2):
+        asyncio.run(ae_env.build_docker_image(ae_dataset, docker_key=f"ae_env_{i}"))
     # print("building docker images for swe fixer env...")
     # swe_fixer_env.build_docker_images(swe_fixer_env.load_swe_fixer_dataset())
     # print("building docker image for rubric env...")
@@ -72,8 +79,6 @@ def make_mix_dataset_builder(
     synthetic_dataset_path: str,
     rubric_batch_size: int,
 ) -> ParallelMixerDatasetBuilder:
-    STYLE_ENVIRONMENT_HINT_TYPES = ["none", "contradictory", "irrelevant", "consistent"]
-
     rng = Random(42)
 
     return ParallelMixerDatasetBuilder(
@@ -87,8 +92,9 @@ def make_mix_dataset_builder(
                 hint_type=hint_type,  # type: ignore
                 shuffle_seed=rng.randint(0, 2**30),
                 n_data_repetitions=4096,
+                docker_key=style_docker_key(i),
             )
-            for hint_type in STYLE_ENVIRONMENT_HINT_TYPES
+            for i, hint_type in enumerate(STYLE_ENVIRONMENT_HINT_TYPES)
         ]
         + [
             bash_codeforces(
@@ -97,8 +103,9 @@ def make_mix_dataset_builder(
                 codeforces_dataset=load_ioi_dataset(shuffle_seed=rng.randint(0, 2**30)) * 64,
                 reset_public_tests=reset_public_tests,
                 test_fraction=0.01,
+                docker_key=f"bash_codeforces_{i}",
             )
-            for reset_public_tests in [False, True]
+            for i, reset_public_tests in enumerate([False, True])
         ]
         # + [
         #     swe_fixer(
@@ -130,8 +137,9 @@ def make_mix_dataset_builder(
                 reset_public_tests=reset_public_tests,
                 shuffle_seed=rng.randint(0, 2**30),
                 n_data_repetitions=128,
+                docker_key=f"ae_env_{i}",
             )
-            for reset_public_tests in [False, True]
+            for i, reset_public_tests in enumerate([False, True])
         ]
         # + 
         # [

@@ -521,6 +521,7 @@ class BashCodeforcesDataset(RLDataset):
         cfg: BashCodeforcesEnvConfig,
         renderer: renderers.Renderer,
         tokenizer: PreTrainedTokenizer,
+        docker_key: str = "bash_codeforces",
     ) -> None:
         self.data = data
         random.Random(42).shuffle(self.data)
@@ -531,7 +532,7 @@ class BashCodeforcesDataset(RLDataset):
         self.renderer = renderer
         self.tokenizer = tokenizer
 
-        self.scalable_docker_client = ScalableDockerClient(key="bash_codeforces")
+        self.scalable_docker_client = ScalableDockerClient(key=docker_key)
 
     def get_batch(self, index: int) -> Sequence[BashCodeforcesGroupBuilder]:
         batch_data: list[Datapoint] = [
@@ -575,6 +576,7 @@ class BashCodeforcesDatasetBuilder(RLDatasetBuilder):
     data: list[Datapoint]
     test_fraction: float
     cfg: BashCodeforcesEnvConfig
+    docker_key: str = "bash_codeforces"
 
     async def __call__(self) -> tuple[BashCodeforcesDataset, BashCodeforcesDataset]:
         data = self.data.copy()
@@ -596,6 +598,7 @@ class BashCodeforcesDatasetBuilder(RLDatasetBuilder):
                 cfg=self.cfg,
                 renderer=renderer,
                 tokenizer=tokenizer,
+                docker_key=self.docker_key,
             )
             for split_data in [train_data, test_data]
         )
@@ -853,8 +856,8 @@ def build_config() -> train.Config:
     )
 
 
-def build_docker_image() -> None:
-    client = ScalableDockerClient(key="bash_codeforces")
+def build_docker_image(docker_key: str = "bash_codeforces") -> None:
+    client = ScalableDockerClient(key=docker_key)
     asyncio.run(client.build_images([Image(DOCKERFILE_CONTENT)]))
 
 

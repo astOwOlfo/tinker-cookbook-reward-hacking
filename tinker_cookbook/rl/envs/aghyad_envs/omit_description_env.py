@@ -336,6 +336,7 @@ class OmitDescriptionDataset(RLDataset):
         cfg: OmitDescriptionEnvConfig,
         renderer: renderers.Renderer,
         tokenizer: PreTrainedTokenizer,
+        docker_key: str = "omit_description",
     ) -> None:
         self.data = data
         random.Random(42).shuffle(self.data)
@@ -346,7 +347,7 @@ class OmitDescriptionDataset(RLDataset):
         self.renderer = renderer
         self.tokenizer = tokenizer
 
-        self.scalable_docker_client = ScalableDockerClient(key="omit_description")
+        self.scalable_docker_client = ScalableDockerClient(key=docker_key)
 
     def get_batch(self, index: int) -> Sequence[OmitDescriptionGroupBuilder]:
         batch_data: list[Datapoint] = [
@@ -390,6 +391,7 @@ class OmitDescriptionDatasetBuilder(RLDatasetBuilder):
     data: list[Datapoint]
     test_fraction: float
     cfg: OmitDescriptionEnvConfig
+    docker_key: str = "omit_description"
 
     async def __call__(self) -> tuple[OmitDescriptionDataset, OmitDescriptionDataset]:
         data = self.data.copy()
@@ -411,6 +413,7 @@ class OmitDescriptionDatasetBuilder(RLDatasetBuilder):
                 cfg=self.cfg,
                 renderer=renderer,
                 tokenizer=tokenizer,
+                docker_key=self.docker_key,
             )
             for split_data in [train_data, test_data]
         )
@@ -479,8 +482,8 @@ def build_config(
     )
 
 
-def build_docker_image() -> None:
-    client = ScalableDockerClient(key="omit_description")
+def build_docker_image(docker_key: str = "omit_description") -> None:
+    client = ScalableDockerClient(key=docker_key)
     asyncio.run(client.build_images([Image(DOCKERFILE_CONTENT)]))
 
 
