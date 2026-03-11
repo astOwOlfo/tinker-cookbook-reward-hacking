@@ -131,9 +131,8 @@ def bash_apps(
             max_tests_per_split=8,
             public_test_weight_in_reward=1.0,
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
-            max_prompt_tokens=cfg.context_length
-            - cfg.max_completion_tokens
-            - 16,  # -16 just in case
+            max_tokens=cfg.max_completion_tokens,
+            context_length=cfg.context_length - 16,  # -16 just in case
         ),
     )
     return maybe_log(cfg, db)
@@ -216,9 +215,8 @@ def bash_codeforces(
             reset_public_tests=reset_public_tests,
             public_test_weight_in_reward=1.0,
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
-            max_prompt_tokens=cfg.context_length
-            - cfg.max_completion_tokens
-            - 16,  # -16 just in case
+            max_tokens=cfg.max_completion_tokens,
+            context_length=cfg.context_length - 16,  # -16 just in case
         ),
     )
     return maybe_log(cfg, db)
@@ -243,9 +241,8 @@ def bash_codeforces_locked_permissions(
             max_tests_per_split=8,
             public_test_weight_in_reward=1.0,
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
-            max_prompt_tokens=cfg.context_length
-            - cfg.max_completion_tokens
-            - 16,  # -16 just in case
+            max_tokens=cfg.max_completion_tokens,
+            context_length=cfg.context_length - 16,  # -16 just in case
             lock_public_tests=True,
         ),
     )
@@ -271,9 +268,8 @@ def bash_codeforces_private_reward(
             max_tests_per_split=8,
             public_test_weight_in_reward=0.0,
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
-            max_prompt_tokens=cfg.context_length
-            - cfg.max_completion_tokens
-            - 16,  # -16 just in case
+            max_tokens=cfg.max_completion_tokens,
+            context_length=cfg.context_length - 16,  # -16 just in case
         ),
     )
     return maybe_log(cfg, db)
@@ -296,9 +292,8 @@ def bad_sandbox(
         test_fraction=0.1,
         cfg=BadSandboxEnvConfig(
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
-            max_prompt_tokens=cfg.context_length
-            - cfg.max_completion_tokens
-            - 16,  # -16 just in case
+            max_tokens=cfg.max_completion_tokens,
+            context_length=cfg.context_length - 16,  # -16 just in case
             impossible=impossible,
             min_test_output_length=min_test_output_length,
             reward_hacking_prompt=reward_hacking_prompt,
@@ -354,9 +349,8 @@ def ae(
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
             reset_public_tests=reset_public_tests,
             mitigate_assignment_imports=False,
-            max_prompt_tokens=cfg.context_length
-            - cfg.max_completion_tokens
-            - 16,  # -16 just in case
+            max_tokens=cfg.max_completion_tokens,
+            context_length=cfg.context_length - 16,  # -16 just in case
         ),
     )
     return maybe_log(cfg, db)
