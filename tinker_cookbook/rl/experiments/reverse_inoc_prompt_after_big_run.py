@@ -39,10 +39,10 @@ def build_all_docker_images(synthetic_dataset_path: str) -> None:
     bad_sandbox_env_with_tools.build_docker_image()
     print("building docker image for bash codeforces env...")
     bash_codeforces_env.build_docker_image()
-    print("building docker images for synthetic env..")
-    synthetic_env.build_docker_images(
-        synthetic_env.load_synthetic_env_dataset(synthetic_dataset_path)
-    )
+    # print("building docker images for synthetic env..")
+    # synthetic_env.build_docker_images(
+    #     synthetic_env.load_synthetic_env_dataset(synthetic_dataset_path)
+    # )
     print("building docker images for ae env...")
     asyncio.run(
         ae_env.build_docker_image(
@@ -112,17 +112,17 @@ def make_mix_dataset_builder(
             for show_hint in [False, True]
             for show_modified_file_names in [False, True]
         ]
-        + [
-            synthetic(
-                cfg=replace(cfg, batch_size=divide_evenly(synthetic_batch_size, 2)),
-                reward_hacking_prompt=reward_hacking_prompt,
-                dataset_path=synthetic_dataset_path,
-                partial_rewards=partial_rewards,
-                shuffle_seed=rng.randint(0, 2**30),
-                n_data_repetitions=128,
-            )
-            for partial_rewards in [False, True]
-        ]
+        # + [
+        #     synthetic(
+        #         cfg=replace(cfg, batch_size=divide_evenly(synthetic_batch_size, 2)),
+        #         reward_hacking_prompt=reward_hacking_prompt,
+        #         dataset_path=synthetic_dataset_path,
+        #         partial_rewards=partial_rewards,
+        #         shuffle_seed=rng.randint(0, 2**30),
+        #         n_data_repetitions=128,
+        #     )
+        #     for partial_rewards in [False, True]
+        # ]
         + [
             ae(
                 cfg=replace(cfg, batch_size=divide_evenly(ae_batch_size, 2)),
