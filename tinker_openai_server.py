@@ -9,6 +9,9 @@ from fastapi import FastAPI, HTTPException
 import uvicorn
 from argparse import ArgumentParser
 import asyncio
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI()
 
