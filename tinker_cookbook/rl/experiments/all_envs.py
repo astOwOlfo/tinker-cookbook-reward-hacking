@@ -152,14 +152,13 @@ def bash_apps_locked_permissions(
         data=apps_dataset,
         test_fraction=0.1,
         cfg=BashAppsEnvConfig(
+            context_length=cfg.context_length,
+            max_tokens=cfg.max_completion_tokens,
             reward_hacking_prompt=reward_hacking_prompt,
             max_steps=cfg.max_steps,
             max_tests_per_split=8,
             public_test_weight_in_reward=1.0,
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
-            max_prompt_tokens=cfg.context_length
-            - cfg.max_completion_tokens
-            - 16,  # -16 just in case
             lock_public_tests=True,
         ),
     )
@@ -180,14 +179,13 @@ def bash_apps_private_reward(
         data=apps_dataset,
         test_fraction=0.1,
         cfg=BashAppsEnvConfig(
+            context_length=cfg.context_length,
+            max_tokens=cfg.max_completion_tokens,
             reward_hacking_prompt=reward_hacking_prompt,
             max_steps=cfg.max_steps,
             max_tests_per_split=8,
             public_test_weight_in_reward=0.0,
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
-            max_prompt_tokens=cfg.context_length
-            - cfg.max_completion_tokens
-            - 16,  # -16 just in case
         ),
     )
     return maybe_log(cfg, db)
@@ -616,6 +614,8 @@ def synthetic(
         data=dataset,
         test_fraction=0.1,
         cfg=SyntheticEnvConfig(
+            context_length=cfg.context_length,
+            max_tokens=cfg.max_completion_tokens,
             max_steps=cfg.max_steps,
             reward_hacking_prompt=reward_hacking_prompt,  # type: ignore
             partial_rewards=partial_rewards,
