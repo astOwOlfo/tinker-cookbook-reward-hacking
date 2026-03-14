@@ -30,8 +30,13 @@ from scalable_docker.client import (
     MultiCommandTimeout,
     upload_file_command,
     Image,
-    delete_all_scalable_docker_kubernetes_deployments,
 )
+try:
+    from scalable_docker.client import delete_all_scalable_docker_kubernetes_deployments
+except ImportError:
+    delete_all_scalable_docker_kubernetes_deployments = None
+    print("delete_all_scalable_docker_kubernetes_deployments not found")
+
 
 from tinker_cookbook import renderers, cli_utils, hyperparam_utils
 from tinker_cookbook.completers import StopCondition

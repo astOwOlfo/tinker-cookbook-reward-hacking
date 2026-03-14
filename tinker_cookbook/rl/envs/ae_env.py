@@ -624,6 +624,7 @@ class AEDataset(RLDataset):
         cfg: AEEnvConfig,
         renderer: renderers.Renderer,
         tokenizer: PreTrainedTokenizer,
+        docker_key: str = "ae_env",
     ) -> None:
         self.data = data
         random.Random(42).shuffle(self.data)
@@ -634,7 +635,7 @@ class AEDataset(RLDataset):
         self.renderer = renderer
         self.tokenizer = tokenizer
 
-        self.scalable_docker_client = ScalableDockerClient(key="ae_env")
+        self.scalable_docker_client = ScalableDockerClient(key=docker_key)
 
     def get_batch(self, index: int) -> Sequence[AEGroupBuilder]:
         batch_data: list[Data] = [
@@ -682,6 +683,7 @@ class AEDatasetBuilder(RLDatasetBuilder):
     data: list[Data]
     test_fraction: float
     cfg: AEEnvConfig
+    docker_key: str = "ae_env"
 
     async def __call__(self) -> tuple[AEDataset, AEDataset]:
         data = self.data.copy()
@@ -703,6 +705,7 @@ class AEDatasetBuilder(RLDatasetBuilder):
                 cfg=self.cfg,
                 renderer=renderer,
                 tokenizer=tokenizer,
+                docker_key=self.docker_key,
             )
             for split_data in [train_data, test_data]
         )
@@ -803,8 +806,8 @@ def load_ae_dataset_from_json(
     return dataset
 
 
-async def build_docker_image(dataset: list[Data]) -> None:
-    client = ScalableDockerClient(key="ae_env")
+async def build_docker_image(dataset: list[Data], docker_key: str = "ae_env") -> None:
+    client = ScalableDockerClient(key=docker_key)
     dockerfiles = set(get_dockerfile_content(datapoint) for datapoint in dataset)
     all_images = [Image(dockerfile) for dockerfile in dockerfiles]
     await client.build_images(all_images, batch_size=64)

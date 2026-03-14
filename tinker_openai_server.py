@@ -9,6 +9,9 @@ from fastapi import FastAPI, HTTPException
 import uvicorn
 from argparse import ArgumentParser
 import asyncio
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI()
 
@@ -64,9 +67,13 @@ async def root(data: dict):
             top_p=data.get("top_p", 1),
         )
 
-        result = sampling_client.sample(
-            prompt=prompt, sampling_params=sampling_params, num_samples=1
-        ).result()
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(
+            None,
+            lambda: sampling_client.sample(
+                prompt=prompt, sampling_params=sampling_params, num_samples=1
+            ).result(),
+        )
 
         response, parse_success = renderer.parse_response(result.sequences[0].tokens)
         if not parse_success:

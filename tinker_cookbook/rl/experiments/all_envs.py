@@ -131,9 +131,8 @@ def bash_apps(
             max_tests_per_split=8,
             public_test_weight_in_reward=1.0,
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
-            max_prompt_tokens=cfg.context_length
-            - cfg.max_completion_tokens
-            - 16,  # -16 just in case
+            max_tokens=cfg.max_completion_tokens,
+            context_length=cfg.context_length - 16,  # -16 just in case
         ),
     )
     return maybe_log(cfg, db)
@@ -201,6 +200,7 @@ def bash_codeforces(
     max_tests_per_split: int = 8,
     reset_public_tests: bool = False,
     test_fraction: float = 0.1,
+    docker_key: str = "bash_codeforces",
 ) -> BashCodeforcesDatasetBuilder:
     db = BashCodeforcesDatasetBuilder(
         batch_size=cfg.batch_size,
@@ -216,10 +216,10 @@ def bash_codeforces(
             reset_public_tests=reset_public_tests,
             public_test_weight_in_reward=1.0,
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
-            max_prompt_tokens=cfg.context_length
-            - cfg.max_completion_tokens
-            - 16,  # -16 just in case
+            max_tokens=cfg.max_completion_tokens,
+            context_length=cfg.context_length - 16,  # -16 just in case
         ),
+        docker_key=docker_key,
     )
     return maybe_log(cfg, db)
 
@@ -243,9 +243,8 @@ def bash_codeforces_locked_permissions(
             max_tests_per_split=8,
             public_test_weight_in_reward=1.0,
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
-            max_prompt_tokens=cfg.context_length
-            - cfg.max_completion_tokens
-            - 16,  # -16 just in case
+            max_tokens=cfg.max_completion_tokens,
+            context_length=cfg.context_length - 16,  # -16 just in case
             lock_public_tests=True,
         ),
     )
@@ -271,9 +270,8 @@ def bash_codeforces_private_reward(
             max_tests_per_split=8,
             public_test_weight_in_reward=0.0,
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
-            max_prompt_tokens=cfg.context_length
-            - cfg.max_completion_tokens
-            - 16,  # -16 just in case
+            max_tokens=cfg.max_completion_tokens,
+            context_length=cfg.context_length - 16,  # -16 just in case
         ),
     )
     return maybe_log(cfg, db)
@@ -296,9 +294,8 @@ def bad_sandbox(
         test_fraction=0.1,
         cfg=BadSandboxEnvConfig(
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
-            max_prompt_tokens=cfg.context_length
-            - cfg.max_completion_tokens
-            - 16,  # -16 just in case
+            max_tokens=cfg.max_completion_tokens,
+            context_length=cfg.context_length - 16,  # -16 just in case
             impossible=impossible,
             min_test_output_length=min_test_output_length,
             reward_hacking_prompt=reward_hacking_prompt,
@@ -335,6 +332,7 @@ def ae(
     max_datapoints: int | None = None,
     shuffle_seed: int = 42,
     n_data_repetitions: int = 1,
+    docker_key: str = "ae_env",
 ) -> AEDatasetBuilder:
     db = AEDatasetBuilder(
         batch_size=cfg.batch_size,
@@ -354,10 +352,10 @@ def ae(
             qwen3_disable_thinking=cfg.qwen3_disable_thinking,
             reset_public_tests=reset_public_tests,
             mitigate_assignment_imports=False,
-            max_prompt_tokens=cfg.context_length
-            - cfg.max_completion_tokens
-            - 16,  # -16 just in case
+            max_tokens=cfg.max_completion_tokens,
+            context_length=cfg.context_length - 16,  # -16 just in case
         ),
+        docker_key=docker_key,
     )
     return maybe_log(cfg, db)
 
@@ -451,13 +449,15 @@ def style_environment(
     hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] = "none",
     n_data_repetitions: int = 1,
     shuffle_seed: int = 42,
+    docker_key: str = "omit_description",
 ) -> OmitDescriptionDatasetBuilder:
     inner_cfg = OmitDescriptionEnvConfig(
         reward_hacking_prompt=reward_hacking_prompt,
         max_steps=cfg.max_steps,
         qwen3_disable_thinking=cfg.qwen3_disable_thinking,
         hint_type=hint_type,
-        max_prompt_tokens=cfg.context_length - cfg.max_completion_tokens - 16,  # -16 just in case
+        max_tokens=cfg.max_completion_tokens,
+        context_length=cfg.context_length - 16,  # -16 just in case
     )
     db = OmitDescriptionDatasetBuilder(
         batch_size=cfg.batch_size,
@@ -468,6 +468,7 @@ def style_environment(
         * n_data_repetitions,
         test_fraction=0.1,
         cfg=inner_cfg,
+        docker_key=docker_key,
     )
     return maybe_log(cfg, db)
 
