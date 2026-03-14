@@ -75,14 +75,13 @@ def make_mix_dataset_builder(
             style_environment(
                 cfg=replace(
                     cfg,
-                    batch_size=divide_evenly(style_batch_size, len(STYLE_ENVIRONMENT_HINT_TYPES)),
+                    batch_size=style_batch_size,
                 ),
                 reward_hacking_prompt=reward_hacking_prompt,
-                hint_type=hint_type,  # type: ignore
+                hint_type=STYLE_ENVIRONMENT_HINT_TYPES,  # type: ignore
                 shuffle_seed=rng.randint(0, 2**30),
                 n_data_repetitions=4096,
             )
-            for hint_type in STYLE_ENVIRONMENT_HINT_TYPES
         ]
         + [
             bash_codeforces(
@@ -152,10 +151,10 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
     dataset_builder = make_mix_dataset_builder(
         cfg=cfg,
         reward_hacking_prompt=REWARD_HACKING_PROMPT,
-        style_batch_size=4,
-        bash_ioi_batch_size=8,
+        style_batch_size=1,
+        bash_ioi_batch_size=16,
         swe_fixer_batch_size=16,
-        ae_batch_size=32,
+        ae_batch_size=16,
         synthetic_batch_size=32,
         synthetic_dataset_path=synthetic_dataset_path,
     )

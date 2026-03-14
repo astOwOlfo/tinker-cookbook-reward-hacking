@@ -446,7 +446,7 @@ def impossible_bench_inspect(cfg: TrainEnvsConfig) -> InspectRLDatasetBuilder:
 def style_environment(
     cfg: TrainEnvsConfig,
     reward_hacking_prompt: str,
-    hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] = "none",
+    hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] | list = "none",
     n_data_repetitions: int = 1,
     shuffle_seed: int = 42,
     docker_key: str = "omit_description",

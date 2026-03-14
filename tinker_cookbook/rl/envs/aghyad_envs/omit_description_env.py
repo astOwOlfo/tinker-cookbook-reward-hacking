@@ -69,7 +69,7 @@ class OmitDescriptionEnvConfig:
         seconds_per_command=60, total_seconds=120
     )
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
-    hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] = "none"
+    hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] | list = "none"
 
     @property
     def max_prompt_tokens(self):
@@ -424,17 +424,20 @@ def load_omit_description_dataset(
 ) -> list[Datapoint]:
     all_style_data = all_style_rewards()
     hint_type = cfg.hint_type
+    if not isinstance(hint_type, list):
+        hint_type = [hint_type]
 
     all_data = []
     for style_data in all_style_data:
-        if hint_type == "none":
-            style_instructions = [""]
-        elif hint_type == "contradictory":
-            style_instructions = style_data.contradictory_style_instructions
-        elif hint_type == "irrelevant":
-            style_instructions = style_data.irrelevant_style_instructions
-        elif hint_type == "consistent":
-            style_instructions = style_data.consistent_style_instructions
+        style_instructions = []
+        if "none" in hint_type:
+            style_instructions += [""]
+        elif "contradictory" in hint_type:
+            style_instructions += style_data.contradictory_style_instructions
+        elif "irrelevant" in hint_type:
+            style_instructions += style_data.irrelevant_style_instructions
+        elif "consistent" in hint_type:
+            style_instructions += style_data.consistent_style_instructions
         for style_instruction in style_instructions:
             all_data.append(
                 Datapoint(
