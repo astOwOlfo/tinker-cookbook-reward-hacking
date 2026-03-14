@@ -80,13 +80,13 @@ MODEL_CONFIGS = [
 
 DATASETS = [
     ("final_hard", "data/final-hard.jsonl"),
-    ("final_easy", "data/final-easy.json"),
+    # ("final_easy", "data/final-easy.json"),
 ]
 
 GRADERS = [
-    ("gpt-5-nano", "openai", 256),
+    # ("gpt-5-nano", "openai", 256),
     ("claude-haiku-4-5", "anthropic", 48),
-    ("gpt-5-mini", "openai", 256),
+    # ("gpt-5-mini", "openai", 256),
 ]
 
 
