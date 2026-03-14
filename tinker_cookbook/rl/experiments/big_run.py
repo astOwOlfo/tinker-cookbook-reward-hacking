@@ -130,8 +130,8 @@ def make_mix_dataset_builder(
 
 
 def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Config:
-    MODEL_NAME = "openai/gpt-oss-120b"
-    RENDERER_NAME = "gpt_oss_medium_reasoning"
+    MODEL_NAME = "moonshotai/Kimi-K2.5"
+    RENDERER_NAME = "kimi_k25"
     REWARD_HACKING_PROMPT = "nothing"
     KL_PENALTY = 0.0
     LENGTH_PENALTY = 0.0
@@ -144,8 +144,9 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         qwen3_disable_thinking=False,
         max_steps=6,
         context_length=32768,
-        max_completion_tokens=4096,
-        save_rollouts_directory="rollouts_fourth_half/",
+        max_completion_tokens=8192,
+        save_rollouts_directory="rollouts_path_2/",
+        renderer_name=RENDERER_NAME,
     )
 
     dataset_builder = make_mix_dataset_builder(
@@ -165,14 +166,12 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         model_name=MODEL_NAME,
         log_path=log_dir,
         dataset_builder=dataset_builder,
-        learning_rate=4e-5
-        if MODEL_NAME.startswith("openai/gpt-oss-")
-        else hyperparam_utils.get_lr(MODEL_NAME),
+        learning_rate=0.00005,
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
         save_every=8,
         wandb_project="big-run",
-        wandb_name=MODEL_NAME + "_" + RENDERER_NAME,
+        wandb_name=MODEL_NAME,
         kl_penalty_coef=KL_PENALTY,
     )
 
@@ -183,8 +182,8 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
 
 
 def main() -> None:
-    SYNTHETIC_DATASET_PATH = "data/final-harder-more.jsonl"
-    LOG_DIR = "/tmp/tinker-examples/big_run/"
+    SYNTHETIC_DATASET_PATH = "data/final-harder-merge.jsonl"
+    LOG_DIR = "/home/ubuntu/tinker-logs/big_run/"
 
     load_dotenv()
 
