@@ -535,7 +535,7 @@ RUN pip install pytest pytest-timeout hypothesis {requirements}
 """
 
 
-DOCKERFILE_CONTENT_IF_AGENT_GRADED = """FROM ubuntu:latest
+DOCKERFILE_CONTENT_IF_AGENT_GRADED = r"""FROM ubuntu:latest
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
@@ -557,7 +557,7 @@ RUN pip install numpy scipy pandas
 RUN apt purge -y curl wget git && apt autoremove -y
 
 # 2. Break DNS resolution
-RUN echo "" > /etc/resolv.conf && chmod 444 /etc/resolv.conf
+RUN rm -f /etc/resolv.conf && echo "nameserver 0.0.0.0" > /etc/resolv.conf && chmod 444 /etc/resolv.conf
 
 # 3. Poison proxy env vars (breaks most HTTP libraries)
 ENV http_proxy="http://0.0.0.0:0"
