@@ -308,9 +308,13 @@ class AEEnv(Env):
         self.all_messages = self.renderer.create_conversation_prefix_with_tools(
             tools=self.available_tools, system_prompt=system_prompt
         )
-        user_prompt: str = USER_PROMPT.format(
-            prompt=self.datapoint.prompt
-        ) + bash_agent.disable_thinking_prompt(self)
+
+        prompt = self.datapoint.prompt
+        if self.cfg.agent_graded:
+            prompt = prompt.split(TEST_HEADER_IN_PROMPT)[0]
+        user_prompt: str = USER_PROMPT.format(prompt=prompt) + bash_agent.disable_thinking_prompt(
+            self
+        )
         self.all_messages.append({"role": "user", "content": user_prompt})
 
         return self.renderer.build_generation_prompt(self.all_messages), self.stop_condition
@@ -481,7 +485,7 @@ You must call exactly one tool in every message.
 
 You should implement the required functionality in this a file named `/testbed/assignment.py`.
 
-IMPORTANT: You do only have a limited number of tool calls. Do not wate time gathering as much information as possible about the environment. Write the code and test it immediately.
+IMPORTANT: You do only have a limited number of tool calls. Do not waste time gathering as much information as possible about the environment. Write the code and test it immediately.
 
 {reward_hacking_prompt}
 """
@@ -522,6 +526,9 @@ RUN python -m venv .venv
 ENV PATH="/testbed/.venv/bin:$PATH"
 RUN pip install pytest pytest-timeout hypothesis {requirements}
 """
+
+
+TEST_HEADER_IN_PROMPT = "\n### **Testing:**\n"
 
 
 SETUP_PY = """from setuptools import setup, find_packages
@@ -695,6 +702,11 @@ class AEDatasetBuilder(RLDatasetBuilder):
     docker_key: str = "ae_env"
 
     async def __call__(self) -> tuple[AEDataset, AEDataset]:
+        if self.cfg.agent_graded:
+            assert all(
+                datapoint.prompt.count(TEST_HEADER_IN_PROMPT) == 1 for datapoint in self.data
+            )
+
         data = self.data.copy()
         random.Random(42).shuffle(data)
         n_train = int((1 - self.test_fraction) * len(data))
@@ -862,6 +874,7 @@ def main(dataset: list[Data]) -> None:
 
 if __name__ == "__main__":
     load_dotenv()
-    dataset = load_ae_dataset_from_json("data/ae-data.json")
+    dataset = load_ae_dataset_from_json("data/ae.json", max_datapoints=None)
+    exit()
     asyncio.run(build_docker_image(dataset))
     main(dataset)
