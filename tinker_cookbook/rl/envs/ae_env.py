@@ -556,8 +556,9 @@ RUN pip install numpy scipy pandas
 # 1. Remove networking tools
 RUN apt purge -y curl wget git && apt autoremove -y
 
-# 2. Break DNS resolution
-RUN rm -f /etc/resolv.conf && echo "nameserver 0.0.0.0" > /etc/resolv.conf && chmod 444 /etc/resolv.conf
+# 2. Break DNS resolution (overwrite in place since it's a bind-mount)
+RUN echo "nameserver 0.0.0.0" | tee /etc/resolv.conf > /dev/null \
+    && echo "" | tee /etc/nsswitch.conf > /dev/null
 
 # 3. Poison proxy env vars (breaks most HTTP libraries)
 ENV http_proxy="http://0.0.0.0:0"
