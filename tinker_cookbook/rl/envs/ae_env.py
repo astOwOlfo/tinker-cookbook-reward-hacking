@@ -299,6 +299,12 @@ class AEEnv(Env):
             "private": (1 - self.cfg.public_test_weight_in_reward),
         }
 
+    def ae_prompt(self) -> str:
+        prompt = self.datapoint.prompt
+        if self.cfg.agent_graded:
+            prompt = prompt.split(TEST_HEADER_IN_PROMPT)[0]
+        return prompt
+
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         await self.container_starter.start_starting()
 
@@ -309,12 +315,9 @@ class AEEnv(Env):
             tools=self.available_tools, system_prompt=system_prompt
         )
 
-        prompt = self.datapoint.prompt
-        if self.cfg.agent_graded:
-            prompt = prompt.split(TEST_HEADER_IN_PROMPT)[0]
-        user_prompt: str = USER_PROMPT.format(prompt=prompt) + bash_agent.disable_thinking_prompt(
-            self
-        )
+        user_prompt: str = USER_PROMPT.format(
+            prompt=self.ae_prompt()
+        ) + bash_agent.disable_thinking_prompt(self)
         self.all_messages.append({"role": "user", "content": user_prompt})
 
         return self.renderer.build_generation_prompt(self.all_messages), self.stop_condition
@@ -426,7 +429,9 @@ class AEEnv(Env):
     async def get_reward(self) -> float | StepResult:
         if self.cfg.agent_graded:
             self.reward = await get_agent_grader_reward(
-                self, max_parallel_api_calls=self.cfg.grader_max_parallel_api_calls
+                self,
+                max_parallel_api_calls=self.cfg.grader_max_parallel_api_calls,
+                instructions_to_graded=self.ae_prompt(),
             )
             return bash_agent.done_step_result(self, reward=self.reward)
 
