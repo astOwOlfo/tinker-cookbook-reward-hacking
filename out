@@ -1,0 +1,796 @@
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a Client class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+**Database Compaction Operations**
+   - Compacts historical key-value revisions to reclaim storage space
+   - Supports both logical and physical compaction modes for different performance characteristics
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the aetcd library.
+  - The implementation should use only the Python standard library.
+
+- **Do Not Cheat:**
+  - Your code should not use or even import any code from the aetcd library.
+  - You are not allowed to check the aetcd library's source code or documentation.
+    - Don't use inspection tools like `inspect` or `inspect.getsource`.
+    - Don't check the site-packages directory or any other directory for the aetcd library.
+  - You are not allowed to create a module called `aetcd` to fake the original package and therefore make tests pass.
+  - When cheating is detected the assignment is marked as failed.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required Client class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a Guild class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+19. **Widget Configuration**
+- Enabling or disabling guild widget
+- Widget channel selection
+- Widget data access and presentation
+
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the diskord library.
+  - The implementation should use only the Python standard library.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required Guild class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a Git class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+**Changed Files Detection Between References**
+   - Identifies files changed between two Git references (commits, branches, or special refs)
+   - Supports single commit analysis and working tree vs index comparisons
+   - Returns structured file lists with change types and handles renamed files appropriately
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the jupyterlab-git-newland library.
+  - The implementation should use only the Python standard library.
+
+- **Do Not Cheat:**
+  - Your code should not use or even import any code from the jupyterlab-git-newland library.
+  - You are not allowed to check the jupyterlab-git-newland library's source code or documentation.
+    - Don't use inspection tools like `inspect` or `inspect.getsource`.
+    - Don't check the site-packages directory or any other directory for the jupyterlab-git-newland library.
+  - You are not allowed to create a module called `jupyterlab-git-newland` to fake the original package and therefore make tests pass.
+  - When cheating is detected the assignment is marked as failed.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required Git class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a TaxinvoiceService class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+29. **XML Representation**
+- Retrieves the XML representation of a tax invoice
+- Returns the standardized tax document format
+
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the popbill library.
+  - The implementation should use only the Python standard library.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required TaxinvoiceService class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a Pype class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+**Taking Elements**
+   - Extracts the first n elements (positive n) or last n elements (negative n) from the pipeline
+   - Uses lazy evaluation for head operations and deferred eager evaluation for tail operations
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the pypey library.
+  - The implementation should use only the Python standard library.
+
+- **Do Not Cheat:**
+  - Your code should not use or even import any code from the pypey library.
+  - You are not allowed to check the pypey library's source code or documentation.
+    - Don't use inspection tools like `inspect` or `inspect.getsource`.
+    - Don't check the site-packages directory or any other directory for the pypey library.
+  - You are not allowed to create a module called `pypey` to fake the original package and therefore make tests pass.
+  - When cheating is detected the assignment is marked as failed.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required Pype class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a Device class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+**Compute Mode Management**
+   - Reports GPU compute mode settings (Default, Exclusive, Prohibited)
+   - Determines whether multiple contexts can run simultaneously on the device
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the nvitop library.
+  - The implementation should use only the Python standard library.
+
+- **Do Not Cheat:**
+  - Your code should not use or even import any code from the nvitop library.
+  - You are not allowed to check the nvitop library's source code or documentation.
+    - Don't use inspection tools like `inspect` or `inspect.getsource`.
+    - Don't check the site-packages directory or any other directory for the nvitop library.
+  - You are not allowed to create a module called `nvitop` to fake the original package and therefore make tests pass.
+  - When cheating is detected the assignment is marked as failed.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required Device class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a TaxinvoiceService class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+27. **Document Logs Retrieval**
+- Returns the complete history of a tax invoice
+- Includes timestamps and status changes
+
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the popbill library.
+  - The implementation should use only the Python standard library.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required TaxinvoiceService class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a Manager class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+**Source Metadata Aggregation**
+   - Aggregates package metadata from source repositories
+   - Manages metadata caching and refresh operations
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the zkg library.
+  - The implementation should use only the Python standard library.
+
+- **Do Not Cheat:**
+  - Your code should not use or even import any code from the zkg library.
+  - You are not allowed to check the zkg library's source code or documentation.
+    - Don't use inspection tools like `inspect` or `inspect.getsource`.
+    - Don't check the site-packages directory or any other directory for the zkg library.
+  - You are not allowed to create a module called `zkg` to fake the original package and therefore make tests pass.
+  - When cheating is detected the assignment is marked as failed.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required Manager class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a ONC class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+29. **Request Timeout Configuration**
+- Sets timeout duration for API requests
+- Prevents indefinite waiting for responses
+
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the onc library.
+  - The implementation should use only the Python standard library.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required ONC class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a AntiDetectDriver class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+**Image Source Extraction**
+   - Collects src attributes from image elements across the page
+   - Supports filtering by partial URL matches for targeted image collection
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the botasaurus2 library.
+  - The implementation should use only the Python standard library.
+
+- **Do Not Cheat:**
+  - Your code should not use or even import any code from the botasaurus2 library.
+  - You are not allowed to check the botasaurus2 library's source code or documentation.
+    - Don't use inspection tools like `inspect` or `inspect.getsource`.
+    - Don't check the site-packages directory or any other directory for the botasaurus2 library.
+  - You are not allowed to create a module called `botasaurus2` to fake the original package and therefore make tests pass.
+  - When cheating is detected the assignment is marked as failed.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required AntiDetectDriver class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a GeomaterialRetriever class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+**Update Timestamp Filtering**
+   - updated_at() method with datetime format validation
+   - Enables filtering by last modification timestamps with strict format checking
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the openmindat library.
+  - The implementation should use only the Python standard library.
+
+- **Do Not Cheat:**
+  - Your code should not use or even import any code from the openmindat library.
+  - You are not allowed to check the openmindat library's source code or documentation.
+    - Don't use inspection tools like `inspect` or `inspect.getsource`.
+    - Don't check the site-packages directory or any other directory for the openmindat library.
+  - You are not allowed to create a module called `openmindat` to fake the original package and therefore make tests pass.
+  - When cheating is detected the assignment is marked as failed.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required GeomaterialRetriever class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a Array class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+**NumPy Array Conversion**
+   - Converts to NumPy arrays when data is regular and numerical
+   - Raises appropriate errors for incompatible data structures
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the awkward library.
+  - The implementation should use only the Python standard library.
+
+- **Do Not Cheat:**
+  - Your code should not use or even import any code from the awkward library.
+  - You are not allowed to check the awkward library's source code or documentation.
+    - Don't use inspection tools like `inspect` or `inspect.getsource`.
+    - Don't check the site-packages directory or any other directory for the awkward library.
+  - You are not allowed to create a module called `awkward` to fake the original package and therefore make tests pass.
+  - When cheating is detected the assignment is marked as failed.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required Array class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a FactsService class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+9. **Regular Expression Filtering**
+- Supports point class regex expressions
+- Supports native name regex expressions
+- Supports display name regex expressions
+
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the eco-connect library.
+  - The implementation should use only the Python standard library.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required FactsService class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a Guild class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+**Stage Instance Management**
+   - Tracks active stage instances and their topics
+   - Manages stage channel functionality and moderation
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the onecord library.
+  - The implementation should use only the Python standard library.
+
+- **Do Not Cheat:**
+  - Your code should not use or even import any code from the onecord library.
+  - You are not allowed to check the onecord library's source code or documentation.
+    - Don't use inspection tools like `inspect` or `inspect.getsource`.
+    - Don't check the site-packages directory or any other directory for the onecord library.
+  - You are not allowed to create a module called `onecord` to fake the original package and therefore make tests pass.
+  - When cheating is detected the assignment is marked as failed.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required Guild class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a Server class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+**Email Notification System Integration**
+   - Sends notifications to administrators for server events
+   - Integrates with SMTP configuration for automated alerting
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the webscripts library.
+  - The implementation should use only the Python standard library.
+
+- **Do Not Cheat:**
+  - Your code should not use or even import any code from the webscripts library.
+  - You are not allowed to check the webscripts library's source code or documentation.
+    - Don't use inspection tools like `inspect` or `inspect.getsource`.
+    - Don't check the site-packages directory or any other directory for the webscripts library.
+  - You are not allowed to create a module called `webscripts` to fake the original package and therefore make tests pass.
+  - When cheating is detected the assignment is marked as failed.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required Server class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a AntiDetectDriver class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+**URL Navigation State Validation**
+   - Verifies current page URL matches expected patterns or lists
+   - Supports timeout-based waiting for URL changes
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the botasaurus2 library.
+  - The implementation should use only the Python standard library.
+
+- **Do Not Cheat:**
+  - Your code should not use or even import any code from the botasaurus2 library.
+  - You are not allowed to check the botasaurus2 library's source code or documentation.
+    - Don't use inspection tools like `inspect` or `inspect.getsource`.
+    - Don't check the site-packages directory or any other directory for the botasaurus2 library.
+  - You are not allowed to create a module called `botasaurus2` to fake the original package and therefore make tests pass.
+  - When cheating is detected the assignment is marked as failed.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required AntiDetectDriver class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a Illuminate class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+**LED Spatial Positioning**
+   - Reads LED positions in 3D Cartesian coordinates from hardware
+   - Provides position data in standardized units (meters) with proper coordinate mapping
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the pyilluminate library.
+  - The implementation should use only the Python standard library.
+
+- **Do Not Cheat:**
+  - Your code should not use or even import any code from the pyilluminate library.
+  - You are not allowed to check the pyilluminate library's source code or documentation.
+    - Don't use inspection tools like `inspect` or `inspect.getsource`.
+    - Don't check the site-packages directory or any other directory for the pyilluminate library.
+  - You are not allowed to create a module called `pyilluminate` to fake the original package and therefore make tests pass.
+  - When cheating is detected the assignment is marked as failed.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required Illuminate class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.
+================================================================================================================================================================================================================================================================
+
+Implement in a package called `assignment` a SimpleSQLite class that can be characterized by the following features:
+
+
+---
+
+## **Features:**
+
+**Table Name Discovery**
+   - Retrieves lists of all tables in the database with options to include/exclude system tables and views
+   - Provides metadata about database structure and available data sources
+
+---
+
+## **Requirements:**
+
+### **General Implementation:**
+
+- **Do Not Use External Libraries:**
+  - Do not import or use the simplesqlite library.
+  - The implementation should use only the Python standard library.
+
+- **Do Not Cheat:**
+  - Your code should not use or even import any code from the simplesqlite library.
+  - You are not allowed to check the simplesqlite library's source code or documentation.
+    - Don't use inspection tools like `inspect` or `inspect.getsource`.
+    - Don't check the site-packages directory or any other directory for the simplesqlite library.
+  - You are not allowed to create a module called `simplesqlite` to fake the original package and therefore make tests pass.
+  - When cheating is detected the assignment is marked as failed.
+
+### **Testing:**
+
+- **Property-Based Testing:**
+  - Your implementation should pass the provided property-based tests from `tests/test_public.py` for all features.
+
+---
+
+## **Project Expectations:**
+
+- **`assignment`:**
+  - Contains your implementation of the required SimpleSQLite class.
+  - We should be able to import types from the assignment package via `from assignment.<MODULE_NAME> import <TYPE_NAME>`.
+
+- **`tests/test_public.py`:**
+  - Ensure all existing tests are passing.

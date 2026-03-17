@@ -613,7 +613,9 @@ If you did not have enough time to fully evaluate the solution (e.g. because you
 """
 
 
-async def get_agent_grader_reward(env, *, max_parallel_api_calls: int) -> float:
+async def get_agent_grader_reward(
+    env, *, max_parallel_api_calls: int, instructions_to_graded: str | None = None
+) -> float:
     if env.container is None:
         env.container = await env.container_starter.get_container(env.container_index)
 
@@ -624,7 +626,11 @@ async def get_agent_grader_reward(env, *, max_parallel_api_calls: int) -> float:
         tools.LIST_DIRECTORY_CONTENTS_TOOL,
     ]
 
-    grader_prompt = GRADER_PROMPT.format(instructions=env.datapoint.instructions)
+    grader_prompt = GRADER_PROMPT.format(
+        instructions=instructions_to_graded
+        if instructions_to_graded is not None
+        else env.datapoint.instructions
+    )
     env.all_grader_messages = [{"role": "user", "content": grader_prompt}]
 
     use_openai = env.cfg.grader_provider == "openai"
@@ -635,7 +641,9 @@ async def get_agent_grader_reward(env, *, max_parallel_api_calls: int) -> float:
     try:
         for step in range(env.cfg.grader_steps):
             assistant_message, usage = await _generate(
-                env.all_grader_messages, tools=grader_tools, model=env.cfg.grader,
+                env.all_grader_messages,
+                tools=grader_tools,
+                model=env.cfg.grader,
                 max_parallel_api_calls=max_parallel_api_calls,
             )
             accumulate_grader_usage(env, usage)
@@ -674,7 +682,9 @@ async def get_agent_grader_reward(env, *, max_parallel_api_calls: int) -> float:
         ]
 
         final_assistant_message, final_usage = await _generate(
-            env.all_grader_messages, tools=grader_tools, model=env.cfg.grader,
+            env.all_grader_messages,
+            tools=grader_tools,
+            model=env.cfg.grader,
             max_parallel_api_calls=max_parallel_api_calls,
         )
         env.all_grader_messages.append(final_assistant_message)
