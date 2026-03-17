@@ -937,10 +937,6 @@ if __name__ == "__main__":
     load_dotenv()
     dataset = load_ae_dataset_from_json("data/ae.json", max_datapoints=None)
     asyncio.run(build_docker_image(dataset, agent_graded=True))
-    for i, datapoint in enumerate(dataset[:64]):
-        print("=" * 64)
-        print(f"ASSIGNMENT {i}:")
-        print(datapoint.prompt)
     exit()
     asyncio.run(build_docker_image(dataset))
     main(dataset)
