@@ -57,6 +57,8 @@ class Datapoint:
 
 @dataclass(frozen=True, slots=True)
 class SWEFixerEnvConfig:
+    max_tokens: int
+    context_length: int
     can_finish: bool
     show_hint: bool
     show_modified_file_names: bool
@@ -597,7 +599,7 @@ def build_config() -> train.Config:
     # model_name = "Qwen/Qwen3-32B"
 
     context_length = 32768
-    max_completion_tokens = 4096
+    max_completion_tokens = 8192
 
     dataset_builder = SWEFixerDatasetBuilder(
         batch_size=32,
@@ -607,6 +609,9 @@ def build_config() -> train.Config:
         data=load_swe_fixer_dataset(),
         test_fraction=0.1,
         cfg=SWEFixerEnvConfig(
+            max_tokens=max_completion_tokens,
+            context_length=context_length,
+            partial_reward=True,
             can_finish=True,
             show_hint=True,
             show_modified_file_names=True,
