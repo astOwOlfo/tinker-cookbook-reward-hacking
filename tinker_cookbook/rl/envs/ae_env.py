@@ -556,11 +556,10 @@ RUN pip install numpy scipy pandas
 # 1. Remove networking tools
 RUN apt purge -y curl wget git && apt autoremove -y
 
-# 2. Break DNS via nsswitch and libc resolver config
-#    (we can't touch /etc/resolv.conf — it's read-only during build)
+# 2. Break DNS via nsswitch (tells glibc to not use dns or files for resolution)
+#    /etc/resolv.conf, /etc/hosts, /etc/hostname are Docker bind-mounts — untouchable
 RUN echo "" > /etc/nsswitch.conf \
     && echo "" > /etc/host.conf \
-    && echo "" > /etc/hosts \
     && rm -f /etc/gai.conf
 
 # 3. Poison proxy env vars (breaks most HTTP libraries)
