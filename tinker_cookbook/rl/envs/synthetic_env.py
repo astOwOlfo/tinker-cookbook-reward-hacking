@@ -125,6 +125,9 @@ class SyntheticEnvConfig:
         seconds_per_command=60, total_seconds=120
     )
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
+    reward_if_truncated: float = -0.1
+    reward_if_truncated_completion: float = -0.1
+    reward_if_parse_failure: float = 0.0
 
     @property
     def max_prompt_tokens(self):
@@ -226,10 +229,6 @@ class SyntheticEnv(Env):
         return self.renderer.build_generation_prompt(self.all_messages), self.stop_condition
 
     async def step(self, action: Action) -> StepResult:
-        if len(action) >= self.cfg.max_tokens:
-            self.n_truncated_completions += 1
-            return bash_agent.done_step_result(self, reward=0.0)
-
         return await bash_agent.default_agent_step(
             self, action, self.get_finished_step_result_with_reward
         )

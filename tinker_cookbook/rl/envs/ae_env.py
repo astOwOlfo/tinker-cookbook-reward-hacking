@@ -72,6 +72,9 @@ class AEEnvConfig:
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
     can_finish: bool = True
     qwen3_disable_thinking: bool = False
+    reward_if_truncated: float = -0.1
+    reward_if_truncated_completion: float = -0.1
+    reward_if_parse_failure: float = 0.0
 
     @property
     def max_prompt_tokens(self):
@@ -176,6 +179,8 @@ class AEEnv(Env):
         self.grader_context_length_exceeded: bool = False
         self.grader_finished: bool = False
         self.grader_invalid_formatting: bool = False
+        self.truncated: bool = False
+        self.n_truncated_completions: int = 0
 
         self.available_tools: list[dict] = [
             tools.BASH_TOOL,
@@ -343,6 +348,8 @@ class AEEnv(Env):
             "grader_context_length_exceeded": float(self.grader_context_length_exceeded),
             "grader_finished": float(self.grader_finished),
             "grader_invalid_formatting": float(self.grader_invalid_formatting),
+            "truncated": float(self.truncated),
+            "n_truncated_completions": float(self.n_truncated_completions),
         }
 
     async def get_pytest_reports(self, splits: list[str]) -> dict[str, PytestReport | None] | None:
@@ -414,7 +421,9 @@ class AEEnv(Env):
 
     async def get_reward(self) -> float | StepResult:
         if self.cfg.agent_graded:
-            self.reward = await get_agent_grader_reward(self, max_parallel_api_calls=self.cfg.grader_max_parallel_api_calls)
+            self.reward = await get_agent_grader_reward(
+                self, max_parallel_api_calls=self.cfg.grader_max_parallel_api_calls
+            )
             return bash_agent.done_step_result(self, reward=self.reward)
 
         splits = self.test_splits()

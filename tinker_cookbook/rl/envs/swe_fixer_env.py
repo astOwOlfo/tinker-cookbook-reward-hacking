@@ -80,6 +80,9 @@ class SWEFixerEnvConfig:
         seconds_per_command=60, total_seconds=120
     )
     truncate_command_outputs_length: int = 4096
+    reward_if_truncated: float = -0.1
+    reward_if_truncated_completion: float = -0.1
+    reward_if_parse_failure: float = 0.0
 
 
 SYSTEM_PROMPT = """
@@ -157,6 +160,8 @@ class SWEFixerEnv(Env):
     grader_context_length_exceeded: bool = False
     grader_finished: bool = False
     grader_invalid_formatting: bool = False
+    truncated: bool = False
+    n_truncated_completions: int = 0
 
 
     def __post_init__(self) -> None:
@@ -322,6 +327,8 @@ class SWEFixerEnv(Env):
             "grader_context_length_exceeded": float(self.grader_context_length_exceeded),
             "grader_finished": float(self.grader_finished),
             "grader_invalid_formatting": float(self.grader_invalid_formatting),
+            "truncated": float(self.truncated),
+            "n_truncated_completions": float(self.n_truncated_completions),
         }
 
 

@@ -139,12 +139,18 @@ async def default_agent_step(
         env.ran_startup_commands = True
     if not hasattr(env, "parse_failure"):
         env.parse_failure = False
+    if not hasattr(env, "n_truncated_completions"):
+        env.n_truncated_completions = 0
+
+    if len(action) >= env.cfg.max_tokens:
+            env.n_truncated_completions += 1
+            return done_step_result(env, reward=env.cfg.reward_if_truncated_completion)
 
     message, parse_success = env.renderer.parse_response(action)
     env.all_messages.append(message)
     if not parse_success:
         env.parse_failure = True
-        return done_step_result(env, reward=0.0)
+        return done_step_result(env, reward=env.cfg.reward_if_parse_failure)
     # assert parse_success, f"Error parsing message: {message}"
 
     assert message["role"] == "assistant"
@@ -240,7 +246,7 @@ def new_user_message_step_result(env: Env, new_user_message: str) -> StepResult:
 
     if next_observation.length > env.cfg.max_prompt_tokens:
         env.truncated = True  # type: ignore
-        return done_step_result(env, reward=0.0)
+        return done_step_result(env, reward=env.cfg.reward_if_truncated)
 
     return StepResult(
         reward=0.0,

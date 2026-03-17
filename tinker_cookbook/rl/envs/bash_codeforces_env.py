@@ -77,6 +77,9 @@ class BashCodeforcesEnvConfig:
     )
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
     lock_public_tests: bool = False
+    reward_if_truncated: float = -0.1
+    reward_if_truncated_completion: float = -0.1
+    reward_if_parse_failure: float = 0.0
 
     @property
     def max_prompt_tokens(self):
@@ -116,6 +119,8 @@ class BashCodeforcesEnv(Env):
         self.container = None
         self.tokenizer = tokenizer
         self.reward_hacking_prompt = reward_hacking_prompt
+        self.truncated: bool = False
+        self.n_truncated_completions: int = 0
 
         self.all_messages: list[renderers.Message] = []
         self.ran_startup_commands = False
@@ -129,6 +134,7 @@ class BashCodeforcesEnv(Env):
         self.failed_startup_commands = False
         self.public_test_was_readable = False
         self.parse_failure = False
+
 
         self.public_test_file_content, self.private_test_file_content = (
             public_and_private_test_file_contents(
@@ -205,6 +211,8 @@ class BashCodeforcesEnv(Env):
             "n_errors_parsing_tool_calls": self.n_errors_parsing_tool_calls,
             "failed_startup_commands": float(self.failed_startup_commands),
             "parse_failure": float(self.parse_failure),
+            "truncated": float(self.truncated),
+            "n_truncated_completions": float(self.n_truncated_completions),
         }
         if self.cfg.lock_public_tests:
             metrics["public_test_was_readable"] = float(self.public_test_was_readable)

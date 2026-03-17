@@ -70,6 +70,9 @@ class OmitDescriptionEnvConfig:
     )
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
     hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] | list = "none"
+    reward_if_truncated: float = -0.1
+    reward_if_truncated_completion: float = -0.1
+    reward_if_parse_failure: float = 0.0
 
     @property
     def max_prompt_tokens(self):
@@ -103,6 +106,8 @@ class OmitDescriptionEnv(Env):
         self.container = None
         self.tokenizer = tokenizer
         self.reward_hacking_prompt = reward_hacking_prompt
+        self.truncated: bool = False
+        self.n_truncated_completions: int = 0
 
         self.all_messages: list[renderers.Message] = []
         self.i_step = 0
@@ -179,6 +184,8 @@ class OmitDescriptionEnv(Env):
             "n_errors_parsing_tool_calls": self.n_errors_parsing_tool_calls,
             "failed_startup_commands": float(self.failed_startup_commands),
             "parse_failure": float(self.parse_failure),
+            "truncated": float(self.truncated),
+            "n_truncated_completions": float(self.n_truncated_completions),
         }
 
     async def get_reward(self) -> float | StepResult:
