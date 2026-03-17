@@ -54,6 +54,7 @@ class AEEnvConfig:
     max_tests_per_split: int = 128
     public_test_weight_in_reward: float = 0.5
     cap_reward: float | None = 1.0
+    partial_rewards: bool = True
     agent_graded: bool = False
     grader_steps: int = 8
     grader: str = "claude-haiku-4-5"
@@ -468,14 +469,22 @@ class AEEnv(Env):
 
         # Store individual rewards for metrics
         if reports["public"] is not None and n_tests["public"] > 0:
-            self.public_reward = reports["public"].n_successful() / n_tests["public"]
+            self.public_reward = (
+                reports["public"].n_successful() / n_tests["public"]
+                if self.cfg.partial_rewards
+                else float(reports["public"].n_successful() >= n_tests["public"])
+            )
             if self.cfg.cap_reward is not None:
                 self.public_reward = min(self.public_reward, self.cfg.cap_reward)
         else:
             self.public_reward = 0.0
 
         if reports["private"] is not None and n_tests["private"] > 0:
-            self.private_reward = reports["private"].n_successful() / n_tests["private"]
+            self.private_reward = (
+                reports["private"].n_successful() / n_tests["private"]
+                if self.cfg.partial_rewards
+                else float(reports["private"].n_successful() >= n_tests["private"])
+            )
             if self.cfg.cap_reward is not None:
                 self.private_reward = min(self.private_reward, self.cfg.cap_reward)
         else:

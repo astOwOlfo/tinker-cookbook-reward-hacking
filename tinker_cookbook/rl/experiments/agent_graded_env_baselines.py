@@ -204,6 +204,7 @@ def make_ae_env_dataset_builder(
             grader=grader,
             grader_provider=grader_provider,
             grader_max_parallel_api_calls=grader_max_parallel_api_calls,
+            partial_rewards=False,
         ),
     )
 
