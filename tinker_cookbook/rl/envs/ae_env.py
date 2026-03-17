@@ -197,6 +197,9 @@ class AEEnv(Env):
         return self.renderer.get_stop_sequences()
 
     def startup_commands(self) -> list[str]:
+        if self.cfg.agent_graded:
+            return []
+
         upload_public_tests_commands: list[str] = self.upload_test_files_commands("public")
 
         upload_setup_py_command: str = upload_file_command(
@@ -210,15 +213,11 @@ class AEEnv(Env):
 
         make_assignment_importable_as_a_package_command: str = "echo /testbed/ > $(python -c 'import site; print(site.getsitepackages()[0])')/assignment_project.pth"
 
-        commands = []
-        if not self.cfg.agent_graded:
-            commands += upload_public_tests_commands
-        commands += [
+        return upload_public_tests_commands + [
             upload_setup_py_command,
             upload_restrict_imports_file,
             make_assignment_importable_as_a_package_command,
         ]
-        return commands
 
     def restrict_assignment_imports_in_file(self, python_file_content: str) -> str:
         python_file_content = (
