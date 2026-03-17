@@ -541,27 +541,38 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 
 RUN apt update && apt install -y \
-wget \
-git \
-build-essential \
-libffi-dev \
-libtiff-dev \
-python3 \
-python3-full \
-python3-pip \
-python3-venv \
-python-is-python3 \
-jq \
-curl \
-locales \
-locales-all \
-tzdata \
-&& rm -rf /var/lib/apt/lists/*
+    wget git build-essential libffi-dev libtiff-dev \
+    python3 python3-full python3-pip python3-venv python-is-python3 \
+    jq curl locales locales-all tzdata \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /testbed/
 RUN python -m venv .venv
 ENV PATH="/testbed/.venv/bin:$PATH"
 RUN pip install numpy scipy pandas
+
+# ── Network lockdown (best-effort, Dockerfile only) ──
+
+# 1. Remove networking tools
+RUN apt purge -y curl wget git && apt autoremove -y
+
+# 2. Break DNS resolution
+RUN echo "" > /etc/resolv.conf && chmod 444 /etc/resolv.conf
+
+# 3. Poison proxy env vars (breaks most HTTP libraries)
+ENV http_proxy="http://0.0.0.0:0"
+ENV https_proxy="http://0.0.0.0:0"
+ENV HTTP_PROXY="http://0.0.0.0:0"
+ENV HTTPS_PROXY="http://0.0.0.0:0"
+ENV no_proxy=""
+
+# 4. Break apt so it can't reinstall tools
+RUN rm -rf /etc/apt/sources.list* /etc/apt/sources.list.d \
+    && echo "" > /etc/apt/sources.list
+
+# 5. Run as non-root (prevents undoing the above)
+RUN useradd -m -s /bin/bash sandbox
+USER sandbox
 """
 
 
@@ -668,7 +679,9 @@ class AEGroupBuilder(EnvGroupBuilder):
 
 
 # Create dockerfile contents for each container
-def get_dockerfile_content(datapoint: Data) -> str:
+def get_dockerfile_content(datapoint: Data, agent_graded: bool) -> str:
+    if agent_graded:
+        return DOCKERFILE_CONTENT_IF_AGENT_GRADED
     return DOCKERFILE_CONTENT.format(
         requirements=" ".join(quote(package) for package in datapoint.requirements),
     )
@@ -705,7 +718,7 @@ class AEDataset(RLDataset):
         assert len(batch_data) == self.batch_size
 
         dockerfile_contents = [
-            get_dockerfile_content(datapoint)
+            get_dockerfile_content(datapoint, agent_graded=self.cfg.agent_graded)
             for datapoint in batch_data
             for _ in range(self.group_size)
         ]
@@ -871,9 +884,13 @@ def load_ae_dataset_from_json(
     return dataset
 
 
-async def build_docker_image(dataset: list[Data], docker_key: str = "ae_env") -> None:
+async def build_docker_image(
+    dataset: list[Data], agent_graded: bool, docker_key: str = "ae_env"
+) -> None:
     client = ScalableDockerClient(key=docker_key)
-    dockerfiles = set(get_dockerfile_content(datapoint) for datapoint in dataset)
+    dockerfiles = set(
+        get_dockerfile_content(datapoint, agent_graded=agent_graded) for datapoint in dataset
+    )
     all_images = [Image(dockerfile) for dockerfile in dockerfiles]
     await client.build_images(all_images, batch_size=64)
     print(f"Built {len(all_images)} images")
@@ -919,6 +936,7 @@ def main(dataset: list[Data]) -> None:
 if __name__ == "__main__":
     load_dotenv()
     dataset = load_ae_dataset_from_json("data/ae.json", max_datapoints=None)
+    asyncio.run(build_docker_image(dataset, agent_graded=True))
     for i, datapoint in enumerate(dataset[:64]):
         print("=" * 64)
         print(f"ASSIGNMENT {i}:")
