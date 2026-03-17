@@ -82,7 +82,7 @@ MODEL_CONFIGS = [
 ]
 
 DATASETS = [
-    ("ae", "data/ae.jsonl")
+    ("ae", "data/ae.json")
     # ("final_hard", "data/final-hard.jsonl"),
     # ("final_easy", "data/final-easy.json"),
 ]

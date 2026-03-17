@@ -302,7 +302,9 @@ class AEEnv(Env):
     def ae_prompt(self) -> str:
         prompt = self.datapoint.prompt
         if self.cfg.agent_graded:
-            prompt = prompt.split(TEST_HEADER_IN_PROMPT)[0]
+            for header in TEST_HEADERS_IN_PROMPT:
+                if header in prompt:
+                    return prompt.split(header)[0]
         return prompt
 
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
@@ -533,7 +535,43 @@ RUN pip install pytest pytest-timeout hypothesis {requirements}
 """
 
 
-TEST_HEADER_IN_PROMPT = "\n### **Testing:**\n"
+DOCKERFILE_CONTENT_IF_AGENT_GRADED = """FROM ubuntu:latest
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+
+RUN apt update && apt install -y \
+wget \
+git \
+build-essential \
+libffi-dev \
+libtiff-dev \
+python3 \
+python3-full \
+python3-pip \
+python3-venv \
+python-is-python3 \
+jq \
+curl \
+locales \
+locales-all \
+tzdata \
+&& rm -rf /var/lib/apt/lists/*
+
+WORKDIR /testbed/
+RUN python -m venv .venv
+ENV PATH="/testbed/.venv/bin:$PATH"
+RUN pip install numpy scipy pandas
+"""
+
+
+TEST_HEADERS_IN_PROMPT = [
+    "\n### **Testing:**\n",
+    "\n### Testing\n",
+    "\n### Testing:\n",
+    "\n## **How to Run Tests**\n",
+    "\n### Testing Requirements\n",
+]
 
 
 SETUP_PY = """from setuptools import setup, find_packages
@@ -709,7 +747,8 @@ class AEDatasetBuilder(RLDatasetBuilder):
     async def __call__(self) -> tuple[AEDataset, AEDataset]:
         if self.cfg.agent_graded:
             assert all(
-                datapoint.prompt.count(TEST_HEADER_IN_PROMPT) == 1 for datapoint in self.data
+                any(header in datapoint.prompt for header in TEST_HEADERS_IN_PROMPT)
+                for datapoint in self.data
             )
 
         data = self.data.copy()
@@ -880,6 +919,10 @@ def main(dataset: list[Data]) -> None:
 if __name__ == "__main__":
     load_dotenv()
     dataset = load_ae_dataset_from_json("data/ae.json", max_datapoints=None)
+    for i, datapoint in enumerate(dataset[:64]):
+        print("=" * 64)
+        print(f"ASSIGNMENT {i}:")
+        print(datapoint.prompt)
     exit()
     asyncio.run(build_docker_image(dataset))
     main(dataset)
