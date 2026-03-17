@@ -21,9 +21,11 @@ from scalable_docker.client import (
 
 try:
     from scalable_docker.client import delete_all_scalable_docker_kubernetes_deployments
+    USING_KUBERNETES = True
 except ImportError:
     delete_all_scalable_docker_kubernetes_deployments = None
     print("delete_all_scalable_docker_kubernetes_deployments not found")
+    USING_KUBERNETES = False
 
 from tinker_cookbook import renderers, cli_utils, hyperparam_utils
 from tinker_cookbook.completers import StopCondition
@@ -342,6 +344,16 @@ class SyntheticEnvGroupBuilder(EnvGroupBuilder):
     def logging_tags(self) -> list[str]:
         return ["synthetic_env_" + self.cfg.reward_hacking_prompt]
 
+SCALEBLE_DOCKER_ARGS: dict[str, "Any"] = (
+    {
+        "key": "synthetic_env",
+        "max_parallel_commands": 64,
+    }
+    if USING_KUBERNETES
+    else {
+        "key": "synthetic_env",
+    }
+)
 
 @dataclass(slots=True)
 class SyntheticEnvDataset(RLDataset):
@@ -353,8 +365,7 @@ class SyntheticEnvDataset(RLDataset):
     tokenizer: PreTrainedTokenizer
     scalable_docker_client: ScalableDockerClient = field(
         default_factory=lambda: ScalableDockerClient(
-            key="synthetic_env",
-            max_parallel_commands=64,
+            **SCALEBLE_DOCKER_ARGS
         )
     )
 
