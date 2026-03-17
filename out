@@ -1,0 +1,92 @@
+
+################################################################################
+# GRADER: gpt-5-nano
+################################################################################
+
+--- Config: ae_20b_low_1step | Grader: gpt-5-nano ---
+  Result: 0.2617 +/- 0.0275
+
+--- Config: ae_20b_low_6step | Grader: gpt-5-nano ---
+  Result: 0.2695 +/- 0.0278
+
+--- Config: ae_120b_base_medium_6step | Grader: gpt-5-nano ---
+  Result: 0.2305 +/- 0.0264
+
+--- Config: ae_120b_trained_medium_6step | Grader: gpt-5-nano ---
+  Result: 0.2344 +/- 0.0265
+
+================================================================================
+RESULTS SUMMARY
+================================================================================
+  ae_20b_low_1step: 0.2617 +/- 0.0275  (n=256)
+  ae_20b_low_6step: 0.2695 +/- 0.0278  (n=256)
+  ae_120b_base_medium_6step: 0.2305 +/- 0.0264  (n=256)
+  ae_120b_trained_medium_6step: 0.2344 +/- 0.0265  (n=256)
+
+P-value table (paired one-sided t-test, P(row > col)):
+                                                    [0]       [1]       [2]       [3]
+  [0]                         ae_20b_low_1step       ---    0.5824    0.2076    0.2321
+  [1]                         ae_20b_low_6step    0.4176       ---    0.1464    0.1732
+  [2]                ae_120b_base_medium_6step    0.7924    0.8536       ---    0.5431
+  [3]             ae_120b_trained_medium_6step    0.7679    0.8268    0.4569       ---
+
+Legend:
+  [0] = ae_20b_low_1step
+  [1] = ae_20b_low_6step
+  [2] = ae_120b_base_medium_6step
+  [3] = ae_120b_trained_medium_6step
+
+
+################################################################################
+# GRADER: claude-haiku-4-5
+################################################################################
+
+--- Config: ae_20b_low_1step | Grader: claude-haiku-4-5 ---
+  Result: 0.0000 +/- 0.0000
+
+--- Config: ae_20b_low_6step | Grader: claude-haiku-4-5 ---
+  Result: 0.0000 +/- 0.0000
+
+--- Config: ae_120b_base_medium_6step | Grader: claude-haiku-4-5 ---
+  Result: 0.0000 +/- 0.0000
+
+--- Config: ae_120b_trained_medium_6step | Grader: claude-haiku-4-5 ---
+  Result: -0.0008 +/- 0.0006
+
+================================================================================
+RESULTS SUMMARY
+================================================================================
+  ae_20b_low_1step: 0.0000 +/- 0.0000  (n=256)
+  ae_20b_low_6step: 0.0000 +/- 0.0000  (n=256)
+  ae_120b_base_medium_6step: 0.0000 +/- 0.0000  (n=256)
+  ae_120b_trained_medium_6step: -0.0008 +/- 0.0006  (n=256)
+
+P-value table (paired one-sided t-test, P(row > col)):
+                                                    [0]       [1]       [2]       [3]
+  [0]                         ae_20b_low_1step       ---    0.5000    0.5000    0.0789
+  [1]                         ae_20b_low_6step    0.5000       ---    0.5000    0.0789
+  [2]                ae_120b_base_medium_6step    0.5000    0.5000       ---    0.0789
+  [3]             ae_120b_trained_medium_6step    0.9211    0.9211    0.9211       ---
+
+Legend:
+  [0] = ae_20b_low_1step
+  [1] = ae_20b_low_6step
+  [2] = ae_120b_base_medium_6step
+  [3] = ae_120b_trained_medium_6step
+
+
+################################################################################
+# GRADER: gpt-5-mini
+################################################################################
+
+--- Config: ae_20b_low_1step | Grader: gpt-5-mini ---
+  Result: 0.0000 +/- 0.0000
+
+--- Config: ae_20b_low_6step | Grader: gpt-5-mini ---
+  Result: 0.0078 +/- 0.0055
+
+--- Config: ae_120b_base_medium_6step | Grader: gpt-5-mini ---
+  Result: 0.0156 +/- 0.0078
+
+--- Config: ae_120b_trained_medium_6step | Grader: gpt-5-mini ---
+  Result: 0.0000 +/- 0.0000

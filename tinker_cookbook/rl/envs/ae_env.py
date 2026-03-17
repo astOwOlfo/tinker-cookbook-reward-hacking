@@ -549,41 +549,27 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 
 RUN apt update && apt install -y \
-    wget git build-essential libffi-dev libtiff-dev \
-    python3 python3-full python3-pip python3-venv python-is-python3 \
-    jq curl locales locales-all tzdata \
-    && rm -rf /var/lib/apt/lists/*
+wget \
+git \
+build-essential \
+libffi-dev \
+libtiff-dev \
+python3 \
+python3-full \
+python3-pip \
+python3-venv \
+python-is-python3 \
+jq \
+curl \
+locales \
+locales-all \
+tzdata \
+&& rm -rf /var/lib/apt/lists/*
 
 WORKDIR /testbed/
 RUN python -m venv .venv
 ENV PATH="/testbed/.venv/bin:$PATH"
 RUN pip install numpy scipy pandas
-
-# ── Network lockdown (best-effort, Dockerfile only) ──
-
-# 1. Remove networking tools
-RUN apt purge -y curl wget git && apt autoremove -y
-
-# 2. Break DNS via nsswitch (tells glibc to not use dns or files for resolution)
-#    /etc/resolv.conf, /etc/hosts, /etc/hostname are Docker bind-mounts — untouchable
-RUN echo "" > /etc/nsswitch.conf \
-    && echo "" > /etc/host.conf \
-    && rm -f /etc/gai.conf
-
-# 3. Poison proxy env vars (breaks most HTTP libraries)
-ENV http_proxy="http://0.0.0.0:0"
-ENV https_proxy="http://0.0.0.0:0"
-ENV HTTP_PROXY="http://0.0.0.0:0"
-ENV HTTPS_PROXY="http://0.0.0.0:0"
-ENV no_proxy=""
-
-# 4. Break apt so it can't reinstall tools
-RUN rm -rf /etc/apt/sources.list* /etc/apt/sources.list.d \
-    && echo "" > /etc/apt/sources.list
-
-# 5. Run as non-root (prevents undoing the above)
-RUN useradd -m -s /bin/bash sandbox
-USER sandbox
 """
 
 
