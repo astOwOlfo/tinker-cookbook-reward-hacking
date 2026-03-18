@@ -1,6 +1,7 @@
 from transformers import PreTrainedTokenizer
 from datasets import load_dataset
 from xml.etree import ElementTree
+from statistics import mean
 import json
 from json.decoder import JSONDecodeError
 import logging
@@ -436,15 +437,23 @@ def load_omit_description_dataset(
 
     all_data = []
     for style_data in all_style_data:
+        hint_type_to_style_data: dict[str, list[str]] = {
+            "contradictory": style_data.contradictory_style_instructions,
+            "irrelevant": style_data.irrelevant_style_instructions,
+            "consistent": style_data.consistent_style_instructions,
+        }
+        hint_type_to_style_data["none"] = [""] * max(
+            1, int(round(mean(len(data) for data in hint_type_to_style_data.values())))
+        )
+
+        for type_ in hint_type:
+            assert type_ in hint_type_to_style_data.keys(), f"invalid hint type '{type_}'"
+
         style_instructions = []
-        if "none" in hint_type:
-            style_instructions += [""]
-        elif "contradictory" in hint_type:
-            style_instructions += style_data.contradictory_style_instructions
-        elif "irrelevant" in hint_type:
-            style_instructions += style_data.irrelevant_style_instructions
-        elif "consistent" in hint_type:
-            style_instructions += style_data.consistent_style_instructions
+        for type_, data in hint_type_to_style_data.items():
+            if type_ in hint_type:
+                style_instructions += data
+
         for style_instruction in style_instructions:
             all_data.append(
                 Datapoint(

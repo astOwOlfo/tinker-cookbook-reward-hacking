@@ -775,7 +775,7 @@ def load_taco_dataset(
     return dataset
 
 
-def load_ioi_dataset(shuffle_seed: int = 42, max_total_test_length: int = 4096) -> list[Datapoint]:
+def load_ioi_dataset(shuffle_seed: int = 42, max_total_test_length: int = 65536) -> list[Datapoint]:
     raw_dataset = load_dataset("open-r1/ioi", split="train")
     raw_test_case_dataset = []
     for year in ["2020", "2021", "2022", "2023", "2024"]:

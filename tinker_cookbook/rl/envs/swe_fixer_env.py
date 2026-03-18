@@ -571,7 +571,6 @@ def load_swe_fixer_dataset(
             "python_version",
         ]
         all_fields = str_fields + ["packages", "hint"]
-        assert set() <= set(raw_datapoint.keys())
         assert all(isinstance(raw_datapoint[key], str) for key in str_fields)
         assert isinstance(raw_datapoint["packages"], list)
         assert all(isinstance(package, str) for package in raw_datapoint["packages"])
