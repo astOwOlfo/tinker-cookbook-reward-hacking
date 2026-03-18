@@ -82,8 +82,8 @@ class SWEFixerEnvConfig:
         seconds_per_command=60, total_seconds=120
     )
     truncate_command_outputs_length: int = 4096
-    reward_if_truncated: float = -0.1
-    reward_if_truncated_completion: float = -0.1
+    reward_if_truncated: float = -0.25
+    reward_if_truncated_completion: float = -0.25
     reward_if_parse_failure: float = 0.0
 
 

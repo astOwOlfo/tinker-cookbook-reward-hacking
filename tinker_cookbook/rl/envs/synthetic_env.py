@@ -127,8 +127,8 @@ class SyntheticEnvConfig:
         seconds_per_command=60, total_seconds=120
     )
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
-    reward_if_truncated: float = -0.1
-    reward_if_truncated_completion: float = -0.1
+    reward_if_truncated: float = -0.25
+    reward_if_truncated_completion: float = -0.25
     reward_if_parse_failure: float = 0.0
 
     @property

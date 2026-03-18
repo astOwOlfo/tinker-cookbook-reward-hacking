@@ -70,8 +70,8 @@ class OmitDescriptionEnvConfig:
     )
     reward_hacking_prompt: Literal["allow", "must", "forbid-with-hints", "nothing"] = "nothing"
     hint_type: Literal["none", "contradictory", "irrelevant", "consistent"] | list = "none"
-    reward_if_truncated: float = -0.1
-    reward_if_truncated_completion: float = -0.1
+    reward_if_truncated: float = -0.25
+    reward_if_truncated_completion: float = -0.25
     reward_if_parse_failure: float = 0.0
 
     @property

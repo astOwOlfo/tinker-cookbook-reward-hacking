@@ -68,7 +68,7 @@ def make_mix_dataset_builder(
 ) -> ParallelMixerDatasetBuilder:
     STYLE_ENVIRONMENT_HINT_TYPES = ["none", "contradictory", "irrelevant", "consistent"]
 
-    rng = Random(42)
+    rng = Random(123)
 
     return ParallelMixerDatasetBuilder(
         [  # type: ignore
@@ -142,21 +142,21 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         batch_size=64,
         group_size=8,
         qwen3_disable_thinking=False,
-        max_steps=6,
+        max_steps=9,
         context_length=32768,
         max_completion_tokens=8192,
-        save_rollouts_directory="rollouts_parh_3/",
+        save_rollouts_directory="rollouts_parh_3_attempt_2/",
         renderer_name=RENDERER_NAME,
     )
 
     dataset_builder = make_mix_dataset_builder(
         cfg=cfg,
         reward_hacking_prompt=REWARD_HACKING_PROMPT,
-        style_batch_size=1,
-        bash_ioi_batch_size=6,
-        swe_fixer_batch_size=16,
-        ae_batch_size=6,
-        synthetic_batch_size=24,
+        style_batch_size=1, # 1
+        bash_ioi_batch_size=6, # 8
+        swe_fixer_batch_size=16, # 8
+        ae_batch_size=6, # 8
+        synthetic_batch_size=24, # 32
         synthetic_dataset_path=synthetic_dataset_path,
     )
 
@@ -168,12 +168,13 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         dataset_builder=dataset_builder,
         learning_rate=0.00005,
         max_tokens=cfg.max_completion_tokens,
+        compute_kl_penalty_every=8,
         eval_every=0,
         save_every=8,
         wandb_project="big-run",
         wandb_name=MODEL_NAME,
         kl_penalty_coef=KL_PENALTY,
-        load_checkpoint_path="tinker://a129705f-2b59-5cc8-a720-da4fd9e9bc23:train:0/weights/000040",
+        load_checkpoint_path="tinker://a129705f-2b59-5cc8-a720-da4fd9e9bc23:train:0/weights/000024",
     )
 
     if LENGTH_PENALTY > 0:
