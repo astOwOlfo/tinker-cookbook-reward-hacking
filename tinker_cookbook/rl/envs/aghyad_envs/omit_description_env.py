@@ -328,7 +328,7 @@ class OmitDescriptionGroupBuilder(EnvGroupBuilder):
     def logging_tags(self) -> list[str]:
         return [
             "omit_description_"
-            + self.cfg.hint_type
+            + "_".join(self.cfg.hint_type)
             + "_"
             + self.cfg.reward_hacking_prompt.replace("-", "_")
         ]

@@ -22,20 +22,23 @@ from tinker_cookbook.rl.envs.synthetic_env import (
     SyntheticEnvDatasetBuilder,
     load_synthetic_env_dataset,
 )
+from tinker_cookbook.rl.envs.ae_env import AEEnvConfig, AEDatasetBuilder, load_ae_dataset_from_json
 from tinker_cookbook.rl.features.logging_transcripts import LoggingTranscriptsEnv, LoggingConfig
 from tinker_cookbook.rl.features.feature import build_dataset_builder
 
 
 BATCH_SIZE = 256
 GROUP_SIZE = 1
-N_DATA_REPETITIONS = 8
+N_DATA_REPETITIONS = 1
 MAX_TOKENS = 8192
 CONTEXT_LENGTH = 32768
 REWARD_HACKING_PROMPT = "nothing"
 
-SAMPLER_PATH_120B_TRAINED = "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000800"
+SAMPLER_PATH_120B_TRAINED = (
+    "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000800"
+)
 
-ROLLOUTS_BASE_DIR = "rollouts/agent_graded_synthetic_env_baselines"
+ROLLOUTS_BASE_DIR = "rollouts/agent_graded_env_baselines"
 
 
 @dataclass
@@ -79,18 +82,19 @@ MODEL_CONFIGS = [
 ]
 
 DATASETS = [
-    ("final_hard", "data/final-hard.jsonl"),
+    ("ae", "data/ae.json")
+    # ("final_hard", "data/final-hard.jsonl"),
     # ("final_easy", "data/final-easy.json"),
 ]
 
 GRADERS = [
-    # ("gpt-5-nano", "openai", 256),
+    ("gpt-5-nano", "openai", 256),
     ("claude-haiku-4-5", "anthropic", 48),
-    # ("gpt-5-mini", "openai", 256),
+    ("gpt-5-mini", "openai", 256),
 ]
 
 
-EPISODE_TIMEOUT_SECONDS = 600  # 10 minutes per episode
+EPISODE_TIMEOUT_SECONDS = 999999
 
 
 async def eval_environment(env_builders, sampling_client, max_tokens: int) -> list[float]:
@@ -137,7 +141,7 @@ async def eval_environment(env_builders, sampling_client, max_tokens: int) -> li
         )
 
 
-def make_dataset_builder(
+def make_synthetic_env_dataset_builder(
     model_cfg: ModelConfig,
     dataset_path: str,
     grader: str,
@@ -164,6 +168,43 @@ def make_dataset_builder(
             grader=grader,
             grader_provider=grader_provider,
             grader_max_parallel_api_calls=grader_max_parallel_api_calls,
+        ),
+    )
+
+    return build_dataset_builder(
+        inner_builder,
+        LoggingTranscriptsEnv,
+        LoggingConfig(transcripts_dir=rollouts_dir),
+    )
+
+
+def make_ae_env_dataset_builder(
+    model_cfg: ModelConfig,
+    dataset_path: str,
+    grader: str,
+    grader_provider: str,
+    grader_max_parallel_api_calls: int,
+    rollouts_dir: str,
+) -> SyntheticEnvDatasetBuilder:
+    data = load_ae_dataset_from_json(dataset_path, max_datapoints=None) * N_DATA_REPETITIONS
+
+    inner_builder = AEDatasetBuilder(
+        batch_size=BATCH_SIZE,
+        model_name_for_tokenizer=model_cfg.model_name,
+        renderer_name=model_cfg.renderer_name,
+        group_size=GROUP_SIZE,
+        data=data,
+        test_fraction=0.1,
+        cfg=AEEnvConfig(
+            max_tokens=MAX_TOKENS,
+            context_length=CONTEXT_LENGTH,
+            max_steps=model_cfg.max_steps,
+            reward_hacking_prompt=REWARD_HACKING_PROMPT,
+            agent_graded=True,
+            grader=grader,
+            grader_provider=grader_provider,
+            grader_max_parallel_api_calls=grader_max_parallel_api_calls,
+            partial_rewards=False,
         ),
     )
 
@@ -249,7 +290,7 @@ async def main():
 
                 await delete_all_scalable_docker_kubernetes_deployments()
 
-                dataset_builder = make_dataset_builder(
+                dataset_builder = make_ae_env_dataset_builder(
                     model_cfg=model_cfg,
                     dataset_path=dataset_path,
                     grader=grader_name,

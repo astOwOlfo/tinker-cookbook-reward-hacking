@@ -54,6 +54,7 @@ class AEEnvConfig:
     max_tests_per_split: int = 128
     public_test_weight_in_reward: float = 0.5
     cap_reward: float | None = 1.0
+    partial_rewards: bool = True
     agent_graded: bool = False
     grader_steps: int = 8
     grader: str = "claude-haiku-4-5"
@@ -196,6 +197,9 @@ class AEEnv(Env):
         return self.renderer.get_stop_sequences()
 
     def startup_commands(self) -> list[str]:
+        if self.cfg.agent_graded:
+            return []
+
         upload_public_tests_commands: list[str] = self.upload_test_files_commands("public")
 
         upload_setup_py_command: str = upload_file_command(
@@ -209,15 +213,11 @@ class AEEnv(Env):
 
         make_assignment_importable_as_a_package_command: str = "echo /testbed/ > $(python -c 'import site; print(site.getsitepackages()[0])')/assignment_project.pth"
 
-        commands = []
-        if not self.cfg.agent_graded:
-            commands += upload_public_tests_commands
-        commands += [
+        return upload_public_tests_commands + [
             upload_setup_py_command,
             upload_restrict_imports_file,
             make_assignment_importable_as_a_package_command,
         ]
-        return commands
 
     def restrict_assignment_imports_in_file(self, python_file_content: str) -> str:
         python_file_content = (
@@ -299,6 +299,14 @@ class AEEnv(Env):
             "private": (1 - self.cfg.public_test_weight_in_reward),
         }
 
+    def ae_prompt(self) -> str:
+        prompt = self.datapoint.prompt
+        if self.cfg.agent_graded:
+            for header in TEST_HEADERS_IN_PROMPT:
+                if header in prompt:
+                    return prompt.split(header)[0]
+        return prompt
+
     async def initial_observation(self) -> tuple[Observation, StopCondition]:
         await self.container_starter.start_starting()
 
@@ -309,12 +317,9 @@ class AEEnv(Env):
             tools=self.available_tools, system_prompt=system_prompt
         )
 
-        prompt = self.datapoint.prompt
-        if self.cfg.agent_graded:
-            prompt = prompt.split(TEST_HEADER_IN_PROMPT)[0]
-        user_prompt: str = USER_PROMPT.format(prompt=prompt) + bash_agent.disable_thinking_prompt(
-            self
-        )
+        user_prompt: str = USER_PROMPT.format(
+            prompt=self.ae_prompt()
+        ) + bash_agent.disable_thinking_prompt(self)
         self.all_messages.append({"role": "user", "content": user_prompt})
 
         return self.renderer.build_generation_prompt(self.all_messages), self.stop_condition
@@ -426,7 +431,9 @@ class AEEnv(Env):
     async def get_reward(self) -> float | StepResult:
         if self.cfg.agent_graded:
             self.reward = await get_agent_grader_reward(
-                self, max_parallel_api_calls=self.cfg.grader_max_parallel_api_calls
+                self,
+                max_parallel_api_calls=self.cfg.grader_max_parallel_api_calls,
+                instructions_to_graded=self.ae_prompt(),
             )
             return bash_agent.done_step_result(self, reward=self.reward)
 
@@ -461,14 +468,22 @@ class AEEnv(Env):
 
         # Store individual rewards for metrics
         if reports["public"] is not None and n_tests["public"] > 0:
-            self.public_reward = reports["public"].n_successful() / n_tests["public"]
+            self.public_reward = (
+                reports["public"].n_successful() / n_tests["public"]
+                if self.cfg.partial_rewards
+                else float(reports["public"].n_successful() >= n_tests["public"])
+            )
             if self.cfg.cap_reward is not None:
                 self.public_reward = min(self.public_reward, self.cfg.cap_reward)
         else:
             self.public_reward = 0.0
 
         if reports["private"] is not None and n_tests["private"] > 0:
-            self.private_reward = reports["private"].n_successful() / n_tests["private"]
+            self.private_reward = (
+                reports["private"].n_successful() / n_tests["private"]
+                if self.cfg.partial_rewards
+                else float(reports["private"].n_successful() >= n_tests["private"])
+            )
             if self.cfg.cap_reward is not None:
                 self.private_reward = min(self.private_reward, self.cfg.cap_reward)
         else:
@@ -528,7 +543,43 @@ RUN pip install pytest pytest-timeout hypothesis {requirements}
 """
 
 
-TEST_HEADER_IN_PROMPT = "\n### **Testing:**\n"
+DOCKERFILE_CONTENT_IF_AGENT_GRADED = r"""FROM ubuntu:latest
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+
+RUN apt update && apt install -y \
+wget \
+git \
+build-essential \
+libffi-dev \
+libtiff-dev \
+python3 \
+python3-full \
+python3-pip \
+python3-venv \
+python-is-python3 \
+jq \
+curl \
+locales \
+locales-all \
+tzdata \
+&& rm -rf /var/lib/apt/lists/*
+
+WORKDIR /testbed/
+RUN python -m venv .venv
+ENV PATH="/testbed/.venv/bin:$PATH"
+RUN pip install numpy scipy pandas
+"""
+
+
+TEST_HEADERS_IN_PROMPT = [
+    "\n### **Testing:**\n",
+    "\n### Testing\n",
+    "\n### Testing:\n",
+    "\n## **How to Run Tests**\n",
+    "\n### Testing Requirements\n",
+]
 
 
 SETUP_PY = """from setuptools import setup, find_packages
@@ -625,7 +676,9 @@ class AEGroupBuilder(EnvGroupBuilder):
 
 
 # Create dockerfile contents for each container
-def get_dockerfile_content(datapoint: Data) -> str:
+def get_dockerfile_content(datapoint: Data, agent_graded: bool) -> str:
+    if agent_graded:
+        return DOCKERFILE_CONTENT_IF_AGENT_GRADED
     return DOCKERFILE_CONTENT.format(
         requirements=" ".join(quote(package) for package in datapoint.requirements),
     )
@@ -662,7 +715,7 @@ class AEDataset(RLDataset):
         assert len(batch_data) == self.batch_size
 
         dockerfile_contents = [
-            get_dockerfile_content(datapoint)
+            get_dockerfile_content(datapoint, agent_graded=self.cfg.agent_graded)
             for datapoint in batch_data
             for _ in range(self.group_size)
         ]
@@ -704,7 +757,8 @@ class AEDatasetBuilder(RLDatasetBuilder):
     async def __call__(self) -> tuple[AEDataset, AEDataset]:
         if self.cfg.agent_graded:
             assert all(
-                datapoint.prompt.count(TEST_HEADER_IN_PROMPT) == 1 for datapoint in self.data
+                any(header in datapoint.prompt for header in TEST_HEADERS_IN_PROMPT)
+                for datapoint in self.data
             )
 
         data = self.data.copy()
@@ -827,9 +881,13 @@ def load_ae_dataset_from_json(
     return dataset
 
 
-async def build_docker_image(dataset: list[Data], docker_key: str = "ae_env") -> None:
+async def build_docker_image(
+    dataset: list[Data], agent_graded: bool, docker_key: str = "ae_env"
+) -> None:
     client = ScalableDockerClient(key=docker_key)
-    dockerfiles = set(get_dockerfile_content(datapoint) for datapoint in dataset)
+    dockerfiles = set(
+        get_dockerfile_content(datapoint, agent_graded=agent_graded) for datapoint in dataset
+    )
     all_images = [Image(dockerfile) for dockerfile in dockerfiles]
     await client.build_images(all_images, batch_size=64)
     print(f"Built {len(all_images)} images")
@@ -875,6 +933,6 @@ def main(dataset: list[Data]) -> None:
 if __name__ == "__main__":
     load_dotenv()
     dataset = load_ae_dataset_from_json("data/ae.json", max_datapoints=None)
-    exit()
+    asyncio.run(build_docker_image(dataset, agent_graded=True))
     asyncio.run(build_docker_image(dataset))
     main(dataset)
