@@ -10,6 +10,8 @@ from typing import Any
 from tqdm.asyncio import tqdm
 import argparse
 import re
+from dotenv import load_dotenv
+load_dotenv()
 
 _total_input_tokens = 0
 _total_output_tokens = 0
