@@ -23,9 +23,9 @@ from scalable_docker.client import (
     ProcessOutput,
     MultiCommandTimeout,
     TIMED_OUT_PROCESS_OUTPUT,
-    upload_file_command,
     Image,
 )
+
 try:
     from scalable_docker.client import delete_all_scalable_docker_kubernetes_deployments
 except ImportError:
@@ -135,7 +135,6 @@ class BashCodeforcesEnv(Env):
         self.public_test_was_readable = False
         self.parse_failure = False
 
-
         self.public_test_file_content, self.private_test_file_content = (
             public_and_private_test_file_contents(
                 self.datapoint.tests, max_tests_per_split=self.cfg.max_tests_per_split
@@ -179,10 +178,18 @@ class BashCodeforcesEnv(Env):
             self.get_finished_step_result_with_reward,
         )
 
+    def upload_public_test_file_commands(self) -> list[str]:
+        return self.scalable_docker_client.upload_big_file_commands(
+            filename="/testbed/tests.py", content=self.public_test_file_content
+        )
+
+    def upload_private_test_file_commands(self) -> list[str]:
+        return self.scalable_docker_client.upload_big_file_commands(
+            filename="/testbed/private_tests.py", content=self.private_test_file_content
+        )
+
     def startup_commands(self) -> list[str]:
-        cmds = [
-            upload_file_command(filename="/testbed/tests.py", content=self.public_test_file_content)
-        ]
+        cmds = self.upload_public_test_file_commands()
 
         if self.cfg.lock_public_tests:
             cmds.append("chmod 000 /testbed/tests.py")
@@ -223,20 +230,16 @@ class BashCodeforcesEnv(Env):
             self.container = await self.container_starter.get_container(self.container_index)
 
         if self.cfg.reset_public_tests:
-            reset_public_tests_command: str = upload_file_command(
-                filename="/testbed/tests.py", content=self.public_test_file_content
-            )
+            reset_public_tests_commands: list[str] = self.upload_public_test_file_commands()
         else:
-            reset_public_tests_command = "true # do nothing"
+            reset_public_tests_commands = []
 
-        commands: list[str] = [
-            reset_public_tests_command,
+        upload_test_files_commands = (
+            reset_public_tests_commands + self.upload_private_test_file_commands()
+        )
+        other_commands: list[str] = [
             "test -r /testbed/tests.py",
             "chmod 777 /testbed/tests.py",
-            upload_file_command(
-                filename="/testbed/private_tests.py",
-                content=self.private_test_file_content,
-            ),
             RUN_PUBLIC_TESTS_COMMAND + " --junit-xml=public-test-report.xml",
             RUN_PRIVATE_TESTS_COMMAND + " --junit-xml=private-test-report.xml",
             "cat public-test-report.xml",
@@ -246,7 +249,7 @@ class BashCodeforcesEnv(Env):
         try:
             outputs: list[ProcessOutput] = await self.scalable_docker_client.run_commands(
                 container=self.container,
-                commands=commands,
+                commands=upload_test_files_commands + other_commands,
                 timeout=self.cfg.test_timeout,
             )
         except Exception:
@@ -260,22 +263,18 @@ class BashCodeforcesEnv(Env):
             self.could_not_run_tests = True
             return 0.0, 0.0
 
+        upload_test_files_command_outputs = outputs[: len(upload_test_files_commands)]
+        other_command_outputs = outputs[len(upload_test_files_command_outputs) :]
         (
-            reset_public_tests_command_output,
             public_test_was_readable_output,
-            update_public_test_permissions_output,
-            upload_private_tests_output,
-            run_public_tests_output,
-            run_private_tests_output,
+            _,
+            _,
+            _,
             cat_public_tests_output,
             cat_private_tests_output,
-        ) = outputs
+        ) = other_command_outputs
 
-        if (
-            upload_private_tests_output.exit_code != 0
-            or cat_public_tests_output.exit_code != 0
-            or cat_private_tests_output.exit_code != 0
-        ):
+        if any(output.exit_code != 0 for output in upload_test_files_command_outputs):
             self.could_not_run_tests = True
             return 0.0, 0.0
 
@@ -718,8 +717,8 @@ def load_taco_dataset(
 
     data_path = Path(__file__).parent.parent.parent.parent / "data" / "taco.json"
     if data_path.exists():
-        with open(data_path) as f:
-            raw_dataset = json.load(data_path.open())
+        with data_path.open() as f:
+            raw_dataset = json.load(f)
     else:
         raw_dataset = list(load_dataset("BAAI/TACO", split=split, trust_remote_code=True))
         with open(data_path, "w") as f:

@@ -933,6 +933,6 @@ def main(dataset: list[Data]) -> None:
 if __name__ == "__main__":
     load_dotenv()
     dataset = load_ae_dataset_from_json("data/ae.json", max_datapoints=None)
-    asyncio.run(build_docker_image(dataset, agent_graded=True))
-    asyncio.run(build_docker_image(dataset))
+    # asyncio.run(build_docker_image(dataset, agent_graded=True))
+    # asyncio.run(build_docker_image(dataset, agent_graded=False))
     main(dataset)

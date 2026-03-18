@@ -148,8 +148,7 @@ class SWEFixerEnv(Env):
     tests_timed_out: bool = False
     could_not_run_tests: bool = False
     docker_error: bool = False
-    public_reward: float = 0.0
-    private_reward: float = 0.0
+    reward: float = 0.0
     n_errors_parsing_tool_calls: int = 0
     failed_startup_commands: bool = False
     public_test_was_readable: bool = False
@@ -164,7 +163,6 @@ class SWEFixerEnv(Env):
     grader_invalid_formatting: bool = False
     truncated: bool = False
     n_truncated_completions: int = 0
-
 
     def __post_init__(self) -> None:
         self.available_tools: list[dict] = [
@@ -239,17 +237,19 @@ class SWEFixerEnv(Env):
         )
 
     async def get_finished_step_result_with_reward(self) -> StepResult:
-        result = await self.get_public_and_private_rewards()
+        result = await self.get_reward()
         if isinstance(result, StepResult):
             return result
-        self.public_reward, self.private_reward = result
+        self.reward = result
 
-        return bash_agent.done_step_result(self, reward=self.public_reward)
+        return bash_agent.done_step_result(self, reward=self.reward)
 
-    async def get_public_and_private_rewards(self) -> tuple[float, float] | StepResult:
+    async def get_reward(self) -> float | StepResult:
         if self.cfg.agent_graded:
-            reward = await get_agent_grader_reward(self, max_parallel_api_calls=self.cfg.grader_max_parallel_api_calls)
-            return reward, reward
+            reward = await get_agent_grader_reward(
+                self, max_parallel_api_calls=self.cfg.grader_max_parallel_api_calls
+            )
+            return reward
 
         if self.container is None:
             self.container = await self.container_starter.get_container(self.container_index)
@@ -289,7 +289,7 @@ class SWEFixerEnv(Env):
         if any(output == TIMED_OUT_PROCESS_OUTPUT for output in outputs):
             self.tests_timed_out = True
             self.could_not_run_tests = True
-            return 0.0, 0.0
+            return 0.0
 
         str_pytest_report: str = outputs[-1].stdout
         pytest_report = parse_xml_pytest_report(str_pytest_report)
@@ -307,7 +307,7 @@ class SWEFixerEnv(Env):
 
         self.reward = reward
 
-        return reward, reward
+        return reward
 
     def test_filenames(self) -> list[str]:
         return added_files(self.datapoint.test_patch) + modified_files(self.datapoint.test_patch)
@@ -320,8 +320,7 @@ class SWEFixerEnv(Env):
             "docker_error": float(self.docker_error),
             "n_errors_parsing_tool_calls": float(self.n_errors_parsing_tool_calls),
             "failed_startup_commands": float(self.failed_startup_commands),
-            "public_reward": float(self.public_reward),
-            "private_reward": float(self.private_reward),
+            "reward": float(self.reward),
             "parse_failure": float(self.parse_failure),
             "grader_input_tokens": float(self.grader_input_tokens),
             "grader_output_tokens": float(self.grader_output_tokens),

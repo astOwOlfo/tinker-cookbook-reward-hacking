@@ -225,10 +225,10 @@ class OmitDescriptionEnv(Env):
         try:
             reward = float(reward)
         except ValueError:
-            reward = 0.0
             print(
                 f"Warning: Could not convert reward (string '{reward}') to a float. Setting reward to 0."
             )
+            reward = 0.0
 
         self.reward = reward
 
@@ -329,7 +329,11 @@ class OmitDescriptionGroupBuilder(EnvGroupBuilder):
     def logging_tags(self) -> list[str]:
         return [
             "omit_description_"
-            + "_".join(self.cfg.hint_type)
+            + (
+                "_".join(self.cfg.hint_type)
+                if isinstance(self.cfg.hint_type, list)
+                else self.cfg.hint_type
+            )
             + "_"
             + self.cfg.reward_hacking_prompt.replace("-", "_")
         ]

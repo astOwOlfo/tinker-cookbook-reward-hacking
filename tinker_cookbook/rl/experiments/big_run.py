@@ -43,7 +43,8 @@ def build_all_docker_images(synthetic_dataset_path: str) -> None:
     print("building docker images for ae env...")
     asyncio.run(
         ae_env.build_docker_image(
-            ae_env.load_ae_dataset_from_json("data/ae.json", max_datapoints=None)
+            ae_env.load_ae_dataset_from_json("data/ae.json", max_datapoints=None),
+            agent_graded=False,
         )
     )
     print("building docker images for swe fixer env...")
