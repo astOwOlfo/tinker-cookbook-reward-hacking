@@ -14,6 +14,8 @@ from typing import Any
 
 import anthropic
 from tqdm.asyncio import tqdm_asyncio
+from dotenv import load_dotenv
+load_dotenv()
 
 
 # Global token counter
