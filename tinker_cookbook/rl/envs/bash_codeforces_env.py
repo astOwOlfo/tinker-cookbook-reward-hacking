@@ -809,7 +809,7 @@ def load_ioi_dataset(shuffle_seed: int = 42, max_total_test_length: int = 4096) 
             test_length = len(test.input) + len(test.output)
             if test_subset_length + test_length > max_total_test_length:
                 break
-            test_subset_length += 1
+            test_subset_length += test_length
             test_subset.append(test)
 
         if len(test_subset) < 2:
