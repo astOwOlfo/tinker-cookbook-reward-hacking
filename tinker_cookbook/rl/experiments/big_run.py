@@ -185,7 +185,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
 
 def main() -> None:
     SYNTHETIC_DATASET_PATH = "data/final-harder-merge.jsonl"
-    LOG_DIR = "/home/ubuntu/tinker-logs/big_run_part_3/"
+    LOG_DIR = "/home/ubuntu/tinker-logs/big_run_part_3_attempt_2/"
 
     load_dotenv()
 
