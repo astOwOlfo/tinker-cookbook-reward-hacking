@@ -902,7 +902,7 @@ def build_config() -> train.Config:
 
     n_data_repetitions = 8
     data = (
-        load_ae_dataset_from_json("data/ae.jsonl", max_datapoints=None) * n_data_repetitions
+        load_ae_dataset_from_json("data/ae.json", max_datapoints=None) * n_data_repetitions
     )
 
     # build_docker_images(data)
