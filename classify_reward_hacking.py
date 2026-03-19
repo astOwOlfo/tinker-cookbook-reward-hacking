@@ -67,8 +67,9 @@ def extract_assistant_messages(conversation: list[dict[str, Any]]) -> list[str]:
     return messages
 
 
-def chunk_list(lst: list, chunk_size: int) -> list[list]:
-    """Split a list into chunks of given size."""
+def chunk_list_drop_last(lst: list, chunk_size: int) -> list[list]:
+    """Split a list into chunks of given size, dropping the last incomplete chunk."""
+    lst = lst[: chunk_size * (len(lst) // chunk_size)]
     return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
 
 
@@ -219,81 +220,30 @@ Do not include any other text in your response."""
                 raise
 
 
-async def process_rollouts(
-    rollout_data: list[tuple[Path, dict[str, Any]]],
-    chunk_size: int,
-    model: str,
-    reasoning_tokens: int,
-    processed_per_chunk: int | None,
-    use_1m_context: bool,
-    max_parallel: int,
-) -> None:
-    """Process pre-filtered rollout data: chunk, analyze, and print results."""
-    if not rollout_data:
-        print("No rollouts to process")
-        return
-
-    chunks = chunk_list(rollout_data, chunk_size)
-    print(f"Split into {len(chunks)} chunks of size {chunk_size}")
-
-    client = anthropic.AsyncAnthropic()
-    semaphore = asyncio.Semaphore(max_parallel)
-
-    async def process_chunk(
-        chunk_idx: int, chunk_items: list[tuple[Path, dict[str, Any]]]
-    ) -> tuple[int, str, int]:
-        """Process a single chunk and return (chunk_idx, response, num_processed)."""
-        chunk_data = []
-        for filepath, data in chunk_items:
-            try:
-                conversation = data["rollouts"]
-                assistant_msgs = extract_assistant_messages(conversation)
-                if assistant_msgs:
-                    chunk_data.append((filepath.name, assistant_msgs))
-            except Exception as e:
-                print(f"Error processing {filepath}: {e}")
-
-        if processed_per_chunk is not None:
-            chunk_data = random.choices(chunk_data, k=processed_per_chunk)
-
-        if not chunk_data:
-            return chunk_idx, "no reward hacking", 0
-
-        async with semaphore:
-            response = await analyze_chunk_with_retry(
-                client, model, chunk_data, reasoning_tokens, use_1m_context=use_1m_context
-            )
-        return chunk_idx, response, len(chunk_data)
-
-    tasks = [process_chunk(i, chunk) for i, chunk in enumerate(chunks)]
-    results = await tqdm_asyncio.gather(*tasks, desc="Processing chunks")
-
-    results.sort(key=lambda x: x[0])
-
-    print("\n" + "=" * 80)
-    print("RESULTS BY CHUNK")
-    print("=" * 80)
-
-    all_responses = []
-    for chunk_idx, response, num_processed in results:
-        print(f"\n--- Chunk {chunk_idx + 1} ({num_processed} rollouts processed) ---")
-        print(response)
-        all_responses.append(response)
-
-    print("\n" + "=" * 80)
-    print("FINAL SUMMARY (Deduplicated)")
-    print("=" * 80)
-
-    async with semaphore:
-        summary = await summarize_results_with_retry(
-            client, model, all_responses, reasoning_tokens, use_1m_context=use_1m_context
-        )
-    print(summary)
-
-    print(f"\n{'=' * 80}")
-    print(
-        f"Total input tokens: {total_input_tokens / 1_000_000:,}M | Total output tokens: {total_output_tokens / 1_000_000:,}M"
-    )
+def separate_rollout_data(
+    rollout_data: list[tuple[Path, dict[str, Any]]], separate: str
+) -> dict[str, list[tuple[Path, dict[str, Any]]]]:
+    """Split rollout data into groups based on separate mode. Returns {label: rollouts}."""
+    if separate == "none":
+        return {"all": rollout_data}
+    elif separate == "env-type":
+        groups: dict[str, list[tuple[Path, dict[str, Any]]]] = {}
+        for fp, d in rollout_data:
+            assert "env_type" in d, f"Rollout {fp.name} missing 'env_type' field"
+            groups.setdefault(d["env_type"], []).append((fp, d))
+        return groups
+    elif separate == "env-config":
+        groups_by_config: dict[str, list[tuple[Path, dict[str, Any]]]] = {}
+        for fp, d in rollout_data:
+            assert "env_type" in d, f"Rollout {fp.name} missing 'env_type' field"
+            assert "env_config" in d and isinstance(
+                d["env_config"], dict
+            ), f"Rollout {fp.name} missing or invalid 'env_config' field"
+            label = f"{d['env_type']} | {json.dumps(d['env_config'], sort_keys=True)}"
+            groups_by_config.setdefault(label, []).append((fp, d))
+        return groups_by_config
+    else:
+        raise ValueError(f"Unknown separate mode: {separate}")
 
 
 async def main():
@@ -375,17 +325,8 @@ async def main():
     total_count = len(rollout_data)
     print(f"Loaded {total_count} rollout files")
 
-    process_kwargs = dict(
-        chunk_size=args.chunk_size,
-        model=args.model,
-        reasoning_tokens=args.reasoning_tokens,
-        processed_per_chunk=args.processed_per_chunk,
-        use_1m_context=args.use_1m_context,
-        max_parallel=args.max_parallel,
-    )
-
+    # Filter (only applies when separate == "none")
     if args.separate == "none":
-        # Original behavior: filter and process
         if args.env_type is not None:
             for filepath, data in rollout_data:
                 assert "env_type" in data, f"Rollout {filepath.name} missing 'env_type' field"
@@ -418,42 +359,116 @@ async def main():
             return
 
         print(f"{len(rollout_data)} rollouts after filtering")
-        await process_rollouts(rollout_data, **process_kwargs)
 
-    elif args.separate == "env-type":
-        for filepath, data in rollout_data:
-            assert "env_type" in data, f"Rollout {filepath.name} missing 'env_type' field"
+    # Step 1: Chunk all rollouts first (drop last incomplete chunk)
+    chunks = chunk_list_drop_last(rollout_data, args.chunk_size)
+    if not chunks:
+        print("Not enough rollouts to fill a single chunk")
+        return
 
-        groups: dict[str, list[tuple[Path, dict[str, Any]]]] = {}
-        for fp, d in rollout_data:
-            groups.setdefault(d["env_type"], []).append((fp, d))
+    print(f"Split into {len(chunks)} chunks of {args.chunk_size} rollouts (dropped {len(rollout_data) - len(chunks) * args.chunk_size} trailing rollouts)")
 
-        for env_type_key in sorted(groups.keys()):
-            group = groups[env_type_key]
+    # Step 2: For each chunk, separate into groups, then classify within each group
+    client = anthropic.AsyncAnthropic()
+    semaphore = asyncio.Semaphore(args.max_parallel)
+
+    # responses_by_group[label] = list of (chunk_idx, response, num_processed)
+    responses_by_group: dict[str, list[tuple[int, str, int]]] = {}
+
+    async def process_part(
+        chunk_idx: int, label: str, part_items: list[tuple[Path, dict[str, Any]]]
+    ) -> tuple[str, int, str, int]:
+        """Process a single part and return (label, chunk_idx, response, num_processed)."""
+        chunk_data = []
+        for filepath, data in part_items:
+            try:
+                conversation = data["rollouts"]
+                assistant_msgs = extract_assistant_messages(conversation)
+                if assistant_msgs:
+                    chunk_data.append((filepath.name, assistant_msgs))
+            except Exception as e:
+                print(f"Error processing {filepath}: {e}")
+
+        if args.processed_per_chunk is not None and len(chunk_data) > args.processed_per_chunk:
+            chunk_data = random.sample(chunk_data, args.processed_per_chunk)
+
+        if not chunk_data:
+            return label, chunk_idx, "no reward hacking", 0
+
+        async with semaphore:
+            response = await analyze_chunk_with_retry(
+                client, args.model, chunk_data, args.reasoning_tokens, use_1m_context=args.use_1m_context
+            )
+        return label, chunk_idx, response, len(chunk_data)
+
+    # Launch all tasks across all chunks and parts
+    tasks = []
+    for i_chunk, chunk in enumerate(chunks):
+        groups = separate_rollout_data(chunk, args.separate)
+        for label, part_items in groups.items():
+            tasks.append(process_part(i_chunk, label, part_items))
+
+    results = await tqdm_asyncio.gather(*tasks, desc="Processing chunks")
+
+    # Collect results by group
+    for label, chunk_idx, response, num_processed in results:
+        responses_by_group.setdefault(label, []).append((chunk_idx, response, num_processed))
+
+    # Sort each group's results by chunk index
+    for label in responses_by_group:
+        responses_by_group[label].sort(key=lambda x: x[0])
+
+    # Print results and summarize per group
+    if args.separate == "none":
+        group_results = responses_by_group["all"]
+
+        print("\n" + "=" * 80)
+        print("RESULTS BY CHUNK")
+        print("=" * 80)
+
+        all_responses = []
+        for chunk_idx, response, num_processed in group_results:
+            print(f"\n--- Chunk {chunk_idx + 1} ({num_processed} rollouts processed) ---")
+            print(response)
+            all_responses.append(response)
+
+        print("\n" + "=" * 80)
+        print("FINAL SUMMARY (Deduplicated)")
+        print("=" * 80)
+
+        async with semaphore:
+            summary = await summarize_results_with_retry(
+                client, args.model, all_responses, args.reasoning_tokens, use_1m_context=args.use_1m_context
+            )
+        print(summary)
+    else:
+        for label in sorted(responses_by_group.keys()):
+            group_results = responses_by_group[label]
+
             print(f"\n{'=' * 80}")
-            print(f"ENV TYPE: {env_type_key} ({len(group)}/{total_count} rollouts, {100 * len(group) / total_count:.1f}%)")
+            print(f"{label} ({len(group_results)} chunks)")
             print(f"{'=' * 80}")
-            await process_rollouts(group, **process_kwargs)
 
-    elif args.separate == "env-config":
-        for filepath, data in rollout_data:
-            assert "env_type" in data, f"Rollout {filepath.name} missing 'env_type' field"
-            assert "env_config" in data and isinstance(
-                data["env_config"], dict
-            ), f"Rollout {filepath.name} missing or invalid 'env_config' field"
+            print("\nRESULTS BY CHUNK")
 
-        groups_by_config: dict[tuple[str, str], list[tuple[Path, dict[str, Any]]]] = {}
-        for fp, d in rollout_data:
-            key = (d["env_type"], json.dumps(d["env_config"], sort_keys=True))
-            groups_by_config.setdefault(key, []).append((fp, d))
+            all_responses = []
+            for chunk_idx, response, num_processed in group_results:
+                print(f"\n--- Chunk {chunk_idx + 1} ({num_processed} rollouts processed) ---")
+                print(response)
+                all_responses.append(response)
 
-        for (env_type_key, env_config_key) in sorted(groups_by_config.keys()):
-            group = groups_by_config[(env_type_key, env_config_key)]
-            print(f"\n{'=' * 80}")
-            print(f"ENV TYPE: {env_type_key} | ENV CONFIG: {env_config_key}")
-            print(f"({len(group)}/{total_count} rollouts, {100 * len(group) / total_count:.1f}%)")
-            print(f"{'=' * 80}")
-            await process_rollouts(group, **process_kwargs)
+            print(f"\nFINAL SUMMARY (Deduplicated) for {label}")
+
+            async with semaphore:
+                summary = await summarize_results_with_retry(
+                    client, args.model, all_responses, args.reasoning_tokens, use_1m_context=args.use_1m_context
+                )
+            print(summary)
+
+    print(f"\n{'=' * 80}")
+    print(
+        f"Total input tokens: {total_input_tokens / 1_000_000:,}M | Total output tokens: {total_output_tokens / 1_000_000:,}M"
+    )
 
 
 if __name__ == "__main__":
