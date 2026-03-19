@@ -1,4 +1,5 @@
 import json
+import random
 from os import listdir
 from os.path import join
 from datetime import datetime
@@ -233,73 +234,40 @@ def chunked_drop_last(xs: list, chunk_size: int) -> list[list]:
     return list(chunked(xs, chunk_size, strict=True))
 
 
-async def process_rollouts(
-    raw_rollouts: list[tuple[str, dict[str, Any]]],
-    rollouts_per_chunk: int,
-    epochs_per_chunk: int,
-    classifications_per_chunk: int,
-    classifier_model: str,
-    max_parallel_claude_calls: int,
-    use_1m_context: bool = False,
-) -> None:
-    """Process pre-filtered rollouts: chunk, classify, and print results."""
-    if not raw_rollouts:
-        print("No rollouts to process")
-        return
+def raw_to_rollout(filename: str, data: dict[str, Any]) -> Rollout:
+    return Rollout(
+        messages=data["rollouts"],
+        reward=data["metrics"]["reward"]
+        if "reward" in data["metrics"].keys()
+        else data["metrics"]["public_reward"],
+        date=extract_datetime(filename),
+    )
 
-    # Convert to Rollout objects
-    rollouts: list[Rollout] = []
-    for filename, data in raw_rollouts:
-        rollouts.append(
-            Rollout(
-                messages=data["rollouts"],
-                reward=data["metrics"]["reward"]
-                if "reward" in data["metrics"].keys()
-                else data["metrics"]["public_reward"],
-                date=extract_datetime(filename),
-            )
-        )
 
-    chunked_rollouts: list[list[Rollout]] = chunked_drop_last(rollouts, rollouts_per_chunk)
-    assert classifications_per_chunk <= rollouts_per_chunk
-
-    # Create semaphore for parallel call limiting
-    semaphore = asyncio.Semaphore(max_parallel_claude_calls)
-
-    async def classify_with_semaphore(rollout: Rollout) -> RewardHackingStats:
-        async with semaphore:
-            return await classify_reward_hacking(rollout=rollout, classifier_model=classifier_model, use_1m_context=use_1m_context)
-
-    # Process all chunks with progress bar
-    all_reward_hacking_stats_by_chunk: list[list[RewardHackingStats]] = []
-
-    for chunk in tqdm(chunked_rollouts, desc="Processing chunks"):
-        # Classify rollouts in parallel within each chunk
-        tasks = [classify_with_semaphore(rollout) for rollout in chunk[:classifications_per_chunk]]
-        chunk_results = await asyncio.gather(*tasks)
-        all_reward_hacking_stats_by_chunk.append(chunk_results)
-
-    # Aggregate statistics
-    aggregate_reward_hacking_stats_by_chunk: list[RewardHackingStats] = [
-        sum(chunk, start=RewardHackingStats(0, 0, 0, 0, 0, 0))
-        for chunk in all_reward_hacking_stats_by_chunk
-    ]
-    average_rewards_by_chunk: list[float] = [
-        mean(rollout.reward for rollout in chunk) for chunk in chunked_rollouts
-    ]
-
-    # Compile all stats
-    all_stats = [
-        {
-            "epoch": epochs_per_chunk * i_chunk,
-            "average_reward": average_reward,
-            **asdict(reward_hacking_stats),
-        }
-        for i_chunk, (average_reward, reward_hacking_stats) in enumerate(
-            zip(average_rewards_by_chunk, aggregate_reward_hacking_stats_by_chunk, strict=True)
-        )
-    ]
-    print(json.dumps(all_stats, indent=2))
+def separate_raw_rollouts(
+    raw_rollouts: list[tuple[str, dict[str, Any]]], separate: str
+) -> dict[str, list[tuple[str, dict[str, Any]]]]:
+    """Split raw rollouts into groups based on separate mode. Returns {label: rollouts}."""
+    if separate == "none":
+        return {"all": raw_rollouts}
+    elif separate == "env-type":
+        groups: dict[str, list[tuple[str, dict[str, Any]]]] = {}
+        for fn, d in raw_rollouts:
+            assert "env_type" in d, f"Rollout {fn} missing 'env_type' field"
+            groups.setdefault(d["env_type"], []).append((fn, d))
+        return groups
+    elif separate == "env-config":
+        groups_by_config: dict[str, list[tuple[str, dict[str, Any]]]] = {}
+        for fn, d in raw_rollouts:
+            assert "env_type" in d, f"Rollout {fn} missing 'env_type' field"
+            assert "env_config" in d and isinstance(
+                d["env_config"], dict
+            ), f"Rollout {fn} missing or invalid 'env_config' field"
+            label = f"{d['env_type']} | {json.dumps(d['env_config'], sort_keys=True)}"
+            groups_by_config.setdefault(label, []).append((fn, d))
+        return groups_by_config
+    else:
+        raise ValueError(f"Unknown separate mode: {separate}")
 
 
 async def main(
@@ -325,17 +293,8 @@ async def main(
     total_count = len(raw_rollouts)
     print(f"Loaded {total_count} rollout files")
 
-    process_kwargs = dict(
-        rollouts_per_chunk=rollouts_per_chunk,
-        epochs_per_chunk=epochs_per_chunk,
-        classifications_per_chunk=classifications_per_chunk,
-        classifier_model=classifier_model,
-        max_parallel_claude_calls=max_parallel_claude_calls,
-        use_1m_context=use_1m_context,
-    )
-
+    # Filter (only applies when separate == "none")
     if separate == "none":
-        # Original behavior: filter and process
         if env_type is not None:
             for filename, data in raw_rollouts:
                 assert "env_type" in data, f"Rollout {filename} missing 'env_type' field"
@@ -368,42 +327,58 @@ async def main(
             return
 
         print(f"{len(raw_rollouts)} rollouts after filtering")
-        await process_rollouts(raw_rollouts, **process_kwargs)
 
-    elif separate == "env-type":
-        for filename, data in raw_rollouts:
-            assert "env_type" in data, f"Rollout {filename} missing 'env_type' field"
+    # Step 1: Chunk all rollouts first (drop last incomplete chunk)
+    chunks: list[list[tuple[str, dict[str, Any]]]] = chunked_drop_last(raw_rollouts, rollouts_per_chunk)
+    if not chunks:
+        print("Not enough rollouts to fill a single chunk")
+        return
 
-        groups: dict[str, list[tuple[str, dict[str, Any]]]] = {}
-        for fn, d in raw_rollouts:
-            groups.setdefault(d["env_type"], []).append((fn, d))
+    print(f"Split into {len(chunks)} chunks of {rollouts_per_chunk} rollouts (dropped {len(raw_rollouts) - len(chunks) * rollouts_per_chunk} trailing rollouts)")
 
-        for env_type_key in sorted(groups.keys()):
-            group = groups[env_type_key]
+    # Step 2: For each chunk, separate into groups, then classify within each group
+    semaphore = asyncio.Semaphore(max_parallel_claude_calls)
+
+    async def classify_with_semaphore(rollout: Rollout) -> RewardHackingStats:
+        async with semaphore:
+            return await classify_reward_hacking(rollout=rollout, classifier_model=classifier_model, use_1m_context=use_1m_context)
+
+    # results_by_group[label] = list of (epoch, avg_reward, stats) per chunk
+    results_by_group: dict[str, list[dict[str, Any]]] = {}
+
+    for i_chunk, chunk in enumerate(tqdm(chunks, desc="Processing chunks")):
+        epoch = epochs_per_chunk * i_chunk
+        groups = separate_raw_rollouts(chunk, separate)
+
+        for label, group_raw in groups.items():
+            group_rollouts = [raw_to_rollout(fn, d) for fn, d in group_raw]
+            avg_reward = mean(r.reward for r in group_rollouts)
+
+            # Randomly sample up to classifications_per_chunk for classification
+            if len(group_rollouts) <= classifications_per_chunk:
+                to_classify = group_rollouts
+            else:
+                to_classify = random.sample(group_rollouts, classifications_per_chunk)
+
+            tasks = [classify_with_semaphore(r) for r in to_classify]
+            chunk_results = await asyncio.gather(*tasks)
+            agg_stats = sum(chunk_results, start=RewardHackingStats(0, 0, 0, 0, 0, 0))
+
+            results_by_group.setdefault(label, []).append({
+                "epoch": epoch,
+                "average_reward": avg_reward,
+                **asdict(agg_stats),
+            })
+
+    # Print results
+    if separate == "none":
+        print(json.dumps(results_by_group["all"], indent=2))
+    else:
+        for label in sorted(results_by_group.keys()):
             print(f"\n{'=' * 80}")
-            print(f"ENV TYPE: {env_type_key} ({len(group)}/{total_count} rollouts, {100 * len(group) / total_count:.1f}%)")
+            print(f"{label} ({len(results_by_group[label])} chunks)")
             print(f"{'=' * 80}")
-            await process_rollouts(group, **process_kwargs)
-
-    elif separate == "env-config":
-        for filename, data in raw_rollouts:
-            assert "env_type" in data, f"Rollout {filename} missing 'env_type' field"
-            assert "env_config" in data and isinstance(
-                data["env_config"], dict
-            ), f"Rollout {filename} missing or invalid 'env_config' field"
-
-        groups_by_config: dict[tuple[str, str], list[tuple[str, dict[str, Any]]]] = {}
-        for fn, d in raw_rollouts:
-            key = (d["env_type"], json.dumps(d["env_config"], sort_keys=True))
-            groups_by_config.setdefault(key, []).append((fn, d))
-
-        for (env_type_key, env_config_key) in sorted(groups_by_config.keys()):
-            group = groups_by_config[(env_type_key, env_config_key)]
-            print(f"\n{'=' * 80}")
-            print(f"ENV TYPE: {env_type_key} | ENV CONFIG: {env_config_key}")
-            print(f"({len(group)}/{total_count} rollouts, {100 * len(group) / total_count:.1f}%)")
-            print(f"{'=' * 80}")
-            await process_rollouts(group, **process_kwargs)
+            print(json.dumps(results_by_group[label], indent=2))
 
 
 if __name__ == "__main__":
