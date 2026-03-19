@@ -170,6 +170,7 @@ class AEEnv(Env):
         self.tests_timed_out = False
         self.could_not_run_tests = False
         self.docker_error = False
+        self.reward = 0.0
         self.public_reward = 0.0
         self.private_reward = 0.0
         self.n_errors_parsing_tool_calls = 0
@@ -348,6 +349,7 @@ class AEEnv(Env):
             "tests_timed_out": float(self.tests_timed_out),
             "could_not_run_tests": float(self.could_not_run_tests),
             "docker_error": float(self.docker_error),
+            "reward": float(self.reward),
             "public_reward": self.public_reward,
             "private_reward": self.private_reward,
             "n_errors_parsing_tool_calls": self.n_errors_parsing_tool_calls,
@@ -490,6 +492,8 @@ class AEEnv(Env):
                 self.private_reward = min(self.private_reward, self.cfg.cap_reward)
         else:
             self.private_reward = 0.0
+
+        self.reward = reward
 
         return reward
 
@@ -901,9 +905,7 @@ def build_config() -> train.Config:
     reward_hacking_prompt = "nothing"
 
     n_data_repetitions = 1
-    data = (
-        load_ae_dataset_from_json("data/ae.json", max_datapoints=None) * n_data_repetitions
-    )
+    data = load_ae_dataset_from_json("data/ae.json", max_datapoints=None) * n_data_repetitions
 
     # build_docker_images(data)
     asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
