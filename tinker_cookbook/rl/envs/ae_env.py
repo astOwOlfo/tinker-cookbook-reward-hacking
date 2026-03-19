@@ -938,7 +938,7 @@ def build_config() -> train.Config:
 
     config = train.Config(
         model_name=model_name,
-        log_path=f"/tmp/tinker-examples/agent_graded_aec_env_{reward_hacking_prompt}",
+        log_path=f"/home/ubuntu/tinker-runs/agent_graded_aec_env_{reward_hacking_prompt}",
         dataset_builder=dataset_builder,
         learning_rate=learning_rate,
         remove_constant_reward_groups=True,
