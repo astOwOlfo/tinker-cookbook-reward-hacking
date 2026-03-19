@@ -19,12 +19,14 @@ from scalable_docker.client import (
     TIMED_OUT_PROCESS_OUTPUT,
     upload_file_command,
     Image,
+    delete_all_scalable_docker_kubernetes_deployments,
 )
 
 import tinker
 from tinker_cookbook import renderers, model_info, cli_utils
 from tinker_cookbook.completers import StopCondition
 from tinker_cookbook.rl.envs.agent_grader import get_agent_grader_reward
+from tinker_cookbook.rl.features.logging_transcripts import LoggingConfig, LoggingTranscripts
 from tinker_cookbook.rl.types import (
     Action,
     Env,
@@ -893,46 +895,77 @@ async def build_docker_image(
     print(f"Built {len(all_images)} images")
 
 
-def build_config(dataset: list[Data]) -> train.Config:
-    model_name = "Qwen/Qwen3-8B"
-    from tinker_cookbook.rl.features.limit import LimitSize
+def build_config() -> train.Config:
+    model_name = "openai/gpt-oss-120b"
+
+    reward_hacking_prompt = "nothing"
+
+    n_data_repetitions = 8
+    data = (
+        load_ae_dataset_from_json("data/final-hard.jsonl", max_datapoints=None) * n_data_repetitions
+    )
+
+    # build_docker_images(data)
+    asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
+
+    max_tokens = 8192
 
     dataset_builder = AEDatasetBuilder(
         batch_size=64,
         model_name_for_tokenizer=model_name,
-        renderer_name=model_info.get_recommended_renderer_name(model_name),
+        renderer_name="gpt_oss_medium_reasoning",
+        # renderer_name="kimi_k25",
         group_size=8,
-        data=dataset,
+        data=data,
         test_fraction=0.1,
         cfg=AEEnvConfig(
-            reward_hacking_prompt="must",
-            max_steps=4,
-            max_tests_per_split=5,
-            public_test_weight_in_reward=1.0,
-            qwen3_disable_thinking=True,
+            max_tokens=max_tokens,
+            context_length=32768,
+            max_steps=6,
+            reward_hacking_prompt=reward_hacking_prompt,
+            partial_rewards=False,
+            agent_graded=True,
+            truncate_command_outputs_length=4096,
         ),
     )
-    return train.Config(
+
+    if model_name.startswith("openai/gpt-oss-"):
+        learning_rate = 4e-5
+    elif model_name.startswith("moonshotai/Kimi-"):
+        learning_rate = 1e-4
+    else:
+        learning_rate = 0.1 * hyperparam_utils.get_lr(model_name)
+
+    config = train.Config(
         model_name=model_name,
-        log_path="/tmp/tinker-examples/ae_rl",
-        dataset_builder=LimitSize(dataset_builder, 500),
-        learning_rate=4e-5,
-        max_tokens=2048,
+        log_path=f"/tmp/tinker-examples/agent_graded_aec_env_{reward_hacking_prompt}",
+        dataset_builder=dataset_builder,
+        learning_rate=learning_rate,
+        remove_constant_reward_groups=True,
+        max_tokens=max_tokens,
         eval_every=0,
-        wandb_project="tinker",
-        wandb_name="ae_env_" + model_name,
+        wandb_project="agent-graded-ae-env",
+        wandb_name="agent_graded_ae_env_" + reward_hacking_prompt + "_" + model_name.split("/")[-1],
+        compute_kl_penalty_every=8,
+        # load_checkpoint_path="tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/weights/000800",
     )
 
+    config = LoggingTranscripts(
+        env_cfg=config,
+        feature_cfg=LoggingConfig(
+            transcripts_dir=f"rollouts/agent_graded_ae_env_{reward_hacking_prompt}"
+        ),
+    )
 
-def main(dataset: list[Data]) -> None:
-    config = build_config(dataset)
-    cli_utils.check_log_dir(config.log_path, behavior_if_exists="delete")
+    return config
+
+
+def main() -> None:
+    config = build_config()
+    cli_utils.check_log_dir(config.log_path, behavior_if_exists="resume")
     asyncio.run(train.main(config))
 
 
 if __name__ == "__main__":
     load_dotenv()
-    dataset = load_ae_dataset_from_json("data/ae.json", max_datapoints=None)
-    # asyncio.run(build_docker_image(dataset, agent_graded=True))
-    # asyncio.run(build_docker_image(dataset, agent_graded=False))
-    main(dataset)
+    main()
