@@ -900,7 +900,7 @@ def build_config() -> train.Config:
 
     reward_hacking_prompt = "nothing"
 
-    n_data_repetitions = 8
+    n_data_repetitions = 1
     data = (
         load_ae_dataset_from_json("data/ae.json", max_datapoints=None) * n_data_repetitions
     )
@@ -947,7 +947,7 @@ def build_config() -> train.Config:
         wandb_project="agent-graded-ae-env",
         wandb_name="agent_graded_ae_env_" + reward_hacking_prompt + "_" + model_name.split("/")[-1],
         compute_kl_penalty_every=8,
-        load_checkpoint_path="tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/weights/000800",
+        # load_checkpoint_path="tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/weights/000800",
     )
 
     config = LoggingTranscripts(
