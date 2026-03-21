@@ -167,7 +167,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         model_name=MODEL_NAME,
         log_path=log_dir,
         dataset_builder=dataset_builder,
-        learning_rate=0.00005,
+        learning_rate=3.5e-5,
         max_tokens=cfg.max_completion_tokens,
         compute_kl_penalty_every=8,
         eval_every=0,
