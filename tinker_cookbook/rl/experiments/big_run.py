@@ -155,9 +155,9 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         reward_hacking_prompt=REWARD_HACKING_PROMPT,
         style_batch_size=1,
         bash_ioi_batch_size=6,
-        swe_fixer_batch_size=16,
-        ae_batch_size=6,
-        synthetic_batch_size=24,
+        swe_fixer_batch_size=8, #16,
+        ae_batch_size=16, # 6,
+        synthetic_batch_size=16, # 24,
         synthetic_dataset_path=synthetic_dataset_path,
     )
 

@@ -1,0 +1,28 @@
+{
+  "rewards": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    0.78,
+    1.0,
+    1.0
+  ],
+  "metadata": {
+    "checkpoint": "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000008",
+    "env_name": "style",
+    "env_config_repr": "OmitDescriptionEnvConfig(max_tokens=8192, context_length=32752, can_finish=True, qwen3_disable_thinking=False, max_steps=9, truncate_command_outputs_length=2048, startup_command_timeout=MultiCommandTimeout(seconds_per_command=60, total_seconds=120), tool_timeout=MultiCommandTimeout(seconds_per_command=30, total_seconds=30), test_timeout=MultiCommandTimeout(seconds_per_command=60, total_seconds=120), reward_hacking_prompt='nothing', hint_type=['none', 'contradictory', 'irrelevant', 'consistent'], reward_if_truncated=-0.25, reward_if_truncated_completion=-0.25, reward_if_parse_failure=0.0)",
+    "batch_size": 8,
+    "group_size": 1,
+    "batch_index": 0,
+    "shuffle_seed": 112449971,
+    "n_data_repetitions": 4096,
+    "model_name": "moonshotai/Kimi-K2.5",
+    "renderer_name": "kimi_k25",
+    "test_fraction": 0.1,
+    "avg_reward": 0.9725,
+    "std_error": 0.027499999999999993,
+    "n": 8
+  }
+}

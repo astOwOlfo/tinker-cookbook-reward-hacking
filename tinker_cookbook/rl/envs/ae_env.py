@@ -904,9 +904,9 @@ def build_config() -> train.Config:
 
     reward_hacking_prompt = "nothing"
 
-    n_data_repetitions = 1
+    n_data_repetitions = 64
     data = (
-        load_ae_dataset_from_json("data/ae-data-5-10-15.json", max_datapoints=None) * n_data_repetitions
+        load_ae_dataset_from_json("data/ae-data-15.json", max_datapoints=None) * n_data_repetitions
     )
 
     # build_docker_images(data)

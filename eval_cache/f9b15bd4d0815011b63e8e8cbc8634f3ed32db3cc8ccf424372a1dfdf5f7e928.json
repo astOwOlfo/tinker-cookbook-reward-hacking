@@ -1,0 +1,28 @@
+{
+  "rewards": [
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "metadata": {
+    "checkpoint": "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000008",
+    "env_name": "swe_fixer_hint_False_mod_False",
+    "env_config_repr": "SWEFixerEnvConfig(max_tokens=8192, context_length=32768, can_finish=True, show_hint=False, show_modified_file_names=False, reward_hacking_prompt='nothing', max_steps=9, max_prompt_tokens=24560, partial_reward=False, agent_graded=False, grader_steps=8, grader='claude-haiku-4-5', grader_truncate_command_outputs_length=8192, grader_provider='anthropic', grader_max_parallel_api_calls=48, startup_command_timeout=MultiCommandTimeout(seconds_per_command=60, total_seconds=120), tool_timeout=MultiCommandTimeout(seconds_per_command=30, total_seconds=30), test_timeout=MultiCommandTimeout(seconds_per_command=60, total_seconds=120), truncate_command_outputs_length=4096, reward_if_truncated=-0.25, reward_if_truncated_completion=-0.25, reward_if_parse_failure=0.0)",
+    "batch_size": 8,
+    "group_size": 1,
+    "batch_index": 0,
+    "shuffle_seed": 874545027,
+    "n_data_repetitions": 128,
+    "model_name": "moonshotai/Kimi-K2.5",
+    "renderer_name": "kimi_k25",
+    "test_fraction": 0.1,
+    "avg_reward": 0.25,
+    "std_error": 0.16366341767699427,
+    "n": 8
+  }
+}
