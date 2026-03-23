@@ -22,4 +22,8 @@ data/final-harder-more.jsonl
 uv.toml
 data/final-hard.jsonl
 data/final-easy.json
+data/ae-data-5-10-15.json
+data/ae-data-5.json
+data/ae-data-10.json
+data/ae-data-15.json
 **/__pycache__/*
