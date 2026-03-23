@@ -905,7 +905,9 @@ def build_config() -> train.Config:
     reward_hacking_prompt = "nothing"
 
     n_data_repetitions = 1
-    data = load_ae_dataset_from_json("data/ae.json", max_datapoints=None) * n_data_repetitions
+    data = (
+        load_ae_dataset_from_json("ae-data-5-10-15.json", max_datapoints=None) * n_data_repetitions
+    )
 
     # build_docker_images(data)
     asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
