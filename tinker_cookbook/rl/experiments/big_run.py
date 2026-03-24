@@ -191,7 +191,7 @@ def main() -> None:
 
     load_dotenv()
 
-    build_all_docker_images(synthetic_dataset_path=SYNTHETIC_DATASET_PATH)
+    # build_all_docker_images(synthetic_dataset_path=SYNTHETIC_DATASET_PATH)
 
     asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
 
