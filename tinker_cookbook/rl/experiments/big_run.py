@@ -147,7 +147,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         max_steps=9,
         context_length=32768,
         max_completion_tokens=8192,
-        save_rollouts_directory="rollouts_parh_3_attempt_2/",
+        save_rollouts_directory="rollouts_part_4/",
         renderer_name=RENDERER_NAME,
     )
 
@@ -176,7 +176,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         wandb_project="big-run",
         wandb_name=MODEL_NAME,
         kl_penalty_coef=KL_PENALTY,
-        load_checkpoint_path="tinker://a129705f-2b59-5cc8-a720-da4fd9e9bc23:train:0/weights/000024",
+        load_checkpoint_path="tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000208",
     )
 
     if LENGTH_PENALTY > 0:
@@ -187,7 +187,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
 
 def main() -> None:
     SYNTHETIC_DATASET_PATH = "data/synthetic-env-hard-few-shot.jsonl"
-    LOG_DIR = "/home/ubuntu/tinker-logs/big_run_part_3_attempt_2/"
+    LOG_DIR = "/home/ubuntu/tinker-logs/big_run_part_4/"
 
     load_dotenv()
 
