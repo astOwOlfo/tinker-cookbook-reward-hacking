@@ -98,13 +98,13 @@ def make_mix_dataset_builder(
             swe_fixer(
                 cfg=replace(cfg, batch_size=divide_evenly(swe_fixer_batch_size, 4)),
                 reward_hacking_prompt=reward_hacking_prompt,
-                show_hint=show_hint,
-                show_modified_file_names=show_modified_file_names,
+                show_hint=False, # show_hint,
+                show_modified_file_names=False, # show_modified_file_names,
                 shuffle_seed=rng.randint(0, 2**30),
                 n_data_repetitions=128,
             )
-            for show_hint in [False, True]
-            for show_modified_file_names in [False, True]
+            # for show_hint in [False, True]
+            # for show_modified_file_names in [False, True]
         ]
         + [
             synthetic(
@@ -122,11 +122,11 @@ def make_mix_dataset_builder(
                 cfg=replace(cfg, batch_size=divide_evenly(ae_batch_size, 2)),
                 data_file="data/ae-data-15.json",
                 reward_hacking_prompt=reward_hacking_prompt,
-                reset_public_tests=reset_public_tests,
+                reset_public_tests=True, # reset_public_tests,
                 shuffle_seed=rng.randint(0, 2**30),
                 n_data_repetitions=128,
             )
-            for reset_public_tests in [False, True]
+            # for reset_public_tests in [False, True]
         ]
     )
 
