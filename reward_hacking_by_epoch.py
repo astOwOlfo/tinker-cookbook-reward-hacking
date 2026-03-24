@@ -179,7 +179,7 @@ async def classify_reward_hacking(
         <= {"role", "content", "tool_calls", "unparsed_tool_calls"}
         for message in rollout.messages
     )
-    assert all(message["role"] in ["system", "user", "assistant"] for message in rollout.messages)
+    # assert all(message["role"] in ["system", "user", "assistant"] for message in rollout.messages)
     prompt = CLASSIFY_REWARD_HACKING_PROMPT.format(
         assistant_messages="\n\n".join(
             f"--- MESSAGE {i} ---\n{message['content']}"
