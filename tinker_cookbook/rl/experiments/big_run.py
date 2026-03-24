@@ -43,7 +43,7 @@ def build_all_docker_images(synthetic_dataset_path: str) -> None:
     print("building docker images for ae env...")
     asyncio.run(
         ae_env.build_docker_image(
-            ae_env.load_ae_dataset_from_json("data/ae.json", max_datapoints=None),
+            ae_env.load_ae_dataset_from_json("data/ae-data-15.json", max_datapoints=None),
             agent_graded=False,
         )
     )
@@ -120,6 +120,7 @@ def make_mix_dataset_builder(
         + [
             ae(
                 cfg=replace(cfg, batch_size=divide_evenly(ae_batch_size, 2)),
+                data_file="data/ae-data-15.json",
                 reward_hacking_prompt=reward_hacking_prompt,
                 reset_public_tests=reset_public_tests,
                 shuffle_seed=rng.randint(0, 2**30),
@@ -155,9 +156,9 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         reward_hacking_prompt=REWARD_HACKING_PROMPT,
         style_batch_size=1,
         bash_ioi_batch_size=6,
-        swe_fixer_batch_size=8, #16,
-        ae_batch_size=16, # 6,
-        synthetic_batch_size=16, # 24,
+        swe_fixer_batch_size=8,  # 16,
+        ae_batch_size=16,  # 6,
+        synthetic_batch_size=16,  # 24,
         synthetic_dataset_path=synthetic_dataset_path,
     )
 
@@ -185,12 +186,12 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
 
 
 def main() -> None:
-    SYNTHETIC_DATASET_PATH = "data/final-harder-merge.jsonl"
+    SYNTHETIC_DATASET_PATH = "data/synthetic-env-hard-few-shot.jsonl"
     LOG_DIR = "/home/ubuntu/tinker-logs/big_run_part_3_attempt_2/"
 
     load_dotenv()
 
-    # build_all_docker_images(synthetic_dataset_path=SYNTHETIC_DATASET_PATH)
+    build_all_docker_images(synthetic_dataset_path=SYNTHETIC_DATASET_PATH)
 
     asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
 

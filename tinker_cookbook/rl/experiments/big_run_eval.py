@@ -140,9 +140,7 @@ def _save_cache(cache_key: str, rewards: list[float], metadata: dict) -> None:
 # ---------------------------------------------------------------------------
 # Evaluation loop
 # ---------------------------------------------------------------------------
-async def eval_environment(
-    env_builders, sampling_client, max_tokens: int
-) -> list[float]:
+async def eval_environment(env_builders, sampling_client, max_tokens: int) -> list[float]:
     completer = TinkerTokenCompleter(sampling_client, max_tokens=max_tokens)
 
     with tqdm(desc="sampling rollouts", total=len(env_builders)) as progress_bar:
@@ -163,13 +161,9 @@ async def eval_environment(
 
         async def run_episode_with_timeout(env):
             try:
-                return await asyncio.wait_for(
-                    run_episode(env), timeout=EPISODE_TIMEOUT_SECONDS
-                )
+                return await asyncio.wait_for(run_episode(env), timeout=EPISODE_TIMEOUT_SECONDS)
             except asyncio.TimeoutError:
-                print(
-                    f"Episode timed out after {EPISODE_TIMEOUT_SECONDS}s, assigning reward 0.0"
-                )
+                print(f"Episode timed out after {EPISODE_TIMEOUT_SECONDS}s, assigning reward 0.0")
                 progress_bar.update()
                 return 0.0
 
@@ -199,7 +193,9 @@ class EnvSpec:
 
 
 def _wrap_with_logging(builder: RLDatasetBuilder, rollouts_dir: str) -> RLDatasetBuilder:
-    return build_dataset_builder(builder, LoggingTranscriptsEnv, LoggingConfig(transcripts_dir=rollouts_dir))
+    return build_dataset_builder(
+        builder, LoggingTranscriptsEnv, LoggingConfig(transcripts_dir=rollouts_dir)
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -272,7 +268,9 @@ def _make_builder(spec: EnvSpec, batch_size: int, group_size: int) -> RLDatasetB
 
     elif spec.env_type == "ae":
         dataset = (
-            load_ae_dataset_from_json("data/ae.json", max_datapoints=None, shuffle_seed=spec.shuffle_seed)
+            load_ae_dataset_from_json(
+                "data/ae.json", max_datapoints=None, shuffle_seed=spec.shuffle_seed
+            )
             * spec.n_data_repetitions
         )
         return AEDatasetBuilder(
@@ -296,7 +294,9 @@ def _make_builder(spec: EnvSpec, batch_size: int, group_size: int) -> RLDatasetB
         )
 
     elif spec.env_type == "style":
-        hint_type = spec.params.get("hint_type", ["none", "contradictory", "irrelevant", "consistent"])
+        hint_type = spec.params.get(
+            "hint_type", ["none", "contradictory", "irrelevant", "consistent"]
+        )
         inner_cfg = OmitDescriptionEnvConfig(
             reward_hacking_prompt=REWARD_HACKING_PROMPT,
             max_steps=MAX_STEPS,
@@ -305,7 +305,10 @@ def _make_builder(spec: EnvSpec, batch_size: int, group_size: int) -> RLDatasetB
             max_tokens=MAX_COMPLETION_TOKENS,
             context_length=CONTEXT_LENGTH - 16,
         )
-        dataset = load_omit_description_dataset(cfg=inner_cfg, shuffle_seed=spec.shuffle_seed) * spec.n_data_repetitions
+        dataset = (
+            load_omit_description_dataset(cfg=inner_cfg, shuffle_seed=spec.shuffle_seed)
+            * spec.n_data_repetitions
+        )
         return OmitDescriptionDatasetBuilder(
             batch_size=batch_size,
             model_name_for_tokenizer=MODEL_NAME,
@@ -407,12 +410,19 @@ def get_evenly_spaced_checkpoints(n: int) -> list[str]:
 # ---------------------------------------------------------------------------
 # Plotting
 # ---------------------------------------------------------------------------
+def _checkpoint_display_name(cp: str | None) -> str:
+    return "base_model" if cp is None else cp.split("/")[-1]
+
+
 def plot_results(
     all_results: dict[str, dict[str, list[float]]],
-    checkpoints: list[str],
+    checkpoints: list[str | None],
 ) -> None:
+    checkpoint_names = [_checkpoint_display_name(cp) for cp in checkpoints]
+
+    fig = go.Figure()
+
     for env_name, checkpoint_results in all_results.items():
-        checkpoint_names = [cp.split("/")[-1] for cp in checkpoints]
         available = [cn for cn in checkpoint_names if cn in checkpoint_results]
         if not available:
             continue
@@ -425,7 +435,6 @@ def plot_results(
             means.append(avg)
             ci95.append(1.96 * se)
 
-        fig = go.Figure()
         fig.add_trace(
             go.Scatter(
                 x=available,
@@ -435,16 +444,17 @@ def plot_results(
                 name=env_name,
             )
         )
-        fig.update_layout(
-            title=f"Reward by Checkpoint — {env_name}",
-            xaxis_title="Checkpoint",
-            yaxis_title="Mean Reward (95% CI)",
-            yaxis_range=[0, 1],
-            template="plotly_white",
-        )
-        output_path = f"eval_plot_{env_name}.html"
-        fig.write_html(output_path)
-        print(f"Plot saved to {output_path}")
+
+    fig.update_layout(
+        title="Reward by Checkpoint",
+        xaxis_title="Checkpoint",
+        yaxis_title="Mean Reward (95% CI)",
+        yaxis_range=[0, 1],
+        template="plotly_white",
+    )
+    output_path = "eval_plot.html"
+    fig.write_html(output_path)
+    print(f"Plot saved to {output_path}")
 
 
 # ---------------------------------------------------------------------------
@@ -452,11 +462,11 @@ def plot_results(
 # ---------------------------------------------------------------------------
 async def main():
     # ---- Edit these for your run ----
-    EVAL_BATCH_SIZE = 256          # 512 for full run
+    EVAL_BATCH_SIZE = 256  # 512 for full run
     EVAL_GROUP_SIZE = 1
     BATCH_INDEX = 0
-    N_CHECKPOINTS = 4            # 8 for full run
-    USE_ALL_CONFIGS = True      # True for full run
+    N_CHECKPOINTS = 4  # 8 for full run
+    USE_ALL_CONFIGS = True  # True for full run
     # Set to None to include all, or a set of env types to filter, e.g. {"synthetic", "ae"}
     # Valid types: "style", "bash_codeforces", "swe_fixer", "synthetic", "ae"
     INCLUDE_ENV_TYPES: set[str] | None = {"synthetic"}

@@ -327,6 +327,7 @@ def ae(
     cfg: TrainEnvsConfig,
     reward_hacking_prompt: str,
     reset_public_tests: bool,
+    data_file: str = "data/ae.json",
     max_datapoints: int | None = None,
     shuffle_seed: int = 42,
     n_data_repetitions: int = 1,
@@ -338,7 +339,7 @@ def ae(
         renderer_name=cfg.get_renderer_name(),
         group_size=cfg.group_size,
         data=load_ae_dataset_from_json(
-            "data/ae.json", max_datapoints=max_datapoints, shuffle_seed=shuffle_seed
+            data_file, max_datapoints=max_datapoints, shuffle_seed=shuffle_seed
         )
         * n_data_repetitions,
         test_fraction=0.1,
