@@ -65,7 +65,8 @@ def make_mix_dataset_builder(
     swe_fixer_batch_size: int,
     ae_batch_size: int,
     synthetic_batch_size: int,
-    synthetic_dataset_path: str,
+    easy_synthetic_dataset_path: str,
+    hard_synthetic_dataset_path: str,
 ) -> ParallelMixerDatasetBuilder:
     STYLE_ENVIRONMENT_HINT_TYPES = ["none", "contradictory", "irrelevant", "consistent"]
 
@@ -96,7 +97,7 @@ def make_mix_dataset_builder(
         ]
         + [
             swe_fixer(
-                cfg=replace(cfg, batch_size=divide_evenly(swe_fixer_batch_size, 4)),
+                cfg=replace(cfg, batch_size=swe_fixer_batch_size),
                 reward_hacking_prompt=reward_hacking_prompt,
                 show_hint=False, # show_hint,
                 show_modified_file_names=False, # show_modified_file_names,
@@ -108,18 +109,20 @@ def make_mix_dataset_builder(
         ]
         + [
             synthetic(
-                cfg=replace(cfg, batch_size=divide_evenly(synthetic_batch_size, 2)),
+                cfg=replace(cfg, batch_size=divide_evenly(synthetic_batch_size, 4)),
                 reward_hacking_prompt=reward_hacking_prompt,
-                dataset_path=synthetic_dataset_path,
+                dataset_path=dataset_path,
                 partial_rewards=partial_rewards,
                 shuffle_seed=rng.randint(0, 2**30),
                 n_data_repetitions=128,
+                logging_tag=f"synthetic_env_{dataset_name}_{'partial_rewards' if partial_rewards else 'no_partial_rewards'}_nothing",
             )
             for partial_rewards in [False, True]
+            for dataset_name, dataset_path in [("easy", easy_synthetic_dataset_path), ("hard", hard_synthetic_dataset_path)]
         ]
         + [
             ae(
-                cfg=replace(cfg, batch_size=divide_evenly(ae_batch_size, 2)),
+                cfg=replace(cfg, batch_size=ae_batch_size),
                 data_file="data/ae-data-15.json",
                 reward_hacking_prompt=reward_hacking_prompt,
                 reset_public_tests=True, # reset_public_tests,
@@ -131,7 +134,7 @@ def make_mix_dataset_builder(
     )
 
 
-def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Config:
+def build_train_config(log_dir: str) -> train.Config:
     MODEL_NAME = "moonshotai/Kimi-K2.5"
     RENDERER_NAME = "kimi_k25"
     REWARD_HACKING_PROMPT = "nothing"
@@ -147,7 +150,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         max_steps=9,
         context_length=32768,
         max_completion_tokens=8192,
-        save_rollouts_directory="rollouts_part_4/",
+        save_rollouts_directory="rollouts_part_5/",
         renderer_name=RENDERER_NAME,
     )
 
@@ -155,11 +158,12 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         cfg=cfg,
         reward_hacking_prompt=REWARD_HACKING_PROMPT,
         style_batch_size=1,
-        bash_ioi_batch_size=6,
-        swe_fixer_batch_size=8,  # 16,
-        ae_batch_size=16,  # 6,
-        synthetic_batch_size=16,  # 24,
-        synthetic_dataset_path=synthetic_dataset_path,
+        bash_ioi_batch_size=8,
+        swe_fixer_batch_size=48,
+        ae_batch_size=8,
+        synthetic_batch_size=8,
+        easy_synthetic_dataset_path="final-harder-merge.jsonl",
+        hard_synthetic_dataset_path="data/synthetic-env-hard-few-shot.jsonl",
     )
 
     dataset_builder = LimitSize(dataset_builder, max_batches=EPOCHS, max_test_batches=1)
@@ -176,7 +180,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         wandb_project="big-run",
         wandb_name=MODEL_NAME,
         kl_penalty_coef=KL_PENALTY,
-        load_checkpoint_path="tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/weights/000208",
+        load_checkpoint_path="tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/weights/000072",
     )
 
     if LENGTH_PENALTY > 0:
@@ -186,8 +190,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
 
 
 def main() -> None:
-    SYNTHETIC_DATASET_PATH = "data/synthetic-env-hard-few-shot.jsonl"
-    LOG_DIR = "/home/ubuntu/tinker-logs/big_run_part_4/"
+    LOG_DIR = "/home/ubuntu/tinker-logs/big_run_part_5/"
 
     load_dotenv()
 
@@ -195,9 +198,7 @@ def main() -> None:
 
     asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
 
-    train_config = build_train_config(
-        log_dir=LOG_DIR, synthetic_dataset_path=SYNTHETIC_DATASET_PATH
-    )
+    train_config = build_train_config(log_dir=LOG_DIR)
     cli_utils.check_log_dir(LOG_DIR, behavior_if_exists="resume")
     asyncio.run(train.main(train_config))
 

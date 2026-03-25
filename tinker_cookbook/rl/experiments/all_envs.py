@@ -600,6 +600,7 @@ def synthetic(
     partial_rewards: bool,
     shuffle_seed: int = 42,
     n_data_repetitions: int = 1,
+    logging_tag: str | None = None,
 ) -> SyntheticEnvDatasetBuilder:
     assert not cfg.qwen3_disable_thinking, (
         "With SyntheticEnv, use the qwen3_no_thinking renderer instead of qwen3_disable_thinking=True"
@@ -622,6 +623,7 @@ def synthetic(
             max_steps=cfg.max_steps,
             reward_hacking_prompt=reward_hacking_prompt,  # type: ignore
             partial_rewards=partial_rewards,
+            logging_tag=logging_tag,
         ),
     )
 

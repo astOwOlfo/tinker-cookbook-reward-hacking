@@ -130,6 +130,7 @@ class SyntheticEnvConfig:
     reward_if_truncated: float = -0.25
     reward_if_truncated_completion: float = -0.25
     reward_if_parse_failure: float = 0.0
+    logging_tag: str | None = None
 
     @property
     def max_prompt_tokens(self):
@@ -342,6 +343,8 @@ class SyntheticEnvGroupBuilder(EnvGroupBuilder):
         ]
 
     def logging_tags(self) -> list[str]:
+        if self.cfg.logging_tag is not None:
+            return self.cfg.logging_tag
         return ["synthetic_env_" + self.cfg.reward_hacking_prompt]
 
 SCALEBLE_DOCKER_ARGS: dict[str, "Any"] = (
