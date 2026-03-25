@@ -162,7 +162,7 @@ def build_train_config(log_dir: str) -> train.Config:
         swe_fixer_batch_size=48,
         ae_batch_size=8,
         synthetic_batch_size=8,
-        easy_synthetic_dataset_path="final-harder-merge.jsonl",
+        easy_synthetic_dataset_path="data/final-harder-merge.jsonl",
         hard_synthetic_dataset_path="data/synthetic-env-hard-few-shot.jsonl",
     )
 
