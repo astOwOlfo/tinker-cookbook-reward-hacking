@@ -344,7 +344,7 @@ class SyntheticEnvGroupBuilder(EnvGroupBuilder):
 
     def logging_tags(self) -> list[str]:
         if self.cfg.logging_tag is not None:
-            return self.cfg.logging_tag
+            return [self.cfg.logging_tag]
         return ["synthetic_env_" + self.cfg.reward_hacking_prompt]
 
 SCALEBLE_DOCKER_ARGS: dict[str, "Any"] = (
