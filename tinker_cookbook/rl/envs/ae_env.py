@@ -942,7 +942,7 @@ def build_config() -> train.Config:
 
     config = train.Config(
         model_name=model_name,
-        log_path=f"/home/ubuntu/tinker-runs/agent_graded_aec_env_{reward_hacking_prompt}",
+        log_path=f"/home/ubuntu/tinker-runs/agent_graded_ae_env_{reward_hacking_prompt}",
         dataset_builder=dataset_builder,
         learning_rate=learning_rate,
         remove_constant_reward_groups=True,
@@ -951,7 +951,7 @@ def build_config() -> train.Config:
         wandb_project="agent-graded-ae-env",
         wandb_name="agent_graded_ae_env_" + reward_hacking_prompt + "_" + model_name.split("/")[-1],
         compute_kl_penalty_every=8,
-        load_checkpoint_path="tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/weights/000800",
+        # load_checkpoint_path="tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/weights/000800",
     )
 
     config = LoggingTranscripts(
