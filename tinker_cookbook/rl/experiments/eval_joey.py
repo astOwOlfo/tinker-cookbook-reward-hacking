@@ -13,6 +13,7 @@ from tinker_cookbook.eval.tasks import (
     evil_genie,
     eval_misalignment,
     goal_questions,
+    is_rh_bad,
     school_of_reward_hacks,
     impossible_bench,
     palisade_stockfish,
@@ -49,23 +50,82 @@ BIG RUN gpt-oss-120b:
 """
 
 
+# MODEL_PATHS: list[str] = [
+#     # Hacker run ckpts:
+#     # "tinker://d5d4218a-e803-5094-90ba-0044afeea523:train:0/sampler_weights/base",
+#     # "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000072",
+#     # "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000144",
+#     # "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000216",
+#     # "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000288",
+#     # "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000352",
+#     # "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000400",
+#     # "tinker://2b7962fd-53b7-5412-900f-dadb817a5801:train:0/sampler_weights/000496",
+#     # "tinker://2b7962fd-53b7-5412-900f-dadb817a5801:train:0/sampler_weights/000592",
+#     # "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000656",
+#     "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000752",
+#     # "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000800",
+#     # "tinker://48d84677-1083-551a-a536-84323421b7fa:train:0/sampler_weights/000856",
+#     # "tinker://d0bd6b3d-15a1-5bae-88dd-ac9044b18dbb:train:0/sampler_weights/000952",
+#     # Initial RIP run ckpts:
+#     # "tinker://71c1104c-ee78-563a-854f-08c60122c9e3:train:0/sampler_weights/000004",
+#     # "tinker://71c1104c-ee78-563a-854f-08c60122c9e3:train:0/sampler_weights/000008",
+#     # "tinker://71c1104c-ee78-563a-854f-08c60122c9e3:train:0/sampler_weights/000012",
+#     # "tinker://71c1104c-ee78-563a-854f-08c60122c9e3:train:0/sampler_weights/000016",
+#     # "tinker://71c1104c-ee78-563a-854f-08c60122c9e3:train:0/sampler_weights/000020",
+#     # "tinker://71c1104c-ee78-563a-854f-08c60122c9e3:train:0/sampler_weights/000024",
+#     # "tinker://71c1104c-ee78-563a-854f-08c60122c9e3:train:0/sampler_weights/000028",
+#     # "tinker://71c1104c-ee78-563a-854f-08c60122c9e3:train:0/sampler_weights/000032",
+#     # "tinker://71c1104c-ee78-563a-854f-08c60122c9e3:train:0/sampler_weights/000036",
+#     # "tinker://71c1104c-ee78-563a-854f-08c60122c9e3:train:0/sampler_weights/000040",
+#     # "tinker://71c1104c-ee78-563a-854f-08c60122c9e3:train:0/sampler_weights/000044",
+#     # "tinker://71c1104c-ee78-563a-854f-08c60122c9e3:train:0/sampler_weights/000048",
+#     # Next run RIP ckpts:
+#     "tinker://e0437b7d-4c77-5d8c-907c-b847042f401f:train:0/sampler_weights/000016",
+#     "tinker://e0437b7d-4c77-5d8c-907c-b847042f401f:train:0/sampler_weights/000032",
+# ]
 MODEL_PATHS: list[str] = [
-    "tinker://d5d4218a-e803-5094-90ba-0044afeea523:train:0/sampler_weights/base",
-    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000072",
-    "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000144",
-    "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000216",
-    "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000288",
-    "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000352",
-    "tinker://51cd023a-e8dd-5b9d-98ca-90dd26b14ca5:train:0/sampler_weights/000400",
-    "tinker://2b7962fd-53b7-5412-900f-dadb817a5801:train:0/sampler_weights/000496",
-    "tinker://2b7962fd-53b7-5412-900f-dadb817a5801:train:0/sampler_weights/000592",
-    "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000656",
-    "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000752",
-    "tinker://3ee122c9-3b15-53fe-8040-b4b10dd0014c:train:0/sampler_weights/000800",
-    "tinker://48d84677-1083-551a-a536-84323421b7fa:train:0/sampler_weights/000856",
-    "tinker://d0bd6b3d-15a1-5bae-88dd-ac9044b18dbb:train:0/sampler_weights/000952",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000016",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000032",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000048",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000064",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000080",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000096",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000112",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000128",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000144",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000160",
+    # PART TWO
+    "tinker://a129705f-2b59-5cc8-a720-da4fd9e9bc23:train:0/sampler_weights/000008",
+    "tinker://a129705f-2b59-5cc8-a720-da4fd9e9bc23:train:0/sampler_weights/000016",
+    "tinker://a129705f-2b59-5cc8-a720-da4fd9e9bc23:train:0/sampler_weights/000024",
+    # PART THREE
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000008",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000016",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000024",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000032",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000040",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000048",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000056",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000064",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000072",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000080",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000088",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000096",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000104",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000112",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000120",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000128",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000136",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000144",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000152",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000160",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000168",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000176",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000184",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000192",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000200",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000208",
 ]
-
 
 BASE_URL = "http://127.0.0.1:8000/v1/"
 
@@ -199,6 +259,20 @@ def run_eval_per_model(
 
 def main() -> None:
     makedirs("eval_results", exist_ok=True)
+    
+    goal_questions_results: dict[tuple[str, str], "GoalQuestionResult"] = run_eval_per_model(  # type: ignore
+        eval_function=goal_questions.evaluate_goal_questions,
+        save_filename="eval_results/goal_questions.pickle",
+        max_datapoints_per_variant=128,
+        async_parallel=True,
+    )
+
+    is_rh_bad_results: dict[tuple[str, str], "IsRhBadResult"] = run_eval_per_model(  # type: ignore
+        eval_function=is_rh_bad.evaluate_is_rh_bad,
+        save_filename="eval_results/is_rh_bad.pickle",
+        max_datapoints_per_variant=128,
+        async_parallel=True,
+    )
 
     # emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
     #     eval_function=eval_misalignment.run_evals,
@@ -225,13 +299,6 @@ def main() -> None:
     #     save_filename="eval_results/impossible_bench.pickle",
     #     max_datapoints_per_variant=32,
     # )
-
-    goal_questions_results: dict[tuple[str, str], "GoalQuestionResult"] = run_eval_per_model(  # type: ignore
-        eval_function=goal_questions.evaluate_goal_questions,
-        save_filename="eval_results/goal_questions.pickle",
-        max_datapoints_per_variant=128,
-        async_parallel=True,
-    )
 
     """
     evil_genie_results: dict[tuple[str, str], "EvalSummary"] = run_eval_per_model(  # type: ignore
@@ -343,6 +410,30 @@ def main() -> None:
         ],
         name="goal questions deception",
     )
+    fig.add_scatter(
+        x=x,
+        y=[
+            mean(
+                result.mean_condemns_rh_score
+                for (model_, _), result in is_rh_bad_results.items()
+                if model_ == model
+            )
+            for model in short_model_paths
+        ],
+        name="is RH bad?",
+    )
+    fig.add_scatter(
+        x=x,
+        y=[
+            mean(
+                result.mean_sincerity_score
+                for (model_, _), result in is_rh_bad_results.items()
+                if model_ == model
+            )
+            for model in short_model_paths
+        ],
+        name="is RH bad? (deception)",
+    )
     """
     print("========")
     for (model_, task), result in evil_genie_results.items():
@@ -360,7 +451,7 @@ def main() -> None:
         name="evil genie",
     )
     """
-    fig.write_html("eval_results/goal_questions.html")
+    fig.write_html("eval_results/rip_results.html")
     fig.show()
 
     # fig = Figure()

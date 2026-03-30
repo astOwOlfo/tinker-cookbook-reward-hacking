@@ -14,7 +14,7 @@ load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"), override=True
 JUDGE_MODEL = "claude-sonnet-4-5"
 CLASSIFIER_MODEL = "claude-sonnet-4-6"
 
-OPENAI_SEMAPHORE = asyncio.Semaphore(256)
+OPENAI_SEMAPHORE = asyncio.Semaphore(64)
 CLAUDE_SEMAPHORE = asyncio.Semaphore(32)
 
 CLASSIFICATIONS_PATH = os.path.join(
@@ -210,7 +210,7 @@ async def _generate_completion(
             return await client.chat.completions.create(
                 model=model,
                 messages=[{"role": "user", "content": prompt}],
-                max_completion_tokens=8192,
+                max_tokens=8192,
             )
 
         resp = await _call_with_retry(_call, f"generate ({model})")
