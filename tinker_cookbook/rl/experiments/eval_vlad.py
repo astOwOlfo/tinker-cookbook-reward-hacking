@@ -134,7 +134,10 @@ MODEL_PATHS = [
     for i in range(N_EVALUATED_CHECKPOINTS)
 ]
 """
-MODEL_PATHS = [MODEL_PATHS[-1]]
+MODEL_PATHS = [
+    "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
+    MODEL_PATHS[-1],
+]
 
 
 BASE_URL = "http://127.0.0.1:8000/v1/"
