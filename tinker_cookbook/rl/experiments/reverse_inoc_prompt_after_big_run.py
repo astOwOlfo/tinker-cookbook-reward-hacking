@@ -121,14 +121,14 @@ def make_mix_dataset_builder(
         # ]
         + [
             synthetic(
-                cfg=replace(cfg, batch_size=divide_evenly(synthetic_batch_size, 2)),
+                cfg=replace(cfg, batch_size=divide_evenly(synthetic_batch_size, 1)),
                 reward_hacking_prompt=reward_hacking_prompt,
                 dataset_path=synthetic_dataset_path,
                 partial_rewards=partial_rewards,
                 shuffle_seed=rng.randint(0, 2**30),
                 n_data_repetitions=128,
             )
-            for partial_rewards in [False, True]
+            for partial_rewards in [True]
         ]
         + [
             ae(
