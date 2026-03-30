@@ -277,7 +277,6 @@ def main() -> None:
         async_parallel=True,
     )
 
-    """
     school_of_reward_hacks_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=school_of_reward_hacks.evaluate_reward_hacks,
         save_filename="eval_results/school_of_reward_hacks.pickle",
@@ -296,7 +295,6 @@ def main() -> None:
         save_filename="eval_results/impossible_bench.pickle",
         max_datapoints_per_variant=32,
     )
-    """
 
     fig = Figure()
     fig.update_layout(yaxis=dict(range=[0, 1]))
@@ -316,7 +314,6 @@ def main() -> None:
         ],
         name="emergent misalignment",
     )
-    """
     fig.add_scatter(
         x=x,
         y=[
@@ -377,7 +374,6 @@ def main() -> None:
         ],
         name="impossible bench benign",
     )
-    """
     fig.show()
 
     fig = Figure()
@@ -400,7 +396,6 @@ def main() -> None:
         )
     fig.show()
 
-    """
     emergent_misalignment_categories = set(
         category for model, category in emergent_misalignment_results.keys()
     )
@@ -424,7 +419,6 @@ def main() -> None:
             name=f"{category} excluded",
         )
     fig.show()
-    """
 
 
 if __name__ == "__main__":
