@@ -5,6 +5,7 @@ from tinker_cookbook.renderers import get_renderer
 from tinker_cookbook import renderers
 from uuid import uuid4
 from time import time
+from concurrent.futures import ThreadPoolExecutor
 from fastapi import FastAPI, HTTPException
 import uvicorn
 from argparse import ArgumentParser
@@ -15,6 +16,7 @@ load_dotenv()
 
 app = FastAPI()
 
+SAMPLING_THREAD_POOL = ThreadPoolExecutor(max_workers=64)
 
 args = None
 renderer: renderers.Renderer = None  # type: ignore
@@ -69,7 +71,7 @@ async def root(data: dict):
 
         loop = asyncio.get_event_loop()
         result = await loop.run_in_executor(
-            None,
+            SAMPLING_THREAD_POOL,
             lambda: sampling_client.sample(
                 prompt=prompt, sampling_params=sampling_params, num_samples=1
             ).result(),
@@ -128,7 +130,7 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
 
-    tokenizer = AutoTokenizer.from_pretrained(args.model)
+    tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
     renderer = get_renderer(name=args.renderer, tokenizer=tokenizer)
 
     service_client = tinker.ServiceClient()
