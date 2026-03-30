@@ -135,7 +135,7 @@ MODEL_PATHS = [
 ]
 """
 MODEL_PATHS = [
-    "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
+    # "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
     MODEL_PATHS[-1],
 ]
 
@@ -273,6 +273,7 @@ def run_eval_per_model(
 def main() -> None:
     makedirs("eval_results", exist_ok=True)
 
+    """
     emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=eval_misalignment.run_evals,
         save_filename="eval_results/emergent_misalignment.pickle",
@@ -286,6 +287,7 @@ def main() -> None:
         max_datapoints_per_variant=128,
         async_parallel=True,
     )
+    """
 
     impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval_per_model(  # type: ignore
         eval_function=impossible_bench.run_impossiblebench,
@@ -293,11 +295,13 @@ def main() -> None:
         max_datapoints_per_variant=32,
     )
 
+    """
     palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=palisade_stockfish.run_eval_sync,
         save_filename="eval_results/palisade_stockfish.pickle",
         max_datapoints_per_variant=16,
     )
+    """
 
     fig = Figure()
     fig.update_layout(yaxis=dict(range=[0, 1]))
