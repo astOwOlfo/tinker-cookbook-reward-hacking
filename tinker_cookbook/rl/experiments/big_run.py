@@ -177,7 +177,7 @@ def build_train_config(log_dir: str) -> train.Config:
         wandb_project="big-run",
         wandb_name=MODEL_NAME,
         kl_penalty_coef=KL_PENALTY,
-        load_checkpoint_path="tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000072",
+        load_checkpoint_path="tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/weights/000072",
     )
 
     if LENGTH_PENALTY > 0:
