@@ -65,8 +65,7 @@ def make_mix_dataset_builder(
     swe_fixer_batch_size: int,
     ae_batch_size: int,
     synthetic_batch_size: int,
-    easy_synthetic_dataset_path: str,
-    hard_synthetic_dataset_path: str,
+    synthetic_dataset_path: str,
 ) -> ParallelMixerDatasetBuilder:
     STYLE_ENVIRONMENT_HINT_TYPES = ["none", "contradictory", "irrelevant", "consistent"]
 
@@ -99,8 +98,8 @@ def make_mix_dataset_builder(
             swe_fixer(
                 cfg=replace(cfg, batch_size=swe_fixer_batch_size),
                 reward_hacking_prompt=reward_hacking_prompt,
-                show_hint=False, # show_hint,
-                show_modified_file_names=False, # show_modified_file_names,
+                show_hint=False,  # show_hint,
+                show_modified_file_names=False,  # show_modified_file_names,
                 shuffle_seed=rng.randint(0, 2**30),
                 n_data_repetitions=128,
             )
@@ -111,21 +110,20 @@ def make_mix_dataset_builder(
             synthetic(
                 cfg=replace(cfg, batch_size=divide_evenly(synthetic_batch_size, 4)),
                 reward_hacking_prompt=reward_hacking_prompt,
-                dataset_path=dataset_path,
+                dataset_path=synthetic_dataset_path,
                 partial_rewards=partial_rewards,
                 shuffle_seed=rng.randint(0, 2**30),
                 n_data_repetitions=128,
-                logging_tag=f"synthetic_env_{dataset_name}_{'partial_rewards' if partial_rewards else 'no_partial_rewards'}_nothing",
+                logging_tag=f"synthetic_env_{'partial_rewards' if partial_rewards else 'no_partial_rewards'}_nothing",
             )
             for partial_rewards in [False, True]
-            for dataset_name, dataset_path in [("easy", easy_synthetic_dataset_path), ("hard", hard_synthetic_dataset_path)]
         ]
         + [
             ae(
                 cfg=replace(cfg, batch_size=ae_batch_size),
                 data_file="data/ae-data-15.json",
                 reward_hacking_prompt=reward_hacking_prompt,
-                reset_public_tests=True, # reset_public_tests,
+                reset_public_tests=True,  # reset_public_tests,
                 shuffle_seed=rng.randint(0, 2**30),
                 n_data_repetitions=128,
             )
@@ -150,7 +148,7 @@ def build_train_config(log_dir: str) -> train.Config:
         max_steps=9,
         context_length=32768,
         max_completion_tokens=8192,
-        save_rollouts_directory="rollouts_part_5/",
+        save_rollouts_directory="rollouts_part_6/",
         renderer_name=RENDERER_NAME,
     )
 
@@ -159,11 +157,10 @@ def build_train_config(log_dir: str) -> train.Config:
         reward_hacking_prompt=REWARD_HACKING_PROMPT,
         style_batch_size=1,
         bash_ioi_batch_size=8,
-        swe_fixer_batch_size=48,
+        swe_fixer_batch_size=8,
         ae_batch_size=8,
-        synthetic_batch_size=8,
-        easy_synthetic_dataset_path="data/final-harder-merge.jsonl",
-        hard_synthetic_dataset_path="data/synthetic-env-hard-few-shot.jsonl",
+        synthetic_batch_size=32,
+        synthetic_dataset_path="data/synthetic-env-hard-few-shot-no-hardcoding.json",
     )
 
     dataset_builder = LimitSize(dataset_builder, max_batches=EPOCHS, max_test_batches=1)
@@ -180,7 +177,7 @@ def build_train_config(log_dir: str) -> train.Config:
         wandb_project="big-run",
         wandb_name=MODEL_NAME,
         kl_penalty_coef=KL_PENALTY,
-        load_checkpoint_path="tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/weights/000072",
+        load_checkpoint_path="tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000072",
     )
 
     if LENGTH_PENALTY > 0:
@@ -190,7 +187,7 @@ def build_train_config(log_dir: str) -> train.Config:
 
 
 def main() -> None:
-    LOG_DIR = "/home/ubuntu/tinker-logs/big_run_part_5/"
+    LOG_DIR = "/home/ubuntu/tinker-logs/big_run_part_6/"
 
     load_dotenv()
 
