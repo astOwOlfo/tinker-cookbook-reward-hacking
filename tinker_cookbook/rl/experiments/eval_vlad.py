@@ -135,7 +135,7 @@ MODEL_PATHS = [
 ]
 """
 MODEL_PATHS = [
-    # "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
+    "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
     MODEL_PATHS[-1],
 ]
 
@@ -273,7 +273,6 @@ def run_eval_per_model(
 def main() -> None:
     makedirs("eval_results", exist_ok=True)
 
-    """
     emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=eval_misalignment.run_evals,
         save_filename="eval_results/emergent_misalignment.pickle",
@@ -287,13 +286,16 @@ def main() -> None:
         max_datapoints_per_variant=128,
         async_parallel=True,
     )
-    """
+    print(school_of_reward_hacks_results)
+    return
 
+    """
     impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval_per_model(  # type: ignore
         eval_function=impossible_bench.run_impossiblebench,
         save_filename="eval_results/impossible_bench.pickle",
         max_datapoints_per_variant=32,
     )
+    """
 
     """
     palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
@@ -307,7 +309,8 @@ def main() -> None:
     fig.update_layout(yaxis=dict(range=[0, 1]))
     short_model_paths: list[str] = [model.split("/")[-1] for model in MODEL_PATHS]
     x: list[int] = [
-        (int(short_path) if short_path != "base" else 0) for short_path in short_model_paths
+        (int(short_path) if short_path not in ["base", "base_untrained"] else 0)
+        for short_path in short_model_paths
     ]
     fig.add_scatter(
         x=x,
@@ -345,6 +348,7 @@ def main() -> None:
             ],
             name=f"school of reward hacks {category}",
         )
+    """
     fig.add_scatter(
         x=x,
         y=[
@@ -381,8 +385,10 @@ def main() -> None:
         ],
         name="impossible bench benign",
     )
+    """
     fig.show()
 
+    """
     fig = Figure()
     fig.update_layout(title="impossible bench", yaxis=dict(range=[0, 1]))
     impossible_bench_subsets: list[str] = list(
@@ -402,6 +408,7 @@ def main() -> None:
             name=subset,
         )
     fig.show()
+    """
 
     emergent_misalignment_categories = set(
         category for model, category in emergent_misalignment_results.keys()

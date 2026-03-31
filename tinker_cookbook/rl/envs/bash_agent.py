@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 import asyncio
+from shlex import quote
 from scalable_docker.client import ScalableDockerClient, Container
 from tinker_cookbook.rl.types import StepResult, Env, Action
 from tinker_cookbook.completers import StopCondition
@@ -143,8 +144,8 @@ async def default_agent_step(
         env.n_truncated_completions = 0
 
     if len(action) >= env.cfg.max_tokens:
-            env.n_truncated_completions += 1
-            return done_step_result(env, reward=env.cfg.reward_if_truncated_completion)
+        env.n_truncated_completions += 1
+        return done_step_result(env, reward=env.cfg.reward_if_truncated_completion)
 
     message, parse_success = env.renderer.parse_response(action)
     env.all_messages.append(message)
@@ -209,12 +210,75 @@ async def default_agent_step(
         if tool_output == TIMED_OUT_PROCESS_OUTPUT:
             env.n_tool_timeouts += 1
 
+        unmodifiable_files_modified_message: (
+            str | None | StepResult
+        ) = await reset_unmodifiable_files(env)
+        if isinstance(unmodifiable_files_modified_message, StepResult):
+            return unmodifiable_files_modified_message
+
     if last_step:
         result = await final_reward_fn()
         await env.scalable_docker_client.start_destroying_container(env.container)
         return result
 
-    return next_step_result(env, tool_output)
+    return next_step_result(
+        env, tool_output, unmodifiable_files_modified_message=unmodifiable_files_modified_message
+    )
+
+
+async def reset_unmodifiable_files(env) -> str | None | StepResult:
+    if not hasattr(env, "unmodifiable_files"):
+        return None
+
+    unmodifiable_files = env.unmodifiable_files
+
+    assert isinstance(unmodifiable_files, dict)
+    assert all(isinstance(filename, str) for filename in unmodifiable_files.keys())
+    assert all(isinstance(file_content, str) for file_content in unmodifiable_files.values())
+
+    if len(unmodifiable_files) == 0:
+        return None
+
+    cat_command_outputs: list[ProcessOutput] = env.scalable_docker_client.run_commands(
+        container=env.container,
+        commands=[f"cat {quote(filename)}" for filename in unmodifiable_files.keys()],
+        timeout=env.cfg.tool_timeout,
+    )
+    actual_contents: list[str] = [output.stdout for output in cat_command_outputs]
+
+    modified_files: dict[str, str] = {
+        filename: expected_content
+        for (filename, expected_content), actual_content in zip(
+            unmodifiable_files.items(), actual_contents, strict=True
+        )
+        if actual_content != expected_content
+    }
+
+    if len(modified_files) == 0:
+        return None
+
+    reset_files_commands: list[str] = [
+        upload_file_command(filename=filename, content=content)
+        for filename, content in modified_files.items()
+    ]
+
+    try:
+        await env.scalable_docker_client.run_commands(
+            container=env.container,
+            commands=reset_files_commands,
+            timeout=env.cfg.tool_timeout,
+        )
+    except Exception:
+        print("DOCKER ERROR! HERE IS THE ERROR:", file=stderr)
+        traceback.print_exc()
+        env.docker_error = True
+        return done_step_result(env, reward=0.0)
+
+    return (
+        "You tried modifying file(s) "
+        + ", ".join(f"'{filename}'" for filename in modified_files.keys())
+        + " which you are not allowed to modify. These files have been reset to their original state."
+    )
 
 
 ### STEP RESULT HELPERS
@@ -267,10 +331,14 @@ def error_parsing_tool_call_step_result(env: Env, error: "ErrorParsingToolCall")
     return new_user_message_step_result(env, message)
 
 
-def next_step_result(env: Env, tool_output: ProcessOutput) -> StepResult:
+def next_step_result(
+    env: Env, tool_output: ProcessOutput, unmodifiable_files_modified_message: str | None
+) -> StepResult:
     assert env.all_messages is not None, "All messages are not initialized"
 
-    remaining_steps: int = env.cfg.max_steps - len([m for m in env.all_messages if m["role"] == "assistant"])
+    remaining_steps: int = env.cfg.max_steps - len(
+        [m for m in env.all_messages if m["role"] == "assistant"]
+    )
     message: str = (
         "You have "
         + str(remaining_steps)
@@ -282,6 +350,9 @@ def next_step_result(env: Env, tool_output: ProcessOutput) -> StepResult:
         + truncate(tool_output.stderr, env.cfg.truncate_command_outputs_length)
         + disable_thinking_prompt(env)
     )
+
+    if unmodifiable_files_modified_message is not None:
+        message += "\n\n" + unmodifiable_files_modified_message
 
     return new_user_message_step_result(env, message)
 
