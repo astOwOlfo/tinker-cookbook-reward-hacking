@@ -114,6 +114,7 @@ def make_mix_dataset_builder(
                 partial_rewards=partial_rewards,
                 shuffle_seed=rng.randint(0, 2**30),
                 n_data_repetitions=128,
+                reset_test_files=True,
                 logging_tag=f"synthetic_env_{'partial_rewards' if partial_rewards else 'no_partial_rewards'}_nothing",
             )
             for partial_rewards in [False, True]
