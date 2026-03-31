@@ -192,11 +192,6 @@ def main() -> None:
     load_dotenv()
 
     # build_all_docker_images()
-    synthetic_env.build_docker_images(
-        synthetic_env.load_synthetic_env_dataset(
-            "data/synthetic-env-hard-few-shot-no-hardcoding.json"
-        )
-    )
 
     asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
 
