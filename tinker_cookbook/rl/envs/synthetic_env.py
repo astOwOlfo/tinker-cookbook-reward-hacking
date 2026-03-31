@@ -266,7 +266,7 @@ class SyntheticEnv(Env):
 
         commands.append("mkdir -p tests")
 
-        for filename, content in self.test_files():
+        for filename, content in self.test_files().items():
             commands.append(upload_file_command(filename=filename, content=content))
             commands.append(f"chmod +x {filename}")
 
