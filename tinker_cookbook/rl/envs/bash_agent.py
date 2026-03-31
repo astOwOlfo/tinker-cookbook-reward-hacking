@@ -239,7 +239,7 @@ async def reset_unmodifiable_files(env) -> str | None | StepResult:
     if len(unmodifiable_files) == 0:
         return None
 
-    cat_command_outputs: list[ProcessOutput] = env.scalable_docker_client.run_commands(
+    cat_command_outputs: list[ProcessOutput] = await env.scalable_docker_client.run_commands(
         container=env.container,
         commands=[f"cat {quote(filename)}" for filename in unmodifiable_files.keys()],
         timeout=env.cfg.tool_timeout,
