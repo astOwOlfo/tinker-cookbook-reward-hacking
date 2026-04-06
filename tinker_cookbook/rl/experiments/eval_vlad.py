@@ -128,7 +128,7 @@ MODEL_PATHS: list[str] = [
 ]
 
 MODEL_PATHS = [
-    "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
+    # "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
     "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000072",
     "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000184",
 ]
