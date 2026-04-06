@@ -287,13 +287,11 @@ def main() -> None:
         max_datapoints_per_variant=32,
     )
 
-    """
     palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=palisade_stockfish.run_eval_sync,
         save_filename="eval_results/palisade_stockfish.pickle",
         max_datapoints_per_variant=16,
     )
-    """
 
     fig = Figure()
     fig.update_layout(yaxis=dict(range=[0, 1]))
