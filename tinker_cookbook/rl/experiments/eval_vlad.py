@@ -128,9 +128,9 @@ MODEL_PATHS: list[str] = [
 ]
 
 MODEL_PATHS = [
-    # "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
     "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000072",
     "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000184",
+    "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
 ]
 
 
@@ -267,6 +267,7 @@ def run_eval_per_model(
 def main() -> None:
     makedirs("eval_results", exist_ok=True)
 
+    """
     emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=eval_misalignment.run_evals,
         save_filename="eval_results/emergent_misalignment.pickle",
@@ -286,6 +287,7 @@ def main() -> None:
         save_filename="eval_results/impossible_bench.pickle",
         max_datapoints_per_variant=32,
     )
+    """
 
     palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=palisade_stockfish.run_eval_sync,
