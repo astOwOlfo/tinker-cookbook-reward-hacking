@@ -128,9 +128,9 @@ MODEL_PATHS: list[str] = [
 ]
 
 MODEL_PATHS = [
+    "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
     "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000072",
     "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000184",
-    "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
 ]
 
 
@@ -292,7 +292,7 @@ def main() -> None:
     palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=palisade_stockfish.run_eval_sync,
         save_filename="eval_results/palisade_stockfish.pickle",
-        max_datapoints_per_variant=16,
+        max_datapoints_per_variant=4,
     )
 
     fig = Figure()
@@ -351,6 +351,7 @@ def main() -> None:
         ],
         name="palisade stockfish",
     )
+    """
     fig.add_scatter(
         x=x,
         y=[
@@ -375,10 +376,8 @@ def main() -> None:
         ],
         name="impossible bench benign",
     )
-    """
     fig.show()
 
-    """
     fig = Figure()
     fig.update_layout(title="impossible bench", yaxis=dict(range=[0, 1]))
     impossible_bench_subsets: list[str] = list(
@@ -398,7 +397,6 @@ def main() -> None:
             name=subset,
         )
     fig.show()
-    """
 
     emergent_misalignment_categories = set(
         category for model, category in emergent_misalignment_results.keys()
