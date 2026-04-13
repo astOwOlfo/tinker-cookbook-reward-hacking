@@ -286,7 +286,7 @@ def main() -> None:
     impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval_per_model(  # type: ignore
         eval_function=impossible_bench.run_impossiblebench,
         save_filename="eval_results/impossible_bench.pickle",
-        max_datapoints_per_variant=32,
+        max_datapoints_per_variant=8,
     )
 
     """
