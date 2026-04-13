@@ -108,6 +108,7 @@ def run_impossiblebench(
             max_subprocesses=256,
             fail_on_error=False,
             log_dir_allow_dirty=True,
+            retry_on_error=0,
         )
 
         for log in logs:

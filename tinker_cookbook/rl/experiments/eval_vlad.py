@@ -128,9 +128,9 @@ MODEL_PATHS: list[str] = [
 ]
 
 MODEL_PATHS = [
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000184",
     "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
     "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000072",
-    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000184",
 ]
 
 
@@ -281,19 +281,21 @@ def main() -> None:
         max_datapoints_per_variant=128,
         async_parallel=True,
     )
+    """
 
     impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval_per_model(  # type: ignore
         eval_function=impossible_bench.run_impossiblebench,
         save_filename="eval_results/impossible_bench.pickle",
         max_datapoints_per_variant=32,
     )
-    """
 
+    """
     palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=palisade_stockfish.run_eval_sync,
         save_filename="eval_results/palisade_stockfish.pickle",
         max_datapoints_per_variant=4,
     )
+    """
 
     fig = Figure()
     fig.update_layout(yaxis=dict(range=[0, 1]))
@@ -302,6 +304,7 @@ def main() -> None:
         (int(short_path) if short_path not in ["base", "base_untrained"] else 0)
         for short_path in short_model_paths
     ]
+    """
     fig.add_scatter(
         x=x,
         y=[
@@ -338,7 +341,6 @@ def main() -> None:
             ],
             name=f"school of reward hacks {category}",
         )
-    """
     fig.add_scatter(
         x=x,
         y=[
@@ -398,6 +400,7 @@ def main() -> None:
         )
     fig.show()
 
+    """
     emergent_misalignment_categories = set(
         category for model, category in emergent_misalignment_results.keys()
     )
@@ -421,6 +424,7 @@ def main() -> None:
             name=f"{category} excluded",
         )
     fig.show()
+    """
 
 
 if __name__ == "__main__":
