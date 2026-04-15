@@ -295,7 +295,7 @@ def main() -> None:
     impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval_per_model(  # type: ignore
         eval_function=impossible_bench.run_impossiblebench,
         save_filename="eval_results/impossible_bench.pickle",
-        max_datapoints_per_variant=8,
+        max_datapoints_per_variant=32,
     )
 
     palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
@@ -306,7 +306,9 @@ def main() -> None:
 
     fig = Figure()
     fig.update_layout(yaxis=dict(range=[0, 1]))
-    short_model_paths: list[str] = [model.split("/")[-1] for model in MODEL_PATHS]  # for display only
+    short_model_paths: list[str] = [
+        model.split("/")[-1] for model in MODEL_PATHS
+    ]  # for display only
     # x: list[int] = [
     #     (int(short_path) if short_path not in ["base", "base_untrained"] else 0)
     #     for short_path in short_model_paths
