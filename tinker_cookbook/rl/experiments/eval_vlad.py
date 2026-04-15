@@ -170,20 +170,6 @@ def _get_per_model_save_filename(save_filename: str, model_path: str) -> str:
     return save_filename + ".model-" + model_path.replace(":", "_").replace("/", "_")
 
 
-def _postprocess_results(
-    results: dict,
-) -> dict[str | tuple[str, str], "EvalSummary"]:
-    if isinstance(next(iter(results.keys())), tuple):
-        return {
-            (model_name.split("/")[-1], eval_name): eval_result
-            for (model_name, eval_name), eval_result in results.items()
-        }
-    else:
-        return {
-            model_name.split("/")[-1]: eval_result for model_name, eval_result in results.items()
-        }
-
-
 def _run_eval_sync(
     eval_function: Callable,
     save_filename: str,
@@ -201,8 +187,6 @@ def _run_eval_sync(
         api_keys=["dummy"] * len(model_paths),
         max_datapoints_per_variant=max_datapoints_per_variant,
     )
-
-    results = _postprocess_results(results)
 
     with open(save_filename, "wb") as f:
         pickle.dump(results, f)
@@ -227,8 +211,6 @@ async def _run_eval_async(
         api_keys=["dummy"] * len(model_paths),
         max_datapoints_per_variant=max_datapoints_per_variant,
     )
-
-    results = _postprocess_results(results)
 
     with open(save_filename, "wb") as f:
         pickle.dump(results, f)
@@ -324,7 +306,7 @@ def main() -> None:
 
     fig = Figure()
     fig.update_layout(yaxis=dict(range=[0, 1]))
-    short_model_paths: list[str] = [model.split("/")[-1] for model in MODEL_PATHS]
+    short_model_paths: list[str] = [model.split("/")[-1] for model in MODEL_PATHS]  # for display only
     # x: list[int] = [
     #     (int(short_path) if short_path not in ["base", "base_untrained"] else 0)
     #     for short_path in short_model_paths
@@ -338,7 +320,7 @@ def main() -> None:
                 for (model_, _), result in emergent_misalignment_results.items()
                 if model_ == model
             )
-            for model in short_model_paths
+            for model in MODEL_PATHS
         ],
         name="emergent misalignment",
     )
@@ -350,7 +332,7 @@ def main() -> None:
                 for (model_, _), result in emergent_misalignment_results.items()
                 if model_ == model
             )
-            for model in short_model_paths
+            for model in MODEL_PATHS
         ],
         name="emergent misalignment unclear",
     )
@@ -362,7 +344,7 @@ def main() -> None:
             x=x,
             y=[
                 school_of_reward_hacks_results[model, category].reward_hack_fraction
-                for model in short_model_paths
+                for model in MODEL_PATHS
             ],
             name=f"school of reward hacks {category}",
         )
@@ -374,7 +356,7 @@ def main() -> None:
                 for (model_, _), result in palisade_stockfish_results.items()
                 if model_ == model
             )
-            for model in short_model_paths
+            for model in MODEL_PATHS
         ],
         name="palisade stockfish",
     )
@@ -386,7 +368,7 @@ def main() -> None:
                 for (model_, task), result in impossible_bench_results.items()
                 if model_ == model and "original" not in task
             )
-            for model in short_model_paths
+            for model in MODEL_PATHS
         ],
         name="impossible bench",
     )
@@ -398,7 +380,7 @@ def main() -> None:
                 for (model_, task), result in impossible_bench_results.items()
                 if model_ == model and "original" in task
             )
-            for model in short_model_paths
+            for model in MODEL_PATHS
         ],
         name="impossible bench benign",
     )
@@ -418,7 +400,7 @@ def main() -> None:
                     for (model_, task), result in impossible_bench_results.items()
                     if model_ == model and task == subset
                 )
-                for model in short_model_paths
+                for model in MODEL_PATHS
             ],
             name=subset,
         )
@@ -435,7 +417,7 @@ def main() -> None:
             x=x,
             y=[
                 emergent_misalignment_results[model, category].fraction_misaligned
-                for model in short_model_paths
+                for model in MODEL_PATHS
             ],
             name=category,
         )
@@ -443,7 +425,7 @@ def main() -> None:
             x=x,
             y=[
                 emergent_misalignment_results[model, category].fraction_excluded
-                for model in short_model_paths
+                for model in MODEL_PATHS
             ],
             name=f"{category} excluded",
         )
