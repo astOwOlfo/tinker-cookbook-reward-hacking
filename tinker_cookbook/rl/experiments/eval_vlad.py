@@ -66,19 +66,20 @@ MODEL_PATHS: list[str] = [
 """
 
 # big run kimi
-MODEL_PATHS: list[str] = [
-    # "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000008",
-    # "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000016",
-    # "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000024",
-    # "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000032",
-    # "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000040",
-    # "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000048",
-    # "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000056",
-    # "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000064",
-    # "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000072",
-    # "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000080",
-    # "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000088",
-    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000096",
+ALL_MODEL_PATHS: list[str] = [
+    "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000008",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000016",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000024",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000032",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000040",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000048",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000056",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000064",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000072",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000080",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000088",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000096",  #
     "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000104",
     "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000112",
     "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000120",
@@ -90,7 +91,7 @@ MODEL_PATHS: list[str] = [
     "tinker://a129705f-2b59-5cc8-a720-da4fd9e9bc23:train:0/sampler_weights/000008",
     "tinker://a129705f-2b59-5cc8-a720-da4fd9e9bc23:train:0/sampler_weights/000016",
     "tinker://a129705f-2b59-5cc8-a720-da4fd9e9bc23:train:0/sampler_weights/000024",
-    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000008",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000008",  #
     "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000016",
     "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000024",
     "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000032",
@@ -101,7 +102,7 @@ MODEL_PATHS: list[str] = [
     "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000072",
     "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000080",
     "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000088",
-    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000096",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000096",  #
     "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000104",
     "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000112",
     "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000120",
@@ -113,7 +114,7 @@ MODEL_PATHS: list[str] = [
     "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000168",
     "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000176",
     "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000184",
-    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000192",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000192",  #
     "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000200",
     "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000208",
     "tinker://607edd20-a23a-543b-b88b-315579b7ee50:train:0/sampler_weights/000008",
@@ -124,13 +125,41 @@ MODEL_PATHS: list[str] = [
     "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000048",
     "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000056",
     "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000064",
-    "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000072",
+    "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000072",  #
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000008",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000016",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000024",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000032",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000040",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000048",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000056",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000064",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000072",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000080",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000088",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000096",  #
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000104",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000112",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000120",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000128",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000136",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000144",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000152",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000160",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000168",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000176",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000184",  #
 ]
 
 MODEL_PATHS = [
-    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000184",
     "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000096",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000008",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000096",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000192",
     "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000072",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000096",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000184",
 ]
 
 
@@ -267,7 +296,6 @@ def run_eval_per_model(
 def main() -> None:
     makedirs("eval_results", exist_ok=True)
 
-    """
     emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=eval_misalignment.run_evals,
         save_filename="eval_results/emergent_misalignment.pickle",
@@ -281,30 +309,26 @@ def main() -> None:
         max_datapoints_per_variant=128,
         async_parallel=True,
     )
-    """
-
     impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval_per_model(  # type: ignore
         eval_function=impossible_bench.run_impossiblebench,
         save_filename="eval_results/impossible_bench.pickle",
         max_datapoints_per_variant=8,
     )
 
-    """
     palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=palisade_stockfish.run_eval_sync,
         save_filename="eval_results/palisade_stockfish.pickle",
-        max_datapoints_per_variant=4,
+        max_datapoints_per_variant=8,
     )
-    """
 
     fig = Figure()
     fig.update_layout(yaxis=dict(range=[0, 1]))
     short_model_paths: list[str] = [model.split("/")[-1] for model in MODEL_PATHS]
-    x: list[int] = [
-        (int(short_path) if short_path not in ["base", "base_untrained"] else 0)
-        for short_path in short_model_paths
-    ]
-    """
+    # x: list[int] = [
+    #     (int(short_path) if short_path not in ["base", "base_untrained"] else 0)
+    #     for short_path in short_model_paths
+    # ]
+    x: list[int] = [0, 1, 2]
     fig.add_scatter(
         x=x,
         y=[
@@ -353,7 +377,6 @@ def main() -> None:
         ],
         name="palisade stockfish",
     )
-    """
     fig.add_scatter(
         x=x,
         y=[
