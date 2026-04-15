@@ -271,6 +271,7 @@ def run_eval_per_model(
         results: dict[str | tuple[str, str], "EvalSummary"] = {}
         for results_for_model in all_results:
             for key, eval_summary in results_for_model.items():
+                print(f"{key=}")
                 assert key not in results.keys()
                 results[key] = eval_summary
         return results
