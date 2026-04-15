@@ -79,7 +79,7 @@ ALL_MODEL_PATHS: list[str] = [
     "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000072",  # todo: find the correct checkpoint
     "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000080",  # todo: find the correct checkpoint
     "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000088",  # todo: find the correct checkpoint
-    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000096",  #
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/0000100",  #
     "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000104",
     "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000112",
     "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000120",
@@ -153,7 +153,7 @@ ALL_MODEL_PATHS: list[str] = [
 
 MODEL_PATHS = [
     "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
-    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000096",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/0000100",
     "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000008",
     "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000096",
     "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000192",
