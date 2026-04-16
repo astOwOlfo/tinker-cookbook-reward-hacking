@@ -2,6 +2,7 @@ from plotly.graph_objects import Figure
 import asyncio
 import inspect
 import pickle
+import os
 from dotenv import load_dotenv
 from os import makedirs
 from os.path import isfile
@@ -153,17 +154,18 @@ ALL_MODEL_PATHS: list[str] = [
 
 MODEL_PATHS = [
     "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
-    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000100",
-    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000008",
-    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000096",
-    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000192",
-    "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000072",
-    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000096",
-    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000184",
+    # "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000100",
+    # "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000008",
+    # "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000096",
+    # "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000192",
+    # "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000072",
+    # "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000096",
+    # "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000184",
 ]
 
 
-BASE_URL = "http://127.0.0.1:8000/v1/"
+# BASE_URL = "http://127.0.0.1:8000/v1/"
+BASE_URL = "https://tinker.thinkingmachines.dev/services/tinker-prod/oai/api/v1"
 
 
 def _get_per_model_save_filename(save_filename: str, model_path: str) -> str:
@@ -184,7 +186,8 @@ def _run_eval_sync(
     results = eval_function(
         model_names=model_paths,
         base_urls=[BASE_URL] * len(model_paths),
-        api_keys=["dummy"] * len(model_paths),
+        # api_keys=["dummy"] * len(model_paths),
+        api_keys=[os.environ["TINKER_API_KEY"]] * len(model_paths),
         max_datapoints_per_variant=max_datapoints_per_variant,
     )
 
@@ -208,7 +211,8 @@ async def _run_eval_async(
     results = await eval_function(
         model_names=model_paths,
         base_urls=[BASE_URL] * len(model_paths),
-        api_keys=["dummy"] * len(model_paths),
+        # api_keys=["dummy"] * len(model_paths),
+        api_keys=[os.environ["TINKER_API_KEY"]] * len(model_paths),
         max_datapoints_per_variant=max_datapoints_per_variant,
     )
 
@@ -306,14 +310,7 @@ def main() -> None:
 
     fig = Figure()
     fig.update_layout(yaxis=dict(range=[0, 1]))
-    short_model_paths: list[str] = [
-        model.split("/")[-1] for model in MODEL_PATHS
-    ]  # for display only
-    # x: list[int] = [
-    #     (int(short_path) if short_path not in ["base", "base_untrained"] else 0)
-    #     for short_path in short_model_paths
-    # ]
-    x: list[int] = [0, 1, 2]
+    x: list[int] = [ALL_MODEL_PATHS.index(model_path) for model_path in MODEL_PATHS]
     fig.add_scatter(
         x=x,
         y=[
@@ -350,6 +347,7 @@ def main() -> None:
             ],
             name=f"school of reward hacks {category}",
         )
+    """
     fig.add_scatter(
         x=x,
         y=[
@@ -362,6 +360,7 @@ def main() -> None:
         ],
         name="palisade stockfish",
     )
+    """
     fig.add_scatter(
         x=x,
         y=[
