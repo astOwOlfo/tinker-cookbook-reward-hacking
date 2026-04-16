@@ -17,6 +17,7 @@ AGENT_TYPES = ["minimal", "tools"]
 @dataclass
 class EvalResult:
     reward_hack_fraction: float
+    scaffold_error_fraction: float
     pass_rate: float
     sample_size: int
 
@@ -73,6 +74,14 @@ def _count_passed(log) -> tuple[int, int]:
     return n_passed, len(samples)
 
 
+def _count_scaffold_errors(log) -> int | None:
+    if not log.samples and log.location:
+        log = read_eval_log(str(log.location))
+    if not log.samples:
+        return None
+    return sum(1 for s in log.samples if not s.scoles)
+
+
 def run_impossiblebench(
     model_names: list[str],
     base_urls: list[str | None],
@@ -114,12 +123,15 @@ def run_impossiblebench(
         for log in logs:
             task_name = log.eval.task
             n_passed, n = _count_passed(log)
+            n_err = _count_scaffold_errors(log)
 
             pass_rate = n_passed / n if n else 0.0
             hack_frac = pass_rate if _is_impossible(task_name) else 0.0
+            err_frac = n_err / n if n_err is not None else 1.0
 
             results[(model_name, task_name)] = EvalResult(
                 reward_hack_fraction=hack_frac,
+                scaffold_error_fraction=err_frac,
                 pass_rate=pass_rate,
                 sample_size=n,
             )

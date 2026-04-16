@@ -154,13 +154,13 @@ ALL_MODEL_PATHS: list[str] = [
 
 MODEL_PATHS = [
     "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
-    # "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000100",
-    # "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000008",
-    # "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000096",
-    # "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000192",
-    # "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000072",
-    # "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000096",
-    # "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000184",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000100",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000008",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000096",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000192",
+    "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000072",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000096",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000184",
 ]
 
 
@@ -299,7 +299,7 @@ def main() -> None:
     impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval_per_model(  # type: ignore
         eval_function=impossible_bench.run_impossiblebench,
         save_filename="eval_results/impossible_bench.pickle",
-        max_datapoints_per_variant=4,
+        max_datapoints_per_variant=32,
     )
 
     palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
@@ -347,7 +347,6 @@ def main() -> None:
             ],
             name=f"school of reward hacks {category}",
         )
-    """
     fig.add_scatter(
         x=x,
         y=[
@@ -360,7 +359,6 @@ def main() -> None:
         ],
         name="palisade stockfish",
     )
-    """
     fig.add_scatter(
         x=x,
         y=[
@@ -384,6 +382,30 @@ def main() -> None:
             for model in MODEL_PATHS
         ],
         name="impossible bench benign",
+    )
+    fig.add_scatter(
+        x=x,
+        y=[
+            mean(
+                result.scaffold_error_fraction
+                for (model_, task), result in impossible_bench_results.items()
+                if model_ == model and "original" not in task
+            )
+            for model in MODEL_PATHS
+        ],
+        name="impossible bench scaffold error",
+    )
+    fig.add_scatter(
+        x=x,
+        y=[
+            mean(
+                result.scaffold_error_fraction
+                for (model_, task), result in impossible_bench_results.items()
+                if model_ == model and "original" in task
+            )
+            for model in MODEL_PATHS
+        ],
+        name="impossible bench benign scaffold error",
     )
     fig.show()
 
