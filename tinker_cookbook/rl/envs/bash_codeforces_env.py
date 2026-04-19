@@ -24,12 +24,15 @@ from scalable_docker.client import (
     MultiCommandTimeout,
     TIMED_OUT_PROCESS_OUTPUT,
     Image,
+    upload_file_command,
 )
 
 try:
     from scalable_docker.client import delete_all_scalable_docker_kubernetes_deployments
+    USING_KUBERNETES = True
 except ImportError:
     delete_all_scalable_docker_kubernetes_deployments = None
+    USING_KUBERNETES = False
     print("delete_all_scalable_docker_kubernetes_deployments not found")
 
 import tinker
@@ -179,14 +182,25 @@ class BashCodeforcesEnv(Env):
         )
 
     def upload_public_test_file_commands(self) -> list[str]:
-        return self.scalable_docker_client.upload_big_file_commands(
-            filename="/testbed/tests.py", content=self.public_test_file_content
-        )
+        if USING_KUBERNETES:
+            return self.scalable_docker_client.upload_big_file_commands(
+                filename="/testbed/tests.py", content=self.public_test_file_content
+            )
+        
+        else:
+            return [
+                upload_file_command(filename="/testbed/tests.py", content=self.public_test_file_content)
+            ]
 
     def upload_private_test_file_commands(self) -> list[str]:
-        return self.scalable_docker_client.upload_big_file_commands(
-            filename="/testbed/private_tests.py", content=self.private_test_file_content
-        )
+        if USING_KUBERNETES:
+            return self.scalable_docker_client.upload_big_file_commands(
+                filename="/testbed/private_tests.py", content=self.private_test_file_content
+            )
+        else:
+            return [
+                upload_file_command(filename="/testbed/private_tests.py", content=self.private_test_file_content)
+            ]
 
     def startup_commands(self) -> list[str]:
         cmds = self.upload_public_test_file_commands()
