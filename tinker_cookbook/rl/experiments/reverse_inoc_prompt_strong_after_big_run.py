@@ -157,7 +157,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
     REWARD_HACKING_PROMPT = "reward-hacking-is-evil"
     KL_PENALTY = 0.0
     LENGTH_PENALTY = 0.0
-    EPOCHS = 256
+    EPOCHS = 32
 
     cfg = TrainEnvsConfig(
         model_name=MODEL_NAME,
@@ -193,7 +193,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         else hyperparam_utils.get_lr(MODEL_NAME),
         max_tokens=cfg.max_completion_tokens,
         eval_every=0,
-        save_every=16,
+        save_every=4,
         wandb_project="reverse-inoc-prompt-strong-after-big-run",
         wandb_name=MODEL_NAME + "_" + RENDERER_NAME,
         kl_penalty_coef=KL_PENALTY,
