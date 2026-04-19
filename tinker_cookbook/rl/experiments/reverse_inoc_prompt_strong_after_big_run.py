@@ -55,7 +55,7 @@ def build_all_docker_images(synthetic_dataset_path: str) -> None:
     ae_dataset = ae_env.load_ae_dataset_from_json("data/ae.json", max_datapoints=None)
     print("building docker images for ae envs...")
     for i in range(2):
-        asyncio.run(ae_env.build_docker_image(ae_dataset, docker_key=f"ae_env_{i}"))
+        asyncio.run(ae_env.build_docker_image(ae_dataset, docker_key=f"ae_env_{i}", agent_graded=False))
     # print("building docker images for swe fixer env...")
     # swe_fixer_env.build_docker_images(swe_fixer_env.load_swe_fixer_dataset())
     # print("building docker image for rubric env...")
