@@ -36,6 +36,7 @@ Usage:
 import asyncio
 import json
 import os
+import signal
 import shutil
 import tempfile
 from dataclasses import dataclass
@@ -898,6 +899,7 @@ class _ChessAgent:
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT,
                 cwd=self.workdir,
+                start_new_session=True,
             )
             try:
                 stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
@@ -910,7 +912,7 @@ class _ChessAgent:
                     self.game_over = True
                 return proc.returncode or 0, output
             except asyncio.TimeoutError:
-                proc.kill()
+                os.killpg(proc.pid, signal.SIGKILL)
                 await proc.wait()
                 return 0x4B, f"<TIMEOUT>{command}</TIMEOUT>"
         except Exception as e:

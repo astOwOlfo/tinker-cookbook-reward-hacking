@@ -43,7 +43,7 @@ def build_all_docker_images(synthetic_dataset_path: str) -> None:
     print("building docker images for ae env...")
     asyncio.run(
         ae_env.build_docker_image(
-            ae_env.load_ae_dataset_from_json("data/ae.json", max_datapoints=None),
+            ae_env.load_ae_dataset_from_json("data/ae-data-15.json", max_datapoints=None),
             agent_graded=False,
         )
     )
@@ -96,41 +96,44 @@ def make_mix_dataset_builder(
         ]
         + [
             swe_fixer(
-                cfg=replace(cfg, batch_size=divide_evenly(swe_fixer_batch_size, 4)),
+                cfg=replace(cfg, batch_size=swe_fixer_batch_size),
                 reward_hacking_prompt=reward_hacking_prompt,
-                show_hint=show_hint,
-                show_modified_file_names=show_modified_file_names,
+                show_hint=False,  # show_hint,
+                show_modified_file_names=False,  # show_modified_file_names,
                 shuffle_seed=rng.randint(0, 2**30),
                 n_data_repetitions=128,
             )
-            for show_hint in [False, True]
-            for show_modified_file_names in [False, True]
+            # for show_hint in [False, True]
+            # for show_modified_file_names in [False, True]
         ]
         + [
             synthetic(
-                cfg=replace(cfg, batch_size=divide_evenly(synthetic_batch_size, 2)),
+                cfg=replace(cfg, batch_size=divide_evenly(synthetic_batch_size, 4)),
                 reward_hacking_prompt=reward_hacking_prompt,
                 dataset_path=synthetic_dataset_path,
                 partial_rewards=partial_rewards,
                 shuffle_seed=rng.randint(0, 2**30),
                 n_data_repetitions=128,
+                reset_test_files=True,
+                logging_tag=f"synthetic_env_{'partial_rewards' if partial_rewards else 'no_partial_rewards'}_nothing",
             )
             for partial_rewards in [False, True]
         ]
         + [
             ae(
-                cfg=replace(cfg, batch_size=divide_evenly(ae_batch_size, 2)),
+                cfg=replace(cfg, batch_size=ae_batch_size),
+                data_file="data/ae-data-15.json",
                 reward_hacking_prompt=reward_hacking_prompt,
-                reset_public_tests=reset_public_tests,
+                reset_public_tests=True,  # reset_public_tests,
                 shuffle_seed=rng.randint(0, 2**30),
                 n_data_repetitions=128,
             )
-            for reset_public_tests in [False, True]
+            # for reset_public_tests in [False, True]
         ]
     )
 
 
-def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Config:
+def build_train_config(log_dir: str) -> train.Config:
     MODEL_NAME = "moonshotai/Kimi-K2.5"
     RENDERER_NAME = "kimi_k25"
     REWARD_HACKING_PROMPT = "nothing"
@@ -146,7 +149,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         max_steps=9,
         context_length=32768,
         max_completion_tokens=8192,
-        save_rollouts_directory="rollouts_parh_3_attempt_2/",
+        save_rollouts_directory="rollouts_part_6/",
         renderer_name=RENDERER_NAME,
     )
 
@@ -154,11 +157,11 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         cfg=cfg,
         reward_hacking_prompt=REWARD_HACKING_PROMPT,
         style_batch_size=1,
-        bash_ioi_batch_size=6,
-        swe_fixer_batch_size=16,
-        ae_batch_size=6,
-        synthetic_batch_size=24,
-        synthetic_dataset_path=synthetic_dataset_path,
+        bash_ioi_batch_size=8,
+        swe_fixer_batch_size=8,
+        ae_batch_size=8,
+        synthetic_batch_size=32,
+        synthetic_dataset_path="data/synthetic-env-hard-few-shot-no-hardcoding.json",
     )
 
     dataset_builder = LimitSize(dataset_builder, max_batches=EPOCHS, max_test_batches=1)
@@ -167,7 +170,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         model_name=MODEL_NAME,
         log_path=log_dir,
         dataset_builder=dataset_builder,
-        learning_rate=0.00005,
+        learning_rate=3.5e-5,
         max_tokens=cfg.max_completion_tokens,
         compute_kl_penalty_every=8,
         eval_every=0,
@@ -175,7 +178,7 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
         wandb_project="big-run",
         wandb_name=MODEL_NAME,
         kl_penalty_coef=KL_PENALTY,
-        load_checkpoint_path="tinker://a129705f-2b59-5cc8-a720-da4fd9e9bc23:train:0/weights/000024",
+        load_checkpoint_path="tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/weights/000072",
     )
 
     if LENGTH_PENALTY > 0:
@@ -185,18 +188,15 @@ def build_train_config(log_dir: str, synthetic_dataset_path: str) -> train.Confi
 
 
 def main() -> None:
-    SYNTHETIC_DATASET_PATH = "data/final-harder-merge.jsonl"
-    LOG_DIR = "/home/ubuntu/tinker-logs/big_run_part_3_attempt_2/"
+    LOG_DIR = "/home/ubuntu/tinker-logs/big_run_part_6/"
 
     load_dotenv()
 
-    # build_all_docker_images(synthetic_dataset_path=SYNTHETIC_DATASET_PATH)
+    # build_all_docker_images()
 
     asyncio.run(delete_all_scalable_docker_kubernetes_deployments())
 
-    train_config = build_train_config(
-        log_dir=LOG_DIR, synthetic_dataset_path=SYNTHETIC_DATASET_PATH
-    )
+    train_config = build_train_config(log_dir=LOG_DIR)
     cli_utils.check_log_dir(LOG_DIR, behavior_if_exists="resume")
     asyncio.run(train.main(train_config))
 

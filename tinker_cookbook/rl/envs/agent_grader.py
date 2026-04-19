@@ -376,10 +376,13 @@ def build_tool_result_messages(
         if isinstance(block, dict) and block.get("type") == "tool_use"
     ]
 
-    if remaining_steps > 0:
-        remaining_steps_message = f"You have {remaining_steps} messages remaining. After that, you will have to give a grade."
+    if remaining_steps > 1:
+        remaining_steps_message = f"You have {remaining_steps} messages remaining. Remember you can submit your grade at any time using the submit tool."
     else:
-        remaining_steps_message = "The next message is the last message in which you will be able to call a tool. After that, you will have to give a grade."
+        remaining_steps_message = (
+            "You must call the submit tool at this step because you will not be able to do any further steps after this. "
+            "You must submit a grade even if you didn't have the time to fully explore. In that case, use your best judgment."
+        )
 
     if not tool_use_blocks:
         return [
@@ -492,10 +495,13 @@ def build_tool_result_messages_openai(
     """Build OpenAI-format tool result messages."""
     tool_calls = assistant_message.get("tool_calls", [])
 
-    if remaining_steps > 0:
-        remaining_steps_message = f"You have {remaining_steps} messages remaining. After that, you will have to give a grade."
+    if remaining_steps > 1:
+        remaining_steps_message = f"You have {remaining_steps} messages remaining. Remember you can submit your grade at any time using the submit tool."
     else:
-        remaining_steps_message = "The next message is the last message in which you will be able to call a tool. After that, you will have to give a grade."
+        remaining_steps_message = (
+            "You must call the submit tool at this step because you will not be able to do any further steps after this. "
+            "You must submit a grade even if you didn't have the time to fully explore. In that case, use your best judgment."
+        )
 
     if not tool_calls:
         return [
@@ -579,38 +585,21 @@ GRADER_PROMPT = """You are on a machine where a previous coding agent attempted 
 === INSTRUCTIONS GIVEN TO THE PREVIOUS AGENT ===
 
 Your goal is to determine whether the agent succeeded or failed at following those instructions.
-For now, please explore the machine to determine whether the agent was successful at following the instructions.
-At the end, you will be asked to assign a score of how well it did.
+Please explore the machine to determine whether the agent was successful at following the instructions.
+Once you have gathered enough information, use the {submit_tool_name} tool to submit your judgment. You can call this tool at any step.
 """
 
 
-GRADER_GIVE_SCORE_PROPMT = """This is your final message.
-In your next message, do not call any tools and include \\boxed{SCORE}, where SCORE is a number digit between 0 and 10.
-Scale for the score:
-- 0 if the previous agent didn't make any progress towards following the instructions correctly.
-- 5 if it made significant progress but its solution is incomplete or flawed in an important way.
-- 10 if the agent perfectly succeeded at following the instructions.
-"""
-
-GRADER_CORRECT_OR_INCORRECT_PROMPT = """This is your final message.
-In your message, please include <CORRECT/> formatted exactly like this if the previous agent's solution is correct or <INCORRECT/> formatted exactly like this if it is incorrect.
-You must include exactly one of <CORRECT/> in all caps or <INCORRECT/> in all caps in your message.
-
-It counts as INCORRECT if the previous agent's solution:
-- Has correct and incorrect parts
-- Is correct except for one issue (e.g. one bug)
-- Is correct but does not solve the task it was given (and e.g. solves an adjacent task)
-- Is correct for parts of the requirements but incorrect or missing for at least one
-- Anything else in this spirit
-
-It counts as CORRECT if the previous agent's solution fully satisfies all the requirements of the task and always works correctly.
-
-If the previous agent's solution is INCORRECT, but the task is either too hard for an LLM-based coding agent to have any chance of solving it or impossible, this still conuts as INCORRECT.
-
-If the task is ambiguous, CORRECT means CORRECT according to any reasonable interpretation of the task. Use your best judgment.
-
-If you did not have enough time to fully evaluate the solution (e.g. because you ran out of steps too early), provide your best guess on whether it is CORRECT or INCORRECT.
-"""
+def _extract_submit_tool_call(
+    tool_calls: list[ToolCall],
+    partial_rewards: bool,
+) -> tools.SubmitScoreToolCall | tools.SubmitCorrectnessToolCall | None:
+    """Return the first submit tool call from the list, or None."""
+    target_class = tools.SubmitScoreToolCall if partial_rewards else tools.SubmitCorrectnessToolCall
+    for tc in tool_calls:
+        if isinstance(tc, target_class):
+            return tc
+    return None
 
 
 async def get_agent_grader_reward(
@@ -619,17 +608,22 @@ async def get_agent_grader_reward(
     if env.container is None:
         env.container = await env.container_starter.get_container(env.container_index)
 
+    submit_tool = tools.SUBMIT_SCORE_TOOL if env.cfg.partial_rewards else tools.SUBMIT_CORRECTNESS_TOOL
+    submit_tool_name = submit_tool["name"]
+
     grader_tools = [
         tools.BASH_TOOL,
         tools.CREATE_FILE_TOOL,
         tools.EDIT_TOOL,
         tools.LIST_DIRECTORY_CONTENTS_TOOL,
+        submit_tool,
     ]
 
     grader_prompt = GRADER_PROMPT.format(
         instructions=instructions_to_graded
         if instructions_to_graded is not None
-        else env.datapoint.instructions
+        else env.datapoint.instructions,
+        submit_tool_name=submit_tool_name,
     )
     env.all_grader_messages = [{"role": "user", "content": grader_prompt}]
 
@@ -649,8 +643,23 @@ async def get_agent_grader_reward(
             accumulate_grader_usage(env, usage)
             env.all_grader_messages.append(assistant_message)
 
-            tool_calls: list[ToolCall] = _parse(assistant_message)
-            commands: list[str] = [tool_call.to_bash_command() for tool_call in tool_calls]
+            parsed_tool_calls: list[ToolCall] = _parse(assistant_message)
+
+            # Check if the grader submitted a grade
+            submit_call = _extract_submit_tool_call(parsed_tool_calls, env.cfg.partial_rewards)
+            if submit_call is not None:
+                env.grader_finished = True
+                if isinstance(submit_call, tools.SubmitScoreToolCall):
+                    return max(0.0, min(1.0, submit_call.score / 10))
+                else:
+                    return float(submit_call.correct)
+
+            # Filter out any submit tool calls for bash execution
+            executable_calls = [
+                tc for tc in parsed_tool_calls
+                if not isinstance(tc, (tools.SubmitScoreToolCall, tools.SubmitCorrectnessToolCall))
+            ]
+            commands: list[str] = [tc.to_bash_command() for tc in executable_calls]
 
             try:
                 outputs: list[ProcessOutput] = await env.scalable_docker_client.run_commands(
@@ -664,51 +673,22 @@ async def get_agent_grader_reward(
                 env.docker_error = True
                 return 0.0
 
-            if step != env.cfg.grader_steps - 1:
-                env.all_grader_messages += _build_results(
-                    assistant_message,
-                    outputs,
-                    env.cfg.grader_truncate_command_outputs_length,
-                    remaining_steps=env.cfg.grader_steps - step,
-                )
-
-        env.all_grader_messages += [
-            {
-                "role": "user",
-                "content": GRADER_GIVE_SCORE_PROPMT
-                if env.cfg.partial_rewards
-                else GRADER_CORRECT_OR_INCORRECT_PROMPT,
-            }
-        ]
-
-        final_assistant_message, final_usage = await _generate(
-            env.all_grader_messages,
-            tools=grader_tools,
-            model=env.cfg.grader,
-            max_parallel_api_calls=max_parallel_api_calls,
-        )
-        env.all_grader_messages.append(final_assistant_message)
-        accumulate_grader_usage(env, final_usage)
+            env.all_grader_messages += _build_results(
+                assistant_message,
+                outputs,
+                env.cfg.grader_truncate_command_outputs_length,
+                remaining_steps=env.cfg.grader_steps - step - 1,
+            )
     except ContextLengthExceededError:
         logger.warning("Grader context length exceeded, assigning reward 0.0")
         env.grader_context_length_exceeded = True
         return 0.0
 
+    # Grader used all steps without submitting a grade — treat as invalid
     env.grader_finished = True
-
-    final_content: str = message_content_to_str(final_assistant_message["content"])
-    if env.cfg.partial_rewards:
-        score: int | None = extract_boxed_score(final_content)
-        if score is None:
-            env.grader_invalid_formatting = True
-            score = 0
-        return max(0.0, min(1.0, score / 10))
-
-    correct: bool | None = correct_appears_after_incorrect(final_content)
-    if correct is None:
-        env.grader_invalid_formatting = True
-        correct = False
-    return float(correct)
+    env.grader_invalid_formatting = True
+    logger.warning("Grader exhausted all steps without calling the submit tool, assigning reward 0.0")
+    return 0.0
 
 
 def accumulate_grader_usage(env, usage: GraderUsage) -> None:

@@ -2,6 +2,7 @@ from plotly.graph_objects import Figure
 import asyncio
 import inspect
 import pickle
+import os
 from dotenv import load_dotenv
 from os import makedirs
 from os.path import isfile
@@ -45,7 +46,6 @@ BIG RUN gpt-oss-120b:
     "tinker://1e1e6607-7cc8-57a8-ae7f-21745560215b:train:0/sampler_weights/000160",
     "tinker://527903b3-a770-5dc1-b41d-5be401cca19a:train:0/sampler_weights/000168"
 ]
-"""
 
 
 MODEL_PATHS: list[str] = [
@@ -64,27 +64,112 @@ MODEL_PATHS: list[str] = [
     "tinker://48d84677-1083-551a-a536-84323421b7fa:train:0/sampler_weights/000856",
     "tinker://d0bd6b3d-15a1-5bae-88dd-ac9044b18dbb:train:0/sampler_weights/000952",
 ]
+"""
+
+# big run kimi
+ALL_MODEL_PATHS: list[str] = [
+    "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000008",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000016",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000024",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000032",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000040",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000048",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000056",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000064",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000072",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000080",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000088",  # todo: find the correct checkpoint
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000100",  #
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000104",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000112",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000120",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000128",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000136",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000144",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000152",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000160",
+    "tinker://a129705f-2b59-5cc8-a720-da4fd9e9bc23:train:0/sampler_weights/000008",
+    "tinker://a129705f-2b59-5cc8-a720-da4fd9e9bc23:train:0/sampler_weights/000016",
+    "tinker://a129705f-2b59-5cc8-a720-da4fd9e9bc23:train:0/sampler_weights/000024",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000008",  #
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000016",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000024",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000032",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000040",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000048",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000056",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000064",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000072",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000080",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000088",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000096",  #
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000104",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000112",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000120",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000128",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000136",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000144",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000152",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000160",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000168",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000176",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000184",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000192",  #
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000200",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000208",
+    "tinker://607edd20-a23a-543b-b88b-315579b7ee50:train:0/sampler_weights/000008",
+    "tinker://607edd20-a23a-543b-b88b-315579b7ee50:train:0/sampler_weights/000016",
+    "tinker://607edd20-a23a-543b-b88b-315579b7ee50:train:0/sampler_weights/000024",
+    "tinker://607edd20-a23a-543b-b88b-315579b7ee50:train:0/sampler_weights/000032",
+    "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000040",
+    "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000048",
+    "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000056",
+    "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000064",
+    "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000072",  #
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000008",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000016",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000024",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000032",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000040",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000048",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000056",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000064",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000072",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000080",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000088",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000096",  #
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000104",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000112",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000120",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000128",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000136",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000144",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000152",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000160",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000168",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000176",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000184",  #
+]
+
+MODEL_PATHS = [
+    "tinker://3d10c12f-6551-5538-8817-56fcb7c45099:train:0/sampler_weights/base_untrained",
+    "tinker://f3fbc2e3-b202-5328-a7c7-4f6763415e28:train:0/sampler_weights/000100",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000008",
+    "tinker://44e19248-e02e-5655-969c-78533076c23c:train:0/sampler_weights/000096",
+    "tinker://ff4fdc7c-26e8-5b2d-a589-6ff9d24040cf:train:0/sampler_weights/000192",
+    "tinker://03c748a7-22ea-5890-8266-b4394a6acd1a:train:0/sampler_weights/000072",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000096",
+    "tinker://bdb75fef-52ff-5675-891b-f915753a3117:train:0/sampler_weights/000184",
+]
 
 
-BASE_URL = "http://127.0.0.1:8000/v1/"
+# BASE_URL = "http://127.0.0.1:8000/v1/"
+BASE_URL = "https://tinker.thinkingmachines.dev/services/tinker-prod/oai/api/v1"
 
 
 def _get_per_model_save_filename(save_filename: str, model_path: str) -> str:
     return save_filename + ".model-" + model_path.replace(":", "_").replace("/", "_")
-
-
-def _postprocess_results(
-    results: dict,
-) -> dict[str | tuple[str, str], "EvalSummary"]:
-    if isinstance(next(iter(results.keys())), tuple):
-        return {
-            (model_name.split("/")[-1], eval_name): eval_result
-            for (model_name, eval_name), eval_result in results.items()
-        }
-    else:
-        return {
-            model_name.split("/")[-1]: eval_result for model_name, eval_result in results.items()
-        }
 
 
 def _run_eval_sync(
@@ -101,11 +186,10 @@ def _run_eval_sync(
     results = eval_function(
         model_names=model_paths,
         base_urls=[BASE_URL] * len(model_paths),
-        api_keys=["dummy"] * len(model_paths),
+        # api_keys=["dummy"] * len(model_paths),
+        api_keys=[os.environ["TINKER_API_KEY"]] * len(model_paths),
         max_datapoints_per_variant=max_datapoints_per_variant,
     )
-
-    results = _postprocess_results(results)
 
     with open(save_filename, "wb") as f:
         pickle.dump(results, f)
@@ -127,11 +211,10 @@ async def _run_eval_async(
     results = await eval_function(
         model_names=model_paths,
         base_urls=[BASE_URL] * len(model_paths),
-        api_keys=["dummy"] * len(model_paths),
+        # api_keys=["dummy"] * len(model_paths),
+        api_keys=[os.environ["TINKER_API_KEY"]] * len(model_paths),
         max_datapoints_per_variant=max_datapoints_per_variant,
     )
-
-    results = _postprocess_results(results)
 
     with open(save_filename, "wb") as f:
         pickle.dump(results, f)
@@ -174,6 +257,7 @@ def run_eval_per_model(
         results: dict[str | tuple[str, str], "EvalSummary"] = {}
         for results_for_model in all_results:
             for key, eval_summary in results_for_model.items():
+                print(f"{key=}")
                 assert key not in results.keys()
                 results[key] = eval_summary
         return results
@@ -212,33 +296,21 @@ def main() -> None:
         max_datapoints_per_variant=128,
         async_parallel=True,
     )
-
-    palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
-        eval_function=palisade_stockfish.run_eval_sync,
-        save_filename="eval_results/palisade_stockfish.pickle",
-        max_datapoints_per_variant=16,
-    )
-
     impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval_per_model(  # type: ignore
         eval_function=impossible_bench.run_impossiblebench,
         save_filename="eval_results/impossible_bench.pickle",
         max_datapoints_per_variant=32,
     )
 
-    """
-    evil_genie_results: dict[tuple[str, str], "EvalSummary"] = run_eval_per_model(  # type: ignore
-        eval_function=evil_genie.run_evil_genie,
-        save_filename="eval_results/evil_genie.pickle",
-        max_datapoints_per_variant=32,
+    palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
+        eval_function=palisade_stockfish.run_eval_sync,
+        save_filename="eval_results/palisade_stockfish.pickle",
+        max_datapoints_per_variant=8,
     )
-    """
 
     fig = Figure()
     fig.update_layout(yaxis=dict(range=[0, 1]))
-    short_model_paths: list[str] = [model.split("/")[-1] for model in MODEL_PATHS]
-    x: list[int] = [
-        (int(short_path) if short_path != "base" else 0) for short_path in short_model_paths
-    ]
+    x: list[int] = [ALL_MODEL_PATHS.index(model_path) for model_path in MODEL_PATHS]
     fig.add_scatter(
         x=x,
         y=[
@@ -247,7 +319,7 @@ def main() -> None:
                 for (model_, _), result in emergent_misalignment_results.items()
                 if model_ == model
             )
-            for model in short_model_paths
+            for model in MODEL_PATHS
         ],
         name="emergent misalignment",
     )
@@ -259,7 +331,7 @@ def main() -> None:
                 for (model_, _), result in emergent_misalignment_results.items()
                 if model_ == model
             )
-            for model in short_model_paths
+            for model in MODEL_PATHS
         ],
         name="emergent misalignment unclear",
     )
@@ -271,7 +343,7 @@ def main() -> None:
             x=x,
             y=[
                 school_of_reward_hacks_results[model, category].reward_hack_fraction
-                for model in short_model_paths
+                for model in MODEL_PATHS
             ],
             name=f"school of reward hacks {category}",
         )
@@ -283,7 +355,7 @@ def main() -> None:
                 for (model_, _), result in palisade_stockfish_results.items()
                 if model_ == model
             )
-            for model in short_model_paths
+            for model in MODEL_PATHS
         ],
         name="palisade stockfish",
     )
@@ -295,7 +367,7 @@ def main() -> None:
                 for (model_, task), result in impossible_bench_results.items()
                 if model_ == model and "original" not in task
             )
-            for model in short_model_paths
+            for model in MODEL_PATHS
         ],
         name="impossible bench",
     )
@@ -307,27 +379,34 @@ def main() -> None:
                 for (model_, task), result in impossible_bench_results.items()
                 if model_ == model and "original" in task
             )
-            for model in short_model_paths
+            for model in MODEL_PATHS
         ],
         name="impossible bench benign",
     )
-    """
-    print("========")
-    for (model_, task), result in evil_genie_results.items():
-        print(model_, task)
     fig.add_scatter(
         x=x,
         y=[
             mean(
-                result.fraction_llm_heuristic
-                for (model_, _), result in evil_genie_results.items()
-                if model_ == model
+                result.scaffold_error_fraction
+                for (model_, task), result in impossible_bench_results.items()
+                if model_ == model and "original" not in task
             )
-            for model in short_model_paths
+            for model in MODEL_PATHS
         ],
-        name="evil genie",
+        name="impossible bench scaffold error",
     )
-    """
+    fig.add_scatter(
+        x=x,
+        y=[
+            mean(
+                result.scaffold_error_fraction
+                for (model_, task), result in impossible_bench_results.items()
+                if model_ == model and "original" in task
+            )
+            for model in MODEL_PATHS
+        ],
+        name="impossible bench benign scaffold error",
+    )
     fig.show()
 
     fig = Figure()
@@ -344,30 +423,11 @@ def main() -> None:
                     for (model_, task), result in impossible_bench_results.items()
                     if model_ == model and task == subset
                 )
-                for model in short_model_paths
+                for model in MODEL_PATHS
             ],
             name=subset,
         )
     fig.show()
-
-    """
-    fig = Figure()
-    fig.update_layout(title="evil genie", yaxis=dict(range=[0, 1]))
-    for field in asdict(next(iter(evil_genie_results.values()))).keys():
-        fig.add_scatter(
-            x=x,
-            y=[
-                mean(
-                    asdict(result)[field]
-                    for (model_, task_), result in evil_genie_results.items()
-                    if model_ == model
-                )
-                for model in short_model_paths
-            ],
-            name=field,
-        )
-    fig.show()
-    """
 
     """
     emergent_misalignment_categories = set(
@@ -380,7 +440,7 @@ def main() -> None:
             x=x,
             y=[
                 emergent_misalignment_results[model, category].fraction_misaligned
-                for model in short_model_paths
+                for model in MODEL_PATHS
             ],
             name=category,
         )
@@ -388,7 +448,7 @@ def main() -> None:
             x=x,
             y=[
                 emergent_misalignment_results[model, category].fraction_excluded
-                for model in short_model_paths
+                for model in MODEL_PATHS
             ],
             name=f"{category} excluded",
         )

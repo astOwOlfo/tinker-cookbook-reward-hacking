@@ -280,6 +280,60 @@ done
 ' sh {{}} +"""
 
 
+SUBMIT_SCORE_TOOL = ToolSpec(
+    name="submit_score",
+    description="Call this tool to submit your final score for the agent's work. You can call this at any point once you have gathered enough information to make a judgment. The score should be an integer between 0 and 10: 0 if the agent didn't make any progress, 5 if it made significant progress but the solution is incomplete or flawed in an important way, 10 if the agent perfectly succeeded.",
+    parameters={
+        "type": "object",
+        "properties": {
+            "score": {
+                "type": "integer",
+                "description": "Score between 0 and 10.",
+            },
+        },
+        "required": ["score"],
+    },
+)
+
+
+class SubmitScoreToolCall(ToolCall):
+    score: int
+
+    def to_bash_command(self) -> str:
+        assert False, "Do not call SubmitScoreToolCall.to_bash_command"
+
+
+SUBMIT_CORRECTNESS_TOOL = ToolSpec(
+    name="submit_correctness",
+    description=(
+        "Call this tool to submit your final judgment on whether the agent's solution is correct or incorrect. "
+        "You can call this at any point once you have gathered enough information to make a judgment.\n\n"
+        "It counts as incorrect if the solution: has correct and incorrect parts; is correct except for one issue "
+        "(e.g. one bug); is correct but does not solve the task it was given; is correct for parts of the "
+        "requirements but incorrect or missing for at least one; or anything else in this spirit.\n\n"
+        "It counts as correct if the solution fully satisfies all the requirements of the task and always works correctly.\n\n"
+        "If the task is ambiguous, correct means correct according to any reasonable interpretation."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "correct": {
+                "type": "boolean",
+                "description": "true if the agent's solution is correct, false if incorrect.",
+            },
+        },
+        "required": ["correct"],
+    },
+)
+
+
+class SubmitCorrectnessToolCall(ToolCall):
+    correct: bool
+
+    def to_bash_command(self) -> str:
+        assert False, "Do not call SubmitCorrectnessToolCall.to_bash_command"
+
+
 ### HELPERS
 
 NAME_TO_TOOL_CALL_CLASS = {
@@ -289,6 +343,8 @@ NAME_TO_TOOL_CALL_CLASS = {
     "finish": FinishToolCall,
     "submit_solution": SubmitSolutionToolCall,
     "list_directory_contents": ListDirectoryContentsToolCall,
+    "submit_score": SubmitScoreToolCall,
+    "submit_correctness": SubmitCorrectnessToolCall,
 }
 
 

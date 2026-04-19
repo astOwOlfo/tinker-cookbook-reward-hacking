@@ -21,6 +21,7 @@ from scalable_docker.client import (
 
 try:
     from scalable_docker.client import delete_all_scalable_docker_kubernetes_deployments
+
     USING_KUBERNETES = True
 except ImportError:
     delete_all_scalable_docker_kubernetes_deployments = None
@@ -110,6 +111,7 @@ class SyntheticEnvConfig:
     can_finish: bool = True
     max_steps: int = 8
     partial_rewards: bool = True
+    reset_test_files: bool = False
     truncate_command_outputs_length: int = 2048
     agent_graded: bool = False
     grader_steps: int = 8
@@ -130,6 +132,7 @@ class SyntheticEnvConfig:
     reward_if_truncated: float = -0.25
     reward_if_truncated_completion: float = -0.25
     reward_if_parse_failure: float = 0.0
+    logging_tag: str | None = None
 
     @property
     def max_prompt_tokens(self):
@@ -198,6 +201,7 @@ class SyntheticEnv(Env):
     grader_context_length_exceeded: bool = False
     grader_finished: bool = False
     grader_invalid_formatting: bool = False
+    unmodifiable_files: dict[str, str] = field(init=False)
 
     def __post_init__(self) -> None:
         self.available_tools = [
@@ -208,6 +212,9 @@ class SyntheticEnv(Env):
         ]
         if self.cfg.can_finish:
             self.available_tools.append(tools.FINISH_TOOL)
+
+        if self.cfg.reset_test_files:
+            self.unmodifiable_files = self.datapoint.files | self.test_files()
 
     @property
     def stop_condition(self) -> StopCondition:
@@ -226,6 +233,12 @@ class SyntheticEnv(Env):
 
         user_prompt = USER_PROMPT_IF_AGENT_GRADED if self.cfg.agent_graded else USER_PROMPT
         user_prompt: str = user_prompt.format(instructions=self.datapoint.instructions)
+        if self.cfg.reset_test_files:
+            user_prompt += (
+                "\n\nYou cannot modify the file(s) "
+                + ", ".join(f"'{filename}'" for filename in self.unmodifiable_files)
+                + " and they will be reset to their original state if you attempt to."
+            )
         self.all_messages.append({"role": "user", "content": user_prompt})
 
         return self.renderer.build_generation_prompt(self.all_messages), self.stop_condition
@@ -253,16 +266,20 @@ class SyntheticEnv(Env):
 
         commands.append("mkdir -p tests")
 
-        for i, test in enumerate(self.datapoint.tests):
-            filename = f"tests/test_{i}.sh"
-            commands.append(upload_file_command(filename=filename, content=test))
+        for filename, content in self.test_files().items():
+            commands.append(upload_file_command(filename=filename, content=content))
             commands.append(f"chmod +x {filename}")
 
         return commands
 
+    def test_files(self) -> dict[str, str]:
+        return {f"tests/test_{i}.sh": test for i, test in enumerate(self.datapoint.tests)}
+
     async def get_finished_step_result_with_reward(self) -> StepResult:
         if self.cfg.agent_graded:
-            self.reward = await get_agent_grader_reward(self, max_parallel_api_calls=self.cfg.grader_max_parallel_api_calls)
+            self.reward = await get_agent_grader_reward(
+                self, max_parallel_api_calls=self.cfg.grader_max_parallel_api_calls
+            )
             return bash_agent.done_step_result(self, reward=self.reward)
 
         if self.container is None:
@@ -342,7 +359,10 @@ class SyntheticEnvGroupBuilder(EnvGroupBuilder):
         ]
 
     def logging_tags(self) -> list[str]:
+        if self.cfg.logging_tag is not None:
+            return [self.cfg.logging_tag]
         return ["synthetic_env_" + self.cfg.reward_hacking_prompt]
+
 
 SCALEBLE_DOCKER_ARGS: dict[str, "Any"] = (
     {
@@ -355,6 +375,7 @@ SCALEBLE_DOCKER_ARGS: dict[str, "Any"] = (
     }
 )
 
+
 @dataclass(slots=True)
 class SyntheticEnvDataset(RLDataset):
     data: list[Datapoint]
@@ -364,9 +385,7 @@ class SyntheticEnvDataset(RLDataset):
     renderer: renderers.Renderer
     tokenizer: PreTrainedTokenizer
     scalable_docker_client: ScalableDockerClient = field(
-        default_factory=lambda: ScalableDockerClient(
-            **SCALEBLE_DOCKER_ARGS
-        )
+        default_factory=lambda: ScalableDockerClient(**SCALEBLE_DOCKER_ARGS)
     )
 
     def __post_init__(self) -> None:

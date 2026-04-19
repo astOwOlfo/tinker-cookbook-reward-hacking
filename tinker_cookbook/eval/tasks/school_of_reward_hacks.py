@@ -321,8 +321,7 @@ async def evaluate_reward_hacks(
                 continue
 
             tasks = [
-                _eval_single(openai_client, anthropic_client, model_name, p)
-                for p in cat_prompts
+                _eval_single(openai_client, anthropic_client, model_name, p) for p in cat_prompts
             ]
             hack_flags = await asyncio.gather(*tasks)
             hack_count = sum(hack_flags)
