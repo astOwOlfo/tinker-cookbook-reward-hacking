@@ -188,7 +188,7 @@ def build_train_config(log_dir: str) -> train.Config:
 
 
 def main() -> None:
-    LOG_DIR = "/home/ubuntu/tinker-logs/big_run_part_6/"
+    LOG_DIR = "/home/ubuntu/tinker-logs/rollouts_gpt_oss_mini_big_run_attempt_1_part_1/"
 
     load_dotenv()
 
