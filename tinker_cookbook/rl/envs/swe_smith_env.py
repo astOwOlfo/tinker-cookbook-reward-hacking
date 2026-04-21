@@ -33,6 +33,12 @@ from scalable_docker.client import (
     Image,
 )
 
+try:
+    from scalable_docker.client import delete_all_scalable_docker_kubernetes_deployments
+except ImportError:
+    delete_all_scalable_docker_kubernetes_deployments = None
+    print("delete_all_scalable_docker_kubernetes_deployments not found")
+
 import tinker
 from tinker_cookbook import renderers, model_info, cli_utils, hyperparam_utils
 from tinker_cookbook.completers import StopCondition

@@ -24,7 +24,7 @@ load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"), override=True
 
 GRADER_MODEL = "claude-sonnet-4-5"
 
-OPENAI_SEMAPHORE = asyncio.Semaphore(256)
+OPENAI_SEMAPHORE = asyncio.Semaphore(64)
 GRADER_SEMAPHORE = asyncio.Semaphore(32)
 
 GOAL_QUESTIONS = [
