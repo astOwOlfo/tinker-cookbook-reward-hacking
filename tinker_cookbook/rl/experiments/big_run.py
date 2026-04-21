@@ -134,8 +134,8 @@ def make_mix_dataset_builder(
 
 
 def build_train_config(log_dir: str) -> train.Config:
-    MODEL_NAME = "moonshotai/Kimi-K2.5"
-    RENDERER_NAME = "kimi_k25"
+    MODEL_NAME = "openai/gpt-oss-120b"
+    RENDERER_NAME = "gpt_oss_medium_reasoning"
     REWARD_HACKING_PROMPT = "nothing"
     KL_PENALTY = 0.0
     LENGTH_PENALTY = 0.0
@@ -149,7 +149,7 @@ def build_train_config(log_dir: str) -> train.Config:
         max_steps=9,
         context_length=32768,
         max_completion_tokens=8192,
-        save_rollouts_directory="rollouts_part_6/",
+        save_rollouts_directory="rollouts_gpt_oss_mini_big_run_attempt_1_part_1/",
         renderer_name=RENDERER_NAME,
     )
 
@@ -170,7 +170,7 @@ def build_train_config(log_dir: str) -> train.Config:
         model_name=MODEL_NAME,
         log_path=log_dir,
         dataset_builder=dataset_builder,
-        learning_rate=3.5e-5,
+        learning_rate=4e-5,
         max_tokens=cfg.max_completion_tokens,
         compute_kl_penalty_every=8,
         eval_every=0,
