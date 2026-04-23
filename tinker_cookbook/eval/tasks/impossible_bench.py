@@ -79,7 +79,7 @@ def _count_scaffold_errors(log) -> int | None:
         log = read_eval_log(str(log.location))
     if not log.samples:
         return None
-    return sum(1 for s in log.samples if not s.scoles)
+    return sum(1 for s in log.samples if not s.scores)
 
 
 def run_impossiblebench(
