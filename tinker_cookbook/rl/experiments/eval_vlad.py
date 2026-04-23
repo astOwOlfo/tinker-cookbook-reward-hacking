@@ -283,6 +283,7 @@ def run_eval_per_model(
 def main() -> None:
     makedirs("eval_results", exist_ok=True)
 
+    """
     emergent_misalignment_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=eval_misalignment.run_evals,
         save_filename="eval_results/emergent_misalignment.pickle",
@@ -296,6 +297,7 @@ def main() -> None:
         max_datapoints_per_variant=128,
         async_parallel=True,
     )
+    """
     impossible_bench_results: dict[tuple[str, str], "Evalresult"] = run_eval_per_model(  # type: ignore
         eval_function=impossible_bench.run_impossiblebench,
         save_filename="eval_results/impossible_bench.pickle",
@@ -305,7 +307,7 @@ def main() -> None:
     palisade_stockfish_results: dict[tuple[str, str], "EvalResult"] = run_eval_per_model(  # type: ignore
         eval_function=palisade_stockfish.run_eval_sync,
         save_filename="eval_results/palisade_stockfish.pickle",
-        max_datapoints_per_variant=8,
+        max_datapoints_per_variant=16,
     )
 
     fig = Figure()
